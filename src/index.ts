@@ -13,15 +13,14 @@ class Everpay extends EverpayBase {
 
   private readonly _apiHost: string
   private readonly _config: Config
-  private readonly _cachedInfo?: EverpayInfo
+  private _cachedInfo?: EverpayInfo
   // cachedTimestamp: number
 
   async info (): Promise<EverpayInfo> {
     if (this._cachedInfo === undefined) {
-      return await getEverpayInfo(this._apiHost)
-    } else {
-      return this._cachedInfo
+      this._cachedInfo = await getEverpayInfo(this._apiHost)
     }
+    return this._cachedInfo
   }
 
   async balance (params?: BalanceParams): Promise<number> {
