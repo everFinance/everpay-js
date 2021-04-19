@@ -6,7 +6,7 @@ const address1 = '0xa06b79E655Db7D7C3B3E7B2ccEEb068c3259d0C9'
 // const address2 = ethWalletHasUSDT.address
 
 const everpay1 = new Everpay({
-  account: '0xa06b79E655Db7D7C3B3E7B2ccEEb068c3259d0C9',
+  account: address1,
   debug: true
 })
 
