@@ -1,9 +1,9 @@
-import { ChainType, EverpayAction } from '../global'
+import { ChainType, EverpayTx } from '../global'
 
 export interface GetEverpayBalanceParams {
   chainType: ChainType
-  symbol: string
-  contractAddress: string
+  id: string
+  tokenSymbol: string
   account: string
 }
 
@@ -12,20 +12,8 @@ export interface GetEverpayBalanceResult {
   balance: string
 }
 
-export interface PostEverpayTxParams {
-  tokenSymbol: string
-  action: EverpayAction
-  from: string
-  to: string
-  amount: string
-  fee: string
-  feeRecipient: string
-  nonce: string
-  tokenID: string
-  chainType: ChainType
-  data: string
-  version: string
-  sig: string
+export interface PostEverpayTxParams extends EverpayTx {
+  chainID: string
 }
 
 export interface PostEverpayTxResult {

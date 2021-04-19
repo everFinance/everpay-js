@@ -17,13 +17,6 @@ export const toBN = (x: number | string | BN): BN => {
   return new BN(x)
 }
 
-export const isBigNumber = (v: any): boolean => {
-  return v instanceof BN ||
-    (v?.isBigNumber === true) ||
-    (v?._isBigNumber === true) ||
-    false
-}
-
 export const getTimestamp = (): number => Math.round(Date.now() / 1000)
 
 export const padLeft = (n: string, width: number, z?: string): string => {
@@ -64,6 +57,6 @@ export function fromUnitToDecimal (balance: string | number, decimal: number, ba
   return fromUnitToDecimalBN(balance, decimal).toString(base)
 }
 
-export const getTokenBySymbol = (symbol: string, tokenList?: Token[]): Token => {
-  return ((tokenList?.find(t => t.symbol.toUpperCase() === symbol.toUpperCase()) != null) || {}) as Token
+export const getTokenBySymbol = (tokenSymbol: string, tokenList?: Token[]): Token => {
+  return ((tokenList?.find(t => t.tokenSymbol.toUpperCase() === tokenSymbol.toUpperCase()) != null) || {}) as Token
 }

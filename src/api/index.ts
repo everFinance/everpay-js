@@ -22,11 +22,11 @@ export const getEverpayInfo = async function (apiHost: string): Promise<EverpayI
 
 export const getEverpayBalance = async function (apiHost: string, {
   chainType,
-  symbol,
-  contractAddress,
+  tokenSymbol,
+  id,
   account
 }: GetEverpayBalanceParams): Promise<GetEverpayBalanceResult> {
-  const url = `${apiHost}/balanceOf/${chainType}-${symbol}-${contractAddress}/${account}`
+  const url = `${apiHost}/balanceOf/${chainType}-${tokenSymbol}-${id}/${account}`
   const result = await axios({
     ...rConfig,
     url,

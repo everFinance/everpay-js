@@ -6,6 +6,7 @@
   "author": "Xaber <xaber.twt@gmail.com>",
   "license": "MIT",
   "scripts": {
+    "lint": "eslint src",
     "build": "tsc"
   },
   "devDependencies": {
@@ -19,7 +20,8 @@
     "eslint-plugin-import": "^2.22.1",
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-promise": "^5.1.0",
-    "typescript": "^4.2.4"
+    "typescript": "^4.2.4",
+    "lint-staged": "10.5.4"
   },
   "dependencies": {
     "axios": "^0.21.1",
@@ -27,5 +29,14 @@
     "ethers": "^5.1.2",
     "lodash": "^4.17.21",
     "web3": "^1.3.5"
+  },
+  "gitHooks": {
+    "pre-commit": "lint-staged"
+  },
+  "lint-staged": {
+    "*.{js,jsx,vue,ts}": [
+      "vue-cli-service lint",
+      "git add"
+    ]
   }
 }
