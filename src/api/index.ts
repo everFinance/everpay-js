@@ -1,6 +1,6 @@
 import axios from 'axios'
 import { EverpayInfo } from '../global'
-import { GetEverpayBalanceParams, GetEverpayBalanceResult } from './interface'
+import { GetEverpayBalanceParams, GetEverpayBalanceResult, PostEverpayTxParams, PostEverpayTxResult } from './interface'
 
 const rConfig = {
   timeout: 5000,
@@ -12,12 +12,12 @@ const rConfig = {
 
 export const getEverpayInfo = async function (apiHost: string): Promise<EverpayInfo> {
   const url = `${apiHost}/info`
-  const data = await axios({
+  const result = await axios({
     ...rConfig,
     url,
     method: 'GET'
   })
-  return data.data
+  return result.data
 }
 
 export const getEverpayBalance = async function (apiHost: string, {
@@ -27,10 +27,21 @@ export const getEverpayBalance = async function (apiHost: string, {
   account
 }: GetEverpayBalanceParams): Promise<GetEverpayBalanceResult> {
   const url = `${apiHost}/balanceOf/${chainType}-${symbol}-${contractAddress}/${account}`
-  const data = await axios({
+  const result = await axios({
     ...rConfig,
     url,
     method: 'GET'
   })
-  return data.data
+  return result.data
+}
+
+export const postTx = async (apiHost: string, params: PostEverpayTxParams): Promise<PostEverpayTxResult> => {
+  const url = `${apiHost}/tx`
+  const result = await axios({
+    ...rConfig,
+    url,
+    method: 'POST',
+    data: params
+  })
+  return result.data
 }

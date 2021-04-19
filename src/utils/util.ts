@@ -1,4 +1,5 @@
 import BN from 'bignumber.js'
+import { Token } from '../global'
 
 BN.config({
   EXPONENTIAL_AT: 1000

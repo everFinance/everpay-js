@@ -1,7 +1,14 @@
 import { Signer } from 'ethers'
 import { TransactionResponse } from '@ethersproject/abstract-provider'
 
-export type ChainType = 'ethereum'
+export enum ChainType {
+  ethereum = 'ethereum'
+}
+
+export enum EverpayAction {
+  transfer = 'transfer',
+  withdraw = 'burn'
+}
 
 export interface Config {
   debug?: boolean
@@ -30,8 +37,15 @@ export interface BalanceParams {
 }
 
 export interface DepositParams {
-  chainType?: ChainType
-  symbol?: string
+  chainType: ChainType
+  symbol: string
+  amount: number
+}
+
+export interface TransferWithdrawParams {
+  chainType: ChainType
+  symbol: string
+  to: string
   amount: number
 }
 
@@ -39,6 +53,6 @@ export abstract class EverpayBase {
   abstract info (): Promise<EverpayInfo>
   abstract balance (params?: BalanceParams): Promise<number>
   abstract deposit (params: DepositParams): Promise<TransactionResponse>
+  // abstract transfer(params: TransferWithdrawParams): Promise<> {}
   // withdraw
-  // transfer
 }
