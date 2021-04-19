@@ -2,9 +2,11 @@ import { TransactionResponse } from '@ethersproject/abstract-provider'
 import { Config, EverpayInfo, EverpayBase, BalanceParams, DepositParams, TransferWithdrawParams, EverpayTxWithoutSig, EverpayAction } from './global'
 import { getEverpayBalance, getEverpayInfo, postTx } from './api'
 import { burnFeeAmount, getEverpayHost } from './config'
-import { fromDecimalToUnit, fromUnitToDecimal, getTokenBySymbol } from './utils/util'
+import { getTokenBySymbol, toBN } from './utils/util'
 import { PostEverpayTxResult } from './api/interface'
+import erc20Abi from './constants/abi/erc20'
 import { ERRORS } from './utils/errors'
+import { ethers } from 'ethers'
 
 class Everpay extends EverpayBase {
   constructor (config: Config) {
@@ -61,15 +63,17 @@ class Everpay extends EverpayBase {
     const to = this._cachedInfo?.ethLocker
 
     // TODO: validation
+    if (symbol.toLowerCase() === 'eth') {
       const transactionRequest = {
         from,
         to,
         value
       }
       return await connectedSigner.sendTransaction(transactionRequest)
+    } else {
+      const erc20RW = new ethers.Contract(token.id ?? '', erc20Abi, connectedSigner)
+      return erc20RW.transfer(to, value)
     }
-
-    return await connectedSigner.sendTransaction(transactionRequest)
   }
 
   async getEverpaySignMessage (everpayTxWithoutSig: EverpayTxWithoutSig): Promise<string> {
