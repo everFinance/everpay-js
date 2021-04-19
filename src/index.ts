@@ -55,7 +55,8 @@ class Everpay extends EverpayBase {
       to: this._cachedInfo?.ethLocker,
       value
     }
-    return this._config.connectedSigner.sendTransaction(transactionRequest)
+    const connectedSigner = this._config?.connectedSigner
+    return connectedSigner.sendTransaction(transactionRequest)
   }
 
   async getEverpaySignMessage (everpayTxWithoutSig: EverpayTxWithoutSig): Promise<string> {
@@ -74,7 +75,8 @@ class Everpay extends EverpayBase {
       'version'
     ] as const
     const message = keys.map(key => `${key}:${everpayTxWithoutSig[key]}`).join('\n')
-    return this._config.connectedSigner.signMessage(message)
+    const connectedSigner = this._config?.connectedSigner
+    return connectedSigner.signMessage(message)
   }
 
   async sendEverpayTx (action: EverpayAction, params: TransferWithdrawParams): Promise<PostEverpayTxResult> {

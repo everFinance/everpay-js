@@ -8,7 +8,7 @@ export enum ChainType {
 export interface Config {
   debug?: boolean
   account: string
-  connectedSigner: Signer
+  connectedSigner?: Signer
 }
 
 export interface Token {
