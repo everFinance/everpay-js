@@ -1,7 +1,8 @@
+import { TransactionResponse } from '@ethersproject/abstract-provider'
 import { getEverpayBalance, getEverpayInfo } from './api'
 import { getEverpayHost } from './config/urls'
-import { fromDecimalToUnit, getTokenBySymbol } from './utils/util'
-import { EverpayBase, BalanceParams } from './interface'
+import { fromDecimalToUnit, fromUnitToDecimal, getTokenBySymbol } from './utils/util'
+import { EverpayBase, BalanceParams, DepositParams } from './interface'
 
 class Everpay extends EverpayBase {
   constructor (config: Config) {
@@ -38,6 +39,18 @@ class Everpay extends EverpayBase {
     }
     const everpayBalance = await getEverpayBalance(this._apiHost, mergedParams)
     return fromDecimalToUnit(everpayBalance.balance, token.decimals).toNumber()
+  }
+
+  async deposit (params: DepositParams): Promise<TransactionResponse> {
+    const { amount } = params
+    const eth = this._cachedInfo?.tokenList.find(t => t.symbol === 'ETH')
+    const value = fromUnitToDecimal(amount, eth?.decimals ?? 18, 10)
+    const transactionRequest = {
+      from: this._config.account,
+      to: this._cachedInfo?.ethLocker,
+      value
+    }
+    return this._config.connectedSigner.sendTransaction(transactionRequest)
   }
 }
 

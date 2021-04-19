@@ -1,3 +1,4 @@
+
 /* eslint-disable */
 type fn = (...args: any[]) => any
 
@@ -6,6 +7,7 @@ type ChainType = 'ethereum'
 interface Config {
   debug?: boolean
   account: string
+  connectedSigner: Signer
 }
 
 interface Token {
