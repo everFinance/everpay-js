@@ -53,8 +53,8 @@ export interface EverpayTx extends EverpayTxWithoutSig {
 }
 
 export interface BalanceParams {
-  chainType?: ChainType
-  symbol?: string
+  chainType: ChainType
+  symbol: string
   account?: string
 }
 
@@ -64,17 +64,21 @@ export interface DepositParams {
   amount: number
 }
 
-export interface TransferWithdrawParams {
+export interface WithdrawParams {
   chainType: ChainType
   symbol: string
-  to: string
   amount: number
+  to?: string
+}
+
+export interface TransferParams extends WithdrawParams {
+  to: string
 }
 
 export abstract class EverpayBase {
   abstract info (): Promise<EverpayInfo>
   abstract balance (params?: BalanceParams): Promise<number>
   abstract deposit (params: DepositParams): Promise<TransactionResponse>
-  abstract transfer (params: TransferWithdrawParams): Promise<PostEverpayTxResult>
-  abstract withdraw (params: TransferWithdrawParams): Promise<PostEverpayTxResult>
+  abstract withdraw (params: WithdrawParams): Promise<PostEverpayTxResult>
+  abstract transfer (params: TransferParams): Promise<PostEverpayTxResult>
 }

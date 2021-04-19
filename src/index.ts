@@ -1,5 +1,5 @@
 import { TransactionResponse } from '@ethersproject/abstract-provider'
-import { Config, EverpayInfo, EverpayBase, BalanceParams, DepositParams, TransferWithdrawParams, EverpayTxWithoutSig, EverpayAction } from './global'
+import { Config, EverpayInfo, EverpayBase, BalanceParams, DepositParams, TransferParams, WithdrawParams, EverpayTxWithoutSig, EverpayAction } from './global'
 import { getEverpayBalance, getEverpayInfo, postTx } from './api'
 import { burnFeeAmount, getEverpayHost } from './config'
 import { getTokenBySymbol, toBN } from './utils/util'
@@ -34,13 +34,13 @@ class Everpay extends EverpayBase {
 
   async balance (params?: BalanceParams): Promise<number> {
     await this.info()
-    params = params ?? {}
+    params = (params ?? {}) as BalanceParams
     // TODO: validation, not supported Token
     const { symbol, account } = params
     const token = getTokenBySymbol(symbol ?? 'eth', this._cachedInfo?.tokenList)
     const mergedParams = {
       id: token.id,
-      chainType: params.chainType ?? token.chainType,
+      chainType: token.chainType,
       symbol: params.symbol ?? token.symbol,
       account: account ?? this._config.account as string
     }
@@ -101,7 +101,7 @@ class Everpay extends EverpayBase {
     return connectedSigner.signMessage(message)
   }
 
-  async sendEverpayTx (action: EverpayAction, params: TransferWithdrawParams): Promise<PostEverpayTxResult> {
+  async sendEverpayTx (action: EverpayAction, params: TransferParams): Promise<PostEverpayTxResult> {
     await this.info()
     const { chainType, symbol, to, amount } = params
     const token = getTokenBySymbol(symbol, this._cachedInfo?.tokenList)
@@ -129,16 +129,18 @@ class Everpay extends EverpayBase {
     })
   }
 
-  async transfer (params: TransferWithdrawParams): Promise<PostEverpayTxResult> {
+  async transfer (params: TransferParams): Promise<PostEverpayTxResult> {
     return await this.sendEverpayTx(EverpayAction.transfer, params)
   }
 
-  async withdraw (params: TransferWithdrawParams): Promise<PostEverpayTxResult> {
+  async withdraw (params: WithdrawParams): Promise<PostEverpayTxResult> {
     // TODO: 提现 收 0.01，还需要针对 erc 20，单独定义
     const amount = params.amount - burnFeeAmount
+    const to = params.to ?? this._config.account as string
     return await this.sendEverpayTx(EverpayAction.withdraw, {
       ...params,
-      amount
+      amount,
+      to
     })
   }
 }
