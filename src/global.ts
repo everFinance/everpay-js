@@ -23,7 +23,7 @@ export interface EverpayInfo {
   ethLocker: string
   owner: string
   txVersion: string
-  ethChainID: number
+  ethChainID: string
   feeRecipient: string
   tokenList: Token[]
 }
