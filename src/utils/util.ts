@@ -43,20 +43,6 @@ export function stripHexPrefix (str: string): string {
   return isHexPrefixed(str) ? str.slice(2) : str
 }
 
-export function fromDecimalToUnit (balance: string | number | BN, decimal: number): BN {
-  return toBN(balance).dividedBy(Math.pow(10, decimal))
-}
-
-export function fromUnitToDecimalBN (balance: string | number, decimal: number): BN {
-  const amountBN = toBN(balance ?? 0)
-  const decimalBN = toBN(10).pow(decimal)
-  return amountBN.times(decimalBN)
-}
-
-export function fromUnitToDecimal (balance: string | number, decimal: number, base: number): string {
-  return fromUnitToDecimalBN(balance, decimal).toString(base)
-}
-
 export const getTokenBySymbol = (symbol: string, tokenList?: Token[]): Token => {
   return (tokenList?.find(t => t.symbol.toUpperCase() === symbol.toUpperCase()) ?? {}) as Token
 }

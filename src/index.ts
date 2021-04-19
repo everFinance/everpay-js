@@ -31,9 +31,7 @@ class Everpay extends EverpayBase {
   }
 
   async balance (params?: BalanceParams): Promise<number> {
-    if (this._cachedInfo === undefined) {
-      await this.info()
-    }
+    await this.info()
     params = params ?? {}
     // TODO: validation, not supported Token
     const { symbol, account } = params
@@ -45,25 +43,30 @@ class Everpay extends EverpayBase {
       account: account ?? this._config.account as string
     }
     const everpayBalance = await getEverpayBalance(this._apiHost, mergedParams)
-    return fromDecimalToUnit(everpayBalance.balance, token.decimals).toNumber()
+    return toBN(ethers.utils.formatUnits(everpayBalance.balance, token.decimals)).toNumber()
   }
 
   async deposit (params: DepositParams): Promise<TransactionResponse> {
-    const { amount } = params
+    await this.info()
+    const { amount, symbol } = params
     const connectedSigner = this._config?.connectedSigner
-    const eth = getTokenBySymbol('ETH', this._cachedInfo?.tokenList)
-    const value = fromUnitToDecimal(amount, eth?.decimals ?? 18, 10)
+    const token = getTokenBySymbol(symbol, this._cachedInfo?.tokenList)
+    const value = ethers.utils.parseUnits(amount.toString(), token.decimals)
 
     if (connectedSigner === undefined) {
       throw new Error(ERRORS.SIGENER_NOT_EXIST)
     }
 
+    const from = this._config.account
+    const to = this._cachedInfo?.ethLocker
+
     // TODO: validation
-    // TODO: erc20
-    const transactionRequest = {
-      from: this._config.account,
-      to: this._cachedInfo?.ethLocker,
-      value
+      const transactionRequest = {
+        from,
+        to,
+        value
+      }
+      return await connectedSigner.sendTransaction(transactionRequest)
     }
 
     return await connectedSigner.sendTransaction(transactionRequest)
@@ -95,6 +98,7 @@ class Everpay extends EverpayBase {
   }
 
   async sendEverpayTx (action: EverpayAction, params: TransferWithdrawParams): Promise<PostEverpayTxResult> {
+    await this.info()
     const { chainType, symbol, to, amount } = params
     const token = getTokenBySymbol(symbol, this._cachedInfo?.tokenList)
     // TODO: validation
@@ -103,7 +107,7 @@ class Everpay extends EverpayBase {
       action,
       from: this._config.account as string,
       to,
-      amount: fromUnitToDecimal(amount, token.decimals, 10),
+      amount: ethers.utils.parseUnits(amount.toString(), token.decimals).toString(),
       // TODO: 写死 0
       fee: '0',
       feeRecipient: this._cachedInfo?.feeRecipient ?? '',
