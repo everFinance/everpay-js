@@ -57,6 +57,6 @@ export function fromUnitToDecimal (balance: string | number, decimal: number, ba
   return fromUnitToDecimalBN(balance, decimal).toString(base)
 }
 
-export const getTokenBySymbol = (tokenSymbol: string, tokenList?: Token[]): Token => {
-  return ((tokenList?.find(t => t.tokenSymbol.toUpperCase() === tokenSymbol.toUpperCase()) != null) || {}) as Token
+export const getTokenBySymbol = (symbol: string, tokenList?: Token[]): Token => {
+  return (tokenList?.find(t => t.symbol.toUpperCase() === symbol.toUpperCase()) ?? {}) as Token
 }

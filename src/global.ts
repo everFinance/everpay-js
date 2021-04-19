@@ -7,13 +7,13 @@ export enum ChainType {
 }
 export interface Config {
   debug?: boolean
-  account: string
+  account?: string
   connectedSigner?: Signer
 }
 
 export interface Token {
   id: string
-  tokenSymbol: string
+  symbol: string
   decimals: number
   totalSupply: number
   chainType: ChainType
@@ -54,19 +54,19 @@ export interface EverpayTx extends EverpayTxWithoutSig {
 
 export interface BalanceParams {
   chainType?: ChainType
-  tokenSymbol?: string
+  symbol?: string
   account?: string
 }
 
 export interface DepositParams {
   chainType: ChainType
-  tokenSymbol: string
+  symbol: string
   amount: number
 }
 
 export interface TransferWithdrawParams {
   chainType: ChainType
-  tokenSymbol: string
+  symbol: string
   to: string
   amount: number
 }

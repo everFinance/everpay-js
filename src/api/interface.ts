@@ -3,7 +3,7 @@ import { ChainType, EverpayTx } from '../global'
 export interface GetEverpayBalanceParams {
   chainType: ChainType
   id: string
-  tokenSymbol: string
+  symbol: string
   account: string
 }
 

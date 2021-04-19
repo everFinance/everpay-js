@@ -4,11 +4,15 @@ import { getEverpayBalance, getEverpayInfo, postTx } from './api'
 import { burnFeeAmount, getEverpayHost } from './config'
 import { fromDecimalToUnit, fromUnitToDecimal, getTokenBySymbol } from './utils/util'
 import { PostEverpayTxResult } from './api/interface'
+import { ERRORS } from './utils/errors'
 
 class Everpay extends EverpayBase {
   constructor (config: Config) {
     super()
-    this._config = config
+    this._config = {
+      ...config,
+      account: config.account?.toLowerCase() ?? ''
+    }
     this._apiHost = getEverpayHost(config.debug)
     // this.cachedTimestamp = 0
   }
@@ -32,13 +36,13 @@ class Everpay extends EverpayBase {
     }
     params = params ?? {}
     // TODO: validation, not supported Token
-    const { tokenSymbol, account } = params
-    const token = getTokenBySymbol(tokenSymbol ?? 'eth', this._cachedInfo?.tokenList)
+    const { symbol, account } = params
+    const token = getTokenBySymbol(symbol ?? 'eth', this._cachedInfo?.tokenList)
     const mergedParams = {
       id: token.id,
       chainType: params.chainType ?? token.chainType,
-      tokenSymbol: params.tokenSymbol ?? token.tokenSymbol,
-      account: account ?? this._config.account
+      symbol: params.symbol ?? token.symbol,
+      account: account ?? this._config.account as string
     }
     const everpayBalance = await getEverpayBalance(this._apiHost, mergedParams)
     return fromDecimalToUnit(everpayBalance.balance, token.decimals).toNumber()
@@ -46,8 +50,14 @@ class Everpay extends EverpayBase {
 
   async deposit (params: DepositParams): Promise<TransactionResponse> {
     const { amount } = params
-    const eth = this._cachedInfo?.tokenList.find(t => t.tokenSymbol === 'ETH')
+    const connectedSigner = this._config?.connectedSigner
+    const eth = getTokenBySymbol('ETH', this._cachedInfo?.tokenList)
     const value = fromUnitToDecimal(amount, eth?.decimals ?? 18, 10)
+
+    if (connectedSigner === undefined) {
+      throw new Error(ERRORS.SIGENER_NOT_EXIST)
+    }
+
     // TODO: validation
     // TODO: erc20
     const transactionRequest = {
@@ -55,8 +65,8 @@ class Everpay extends EverpayBase {
       to: this._cachedInfo?.ethLocker,
       value
     }
-    const connectedSigner = this._config?.connectedSigner
-    return connectedSigner.sendTransaction(transactionRequest)
+
+    return await connectedSigner.sendTransaction(transactionRequest)
   }
 
   async getEverpaySignMessage (everpayTxWithoutSig: EverpayTxWithoutSig): Promise<string> {
@@ -76,17 +86,22 @@ class Everpay extends EverpayBase {
     ] as const
     const message = keys.map(key => `${key}:${everpayTxWithoutSig[key]}`).join('\n')
     const connectedSigner = this._config?.connectedSigner
+
+    if (connectedSigner === undefined) {
+      throw new Error(ERRORS.SIGENER_NOT_EXIST)
+    }
+
     return connectedSigner.signMessage(message)
   }
 
   async sendEverpayTx (action: EverpayAction, params: TransferWithdrawParams): Promise<PostEverpayTxResult> {
-    const { chainType, tokenSymbol, to, amount } = params
-    const token = getTokenBySymbol(tokenSymbol, this._cachedInfo?.tokenList)
+    const { chainType, symbol, to, amount } = params
+    const token = getTokenBySymbol(symbol, this._cachedInfo?.tokenList)
     // TODO: validation
     const everpayTxWithoutSig: EverpayTxWithoutSig = {
-      tokenSymbol,
+      tokenSymbol: symbol,
       action,
-      from: this._config.account,
+      from: this._config.account as string,
       to,
       amount: fromUnitToDecimal(amount, token.decimals, 10),
       // TODO: 写死 0
