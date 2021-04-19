@@ -10,14 +10,10 @@ module.exports = {
     'standard-with-typescript'
   ],
   parser: '@typescript-eslint/parser',
-  include: [
-    'src',
-    'test'
-  ],
   parserOptions: {
     ecmaVersion: 12,
     sourceType: 'module',
-    project: './tsconfig.json'
+    project: './tsconfig.eslint.json'
   },
   plugins: ['@typescript-eslint'],
   ignorePatterns: ['/dist']
