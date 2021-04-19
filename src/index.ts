@@ -1,8 +1,8 @@
 import { TransactionResponse } from '@ethersproject/abstract-provider'
+import { Config, EverpayInfo, EverpayBase, BalanceParams, DepositParams } from './global'
 import { getEverpayBalance, getEverpayInfo } from './api'
 import { getEverpayHost } from './config/urls'
 import { fromDecimalToUnit, fromUnitToDecimal, getTokenBySymbol } from './utils/util'
-import { EverpayBase, BalanceParams, DepositParams } from './interface'
 
 class Everpay extends EverpayBase {
   constructor (config: Config) {

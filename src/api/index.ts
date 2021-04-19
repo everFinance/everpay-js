@@ -1,4 +1,5 @@
 import axios from 'axios'
+import { EverpayInfo } from '../global'
 import { GetEverpayBalanceParams, GetEverpayBalanceResult } from './interface'
 
 const rConfig = {

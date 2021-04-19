@@ -1,3 +1,4 @@
+import { ChainType } from '../global'
 export interface GetEverpayBalanceParams {
   chainType: ChainType
   symbol: string
