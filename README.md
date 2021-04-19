@@ -7,7 +7,7 @@ const signer = new ethers.Wallet(ethWalletHasUSDT.privateKey, provider)
 
 const everpay = new Everpay({
   account: address,
-  // true use kovan, false 或者不传递，使用主网
+  // true 使用 everpay 开发环境, false 或者不传递，使用 everpay 正式环境
   debug: true,
   // etherjs connected signer
   // 可以不传递，如果不传递，只能使用 everpay 最基础的查询接口
