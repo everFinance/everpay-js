@@ -110,6 +110,8 @@ export interface TransferParams extends WithdrawParams {
 export abstract class EverpayBase {
   abstract info (): Promise<EverpayInfo>
   abstract balance (params?: BalanceParams): Promise<number>
+  abstract txs (): Promise<EverpayTransaction[]>
+  abstract txsByAccount (): Promise<EverpayTransaction[]>
   abstract deposit (params: DepositParams): Promise<TransactionResponse>
   abstract withdraw (params: WithdrawParams): Promise<PostEverpayTxResult>
   abstract transfer (params: TransferParams): Promise<PostEverpayTxResult>
