@@ -43,6 +43,6 @@ export function stripHexPrefix (str: string): string {
   return isHexPrefixed(str) ? str.slice(2) : str
 }
 
-export const getTokenBySymbol = (symbol: string, tokenList?: Token[]): Token => {
-  return (tokenList?.find(t => t.symbol.toUpperCase() === symbol.toUpperCase()) ?? {}) as Token
+export const getTokenBySymbol = (symbol: string, tokenList?: Token[]): Token | undefined => {
+  return tokenList?.find(t => t.symbol.toUpperCase() === symbol.toUpperCase())
 }
