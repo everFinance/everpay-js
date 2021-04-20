@@ -26,7 +26,7 @@ class Everpay extends EverpayBase {
 
   async info (): Promise<EverpayInfo> {
     // cache info 3 mins
-    if (this._cachedInfo == null || (getTimestamp() - 3 * 60 > this._cachedTimestamp)) {
+    if (this._cachedInfo === undefined || (getTimestamp() - 3 * 60 > this._cachedTimestamp)) {
       this._cachedInfo = await getEverpayInfo(this._apiHost)
       this._cachedTimestamp = getTimestamp()
     }
@@ -82,15 +82,6 @@ class Everpay extends EverpayBase {
       const erc20RW = new ethers.Contract(token.id ?? '', erc20Abi, connectedSigner)
       everpayTx = await erc20RW.transfer(to, value)
     }
-
-    // const result = await this.sendEverpayTx(EverpayAction.deposit, {
-    //   chainType: ChainType.ethereum,
-    //   symbol,
-    //   amount,
-    //   to: to ?? ''
-    // })
-
-    // console.log('mint result', result)
 
     return everpayTx
   }

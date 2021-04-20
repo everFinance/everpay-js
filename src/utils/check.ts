@@ -12,7 +12,7 @@ const cases: CaseObject = {
 }
 
 export const checkItem = (itemName: string, param?: unknown): void => {
-  if (param == null) {
+  if (param === null || param === undefined || param === '' || param === 0) {
     throw new Error(cases[itemName])
   }
   if (itemName === 'amount' && !((param as number) > 0)) {
