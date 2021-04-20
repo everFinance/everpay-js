@@ -31,6 +31,8 @@ export interface EverpayInfo {
 export enum EverpayAction {
   transfer = 'transfer',
   withdraw = 'burn',
+  // TODO: for test
+  // deposit = 'mint'
 }
 
 export interface EverpayTxWithoutSig {

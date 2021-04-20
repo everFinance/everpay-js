@@ -2,32 +2,33 @@ import { TransactionResponse } from '@ethersproject/abstract-provider'
 import { Config, EverpayInfo, EverpayBase, BalanceParams, DepositParams, TransferParams, WithdrawParams, EverpayTxWithoutSig, EverpayAction, EverpayTransaction } from './global'
 import { getEverpayBalance, getEverpayInfo, getEverpayTransactions, postTx } from './api'
 import { burnFeeAmount, getEverpayHost } from './config'
-import { getTokenBySymbol, toBN } from './utils/util'
+import { getTimestamp, getTokenBySymbol, toBN } from './utils/util'
 import { PostEverpayTxResult } from './api/interface'
 import erc20Abi from './constants/abi/erc20'
-import { ERRORS } from './utils/errors'
-import { ethers } from 'ethers'
+import { Signer, ethers } from 'ethers'
+import { checkParams } from './utils/check'
 
 class Everpay extends EverpayBase {
-  constructor (config: Config) {
+  constructor (config?: Config) {
     super()
     this._config = {
       ...config,
-      account: config.account?.toLowerCase() ?? ''
+      account: config?.account?.toLowerCase() ?? ''
     }
-    this._apiHost = getEverpayHost(config.debug)
-    // this.cachedTimestamp = 0
+    this._apiHost = getEverpayHost(config?.debug)
+    this._cachedTimestamp = 0
   }
 
   private readonly _apiHost: string
   private readonly _config: Config
   private _cachedInfo?: EverpayInfo
-  // cachedTimestamp: number
+  private _cachedTimestamp: number
 
   async info (): Promise<EverpayInfo> {
-    if (this._cachedInfo === undefined) {
-      // TODO: cache timestamp
+    // cache info 3 mins
+    if (this._cachedInfo == null || (getTimestamp() - 3 * 60 > this._cachedTimestamp)) {
       this._cachedInfo = await getEverpayInfo(this._apiHost)
+      this._cachedTimestamp = getTimestamp()
     }
     return this._cachedInfo
   }
@@ -35,14 +36,15 @@ class Everpay extends EverpayBase {
   async balance (params?: BalanceParams): Promise<number> {
     await this.info()
     params = (params ?? {}) as BalanceParams
-    // TODO: validation, not supported Token
     const { symbol, account } = params
-    const token = getTokenBySymbol(symbol ?? 'eth', this._cachedInfo?.tokenList)
+    const acc = account ?? this._config.account as string
+    const token = getTokenBySymbol(symbol, this._cachedInfo?.tokenList)
+    checkParams({ account: acc, symbol, token })
     const mergedParams = {
       id: token.id,
       chainType: token.chainType,
-      symbol: params.symbol ?? token.symbol,
-      account: account ?? this._config.account as string
+      symbol: params.symbol,
+      account: acc
     }
     const everpayBalance = await getEverpayBalance(this._apiHost, mergedParams)
     return toBN(ethers.utils.formatUnits(everpayBalance.balance, token.decimals)).toNumber()
@@ -52,36 +54,45 @@ class Everpay extends EverpayBase {
     return await getEverpayTransactions(this._apiHost)
   }
 
-  async txsByAccount (): Promise<EverpayTransaction[]> {
-    return await getEverpayTransactions(this._apiHost, this._config.account)
+  async txsByAccount (account?: string): Promise<EverpayTransaction[]> {
+    checkParams({ account: account ?? this._config.account })
+    return await getEverpayTransactions(this._apiHost, account ?? this._config.account)
   }
 
   async deposit (params: DepositParams): Promise<TransactionResponse> {
     await this.info()
     const { amount, symbol } = params
-    const connectedSigner = this._config?.connectedSigner
+    const connectedSigner = this._config?.connectedSigner as Signer
     const token = getTokenBySymbol(symbol, this._cachedInfo?.tokenList)
     const value = ethers.utils.parseUnits(amount.toString(), token.decimals)
-
-    if (connectedSigner === undefined) {
-      throw new Error(ERRORS.SIGENER_NOT_EXIST)
-    }
-
     const from = this._config.account
     const to = this._cachedInfo?.ethLocker
+    let everpayTx: TransactionResponse
+    checkParams({ account: from, token, signer: connectedSigner, amount })
 
-    // TODO: validation
+    // TODO: check balance
     if (symbol.toLowerCase() === 'eth') {
       const transactionRequest = {
         from,
         to,
         value
       }
-      return await connectedSigner.sendTransaction(transactionRequest)
+      everpayTx = await connectedSigner.sendTransaction(transactionRequest)
     } else {
       const erc20RW = new ethers.Contract(token.id ?? '', erc20Abi, connectedSigner)
-      return erc20RW.transfer(to, value)
+      everpayTx = await erc20RW.transfer(to, value)
     }
+
+    // const result = await this.sendEverpayTx(EverpayAction.deposit, {
+    //   chainType: ChainType.ethereum,
+    //   symbol,
+    //   amount,
+    //   to: to ?? ''
+    // })
+
+    // console.log('mint result', result)
+
+    return everpayTx
   }
 
   async getEverpaySignMessage (everpayTxWithoutSig: EverpayTxWithoutSig): Promise<string> {
@@ -100,12 +111,7 @@ class Everpay extends EverpayBase {
       'version'
     ] as const
     const message = keys.map(key => `${key}:${everpayTxWithoutSig[key]}`).join('\n')
-    const connectedSigner = this._config?.connectedSigner
-
-    if (connectedSigner === undefined) {
-      throw new Error(ERRORS.SIGENER_NOT_EXIST)
-    }
-
+    const connectedSigner = this._config?.connectedSigner as Signer
     return connectedSigner.signMessage(message)
   }
 
@@ -113,11 +119,11 @@ class Everpay extends EverpayBase {
     await this.info()
     const { chainType, symbol, to, amount } = params
     const token = getTokenBySymbol(symbol, this._cachedInfo?.tokenList)
-    // TODO: validation
+    const from = this._config.account as string
     const everpayTxWithoutSig: EverpayTxWithoutSig = {
       tokenSymbol: symbol,
       action,
-      from: this._config.account as string,
+      from,
       to,
       amount: ethers.utils.parseUnits(amount.toString(), token.decimals).toString(),
       // TODO: 写死 0
@@ -129,6 +135,8 @@ class Everpay extends EverpayBase {
       data: '',
       version: this._cachedInfo?.txVersion ?? 'v1'
     }
+    checkParams({ account: from, token, signer: this._config?.connectedSigner, amount })
+
     const sig = await this.getEverpaySignMessage(everpayTxWithoutSig)
     return await postTx(this._apiHost, {
       ...everpayTxWithoutSig,
