@@ -30,7 +30,7 @@ export interface EverpayInfo {
 
 export enum EverpayAction {
   transfer = 'transfer',
-  withdraw = 'burn'
+  withdraw = 'burn',
 }
 
 export interface EverpayTxWithoutSig {
@@ -50,6 +50,36 @@ export interface EverpayTxWithoutSig {
 
 export interface EverpayTx extends EverpayTxWithoutSig {
   sig: string
+}
+
+enum EverpayActionWithDeposit {
+  transfer = 'transfer',
+  withdraw = 'burn',
+  deposit = 'mint'
+}
+
+enum EverpayTransactionStatus {
+  // deposit 下，经过 6 个区块 everPay confirm
+  // mint、burn，后端接收到信息，会先 confirmed
+  confirmed = 'confirmed',
+  // JSON 文件存储交易打包完成，变成 packaged
+  packaged = 'packaged'
+}
+
+export interface EverpayTransaction {
+  // a transaction that everpay json saved to ar
+  id: string
+  nonce: number
+  action: EverpayActionWithDeposit
+  from: string
+  to: string
+  amount: string
+  data: string
+  fee: string
+  feeRecipient: string
+  sig: string
+  status: EverpayTransactionStatus
+  timestamp: number
 }
 
 export interface BalanceParams {

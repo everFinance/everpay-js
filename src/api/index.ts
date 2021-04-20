@@ -1,5 +1,5 @@
 import axios from 'axios'
-import { EverpayInfo } from '../global'
+import { EverpayInfo, EverpayTransaction } from '../global'
 import { GetEverpayBalanceParams, GetEverpayBalanceResult, PostEverpayTxParams, PostEverpayTxResult } from './interface'
 
 const rConfig = {
@@ -10,7 +10,7 @@ const rConfig = {
   }
 }
 
-export const getEverpayInfo = async function (apiHost: string): Promise<EverpayInfo> {
+export const getEverpayInfo = async (apiHost: string): Promise<EverpayInfo> => {
   const url = `${apiHost}/info`
   const result = await axios({
     ...rConfig,
@@ -20,12 +20,12 @@ export const getEverpayInfo = async function (apiHost: string): Promise<EverpayI
   return result.data
 }
 
-export const getEverpayBalance = async function (apiHost: string, {
+export const getEverpayBalance = async (apiHost: string, {
   chainType,
   symbol,
   id,
   account
-}: GetEverpayBalanceParams): Promise<GetEverpayBalanceResult> {
+}: GetEverpayBalanceParams): Promise<GetEverpayBalanceResult> => {
   const url = `${apiHost}/balanceOf/${chainType}-${symbol}-${id}/${account}`
   const result = await axios({
     ...rConfig,
@@ -33,6 +33,16 @@ export const getEverpayBalance = async function (apiHost: string, {
     method: 'GET'
   })
   return result.data
+}
+
+export const getEverpayTransactions = async (apiHost: string, account?: string): Promise<EverpayTransaction[]> => {
+  const url = account !== undefined ? `${apiHost}/txs/${account}` : `${apiHost}/txs/`
+  const result = await axios({
+    ...rConfig,
+    url,
+    method: 'GET'
+  })
+  return result.data.txs
 }
 
 export const postTx = async (apiHost: string, params: PostEverpayTxParams): Promise<PostEverpayTxResult> => {

@@ -1,6 +1,6 @@
 import { TransactionResponse } from '@ethersproject/abstract-provider'
-import { Config, EverpayInfo, EverpayBase, BalanceParams, DepositParams, TransferParams, WithdrawParams, EverpayTxWithoutSig, EverpayAction } from './global'
-import { getEverpayBalance, getEverpayInfo, postTx } from './api'
+import { Config, EverpayInfo, EverpayBase, BalanceParams, DepositParams, TransferParams, WithdrawParams, EverpayTxWithoutSig, EverpayAction, EverpayTransaction } from './global'
+import { getEverpayBalance, getEverpayInfo, getEverpayTransactions, postTx } from './api'
 import { burnFeeAmount, getEverpayHost } from './config'
 import { getTokenBySymbol, toBN } from './utils/util'
 import { PostEverpayTxResult } from './api/interface'
@@ -46,6 +46,14 @@ class Everpay extends EverpayBase {
     }
     const everpayBalance = await getEverpayBalance(this._apiHost, mergedParams)
     return toBN(ethers.utils.formatUnits(everpayBalance.balance, token.decimals)).toNumber()
+  }
+
+  async txs (): Promise<EverpayTransaction[]> {
+    return await getEverpayTransactions(this._apiHost)
+  }
+
+  async currentTxs (): Promise<EverpayTransaction[]> {
+    return await getEverpayTransactions(this._apiHost, this._config.account)
   }
 
   async deposit (params: DepositParams): Promise<TransactionResponse> {
