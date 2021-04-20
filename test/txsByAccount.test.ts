@@ -8,7 +8,7 @@ const everpay = new Everpay({
 })
 
 test('everpey info got correct', async () => {
-  return await everpay.currentTxs().then(transactions => {
+  return await everpay.txsByAccount().then(transactions => {
     expect(transactions.length).toBeGreaterThan(0)
     // for (const tx of transactions) {
     //   const { action, data } = tx

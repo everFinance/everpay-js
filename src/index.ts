@@ -52,7 +52,7 @@ class Everpay extends EverpayBase {
     return await getEverpayTransactions(this._apiHost)
   }
 
-  async currentTxs (): Promise<EverpayTransaction[]> {
+  async txsByAccount (): Promise<EverpayTransaction[]> {
     return await getEverpayTransactions(this._apiHost, this._config.account)
   }
 

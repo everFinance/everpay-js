@@ -31,6 +31,19 @@ const balance = await everpay1.balance({
 })
 ```
 
+### txs
+查询 everpay 上的所有交易记录
+
+```ts
+await everpay.txs()
+```
+### txsByAccount
+查询 everpay 上对应 account 下的交易记录
+
+```ts
+// account 可不传递，默认为当前账户
+await everpay.txsByAccount(account)
+```
 ## 操作类接口
 **注意**：everpay 实例创建时，必须传递 connectedSigner 才可调用操作类接口
 
