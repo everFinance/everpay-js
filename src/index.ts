@@ -68,7 +68,7 @@ class Everpay extends EverpayBase {
     const from = this._config.account
     const to = this._cachedInfo?.ethLocker
     let everpayTx: TransactionResponse
-    checkParams({ account: from, token, signer: connectedSigner, amount })
+    checkParams({ account: from, symbol, token, signer: connectedSigner, amount })
 
     // TODO: check balance
     if (symbol.toLowerCase() === 'eth') {
@@ -126,7 +126,7 @@ class Everpay extends EverpayBase {
       from,
       to,
       amount: ethers.utils.parseUnits(amount.toString(), token.decimals).toString(),
-      // TODO: 写死 0
+      // Warning: 写死 0
       fee: '0',
       feeRecipient: this._cachedInfo?.feeRecipient ?? '',
       nonce: Date.now().toString(),
@@ -135,7 +135,7 @@ class Everpay extends EverpayBase {
       data: '',
       version: this._cachedInfo?.txVersion ?? 'v1'
     }
-    checkParams({ account: from, token, signer: this._config?.connectedSigner, amount })
+    checkParams({ symbol, account: from, token, signer: this._config?.connectedSigner, amount })
 
     const sig = await this.getEverpaySignMessage(everpayTxWithoutSig)
     return await postTx(this._apiHost, {
@@ -150,7 +150,7 @@ class Everpay extends EverpayBase {
   }
 
   async withdraw (params: WithdrawParams): Promise<PostEverpayTxResult> {
-    // TODO: 提现 收 0.01，还需要针对 erc 20，单独定义
+    // Warning: 提现 收 0.01，还需要针对 erc 20，单独定义
     const amount = params.amount - burnFeeAmount
     const to = params.to ?? this._config.account as string
     return await this.sendEverpayTx(EverpayAction.withdraw, {
