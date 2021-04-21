@@ -4,7 +4,7 @@ import {
   TransferParams, WithdrawParams, EverpayTxWithoutSig, EverpayAction, EverpayTransaction
 } from './global'
 import { getEverpayBalance, getEverpayInfo, getEverpayTransactions, postTx } from './api'
-import { burnFeeAmount, getEverpayHost } from './config'
+import { burnFeeAmount, everpayTxVersion, getEverpayHost } from './config'
 import { getTimestamp, getTokenBySymbol, toBN } from './utils/util'
 import { GetEverpayBalanceParams, PostEverpayTxResult } from './api/interface'
 import erc20Abi from './constants/abi/erc20'
@@ -130,7 +130,7 @@ class Everpay extends EverpayBase {
       chainType: chainType,
       chainID: this._cachedInfo?.ethChainID.toString() ?? '',
       data: '',
-      version: this._cachedInfo?.txVersion ?? 'v1'
+      version: everpayTxVersion
     }
     checkParams({ symbol, account: from, token, signer: this._config?.connectedSigner, amount })
 
