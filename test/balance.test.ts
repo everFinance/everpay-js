@@ -1,4 +1,3 @@
-// TODO: fix axios 2 request error
 import { ethWalletHasUSDT } from './constants/wallet'
 import { ChainType } from '../src/global'
 import Everpay from '../src/index'
