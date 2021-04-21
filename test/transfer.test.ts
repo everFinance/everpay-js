@@ -1,5 +1,5 @@
 import Everpay from '../src/index'
-import { ethWalletHasUSDT } from './constants/wallet'
+import { ethWalletHasUSDT, ethWalletHasUSDT2 } from './constants/wallet'
 import { ethers } from 'ethers'
 import { ChainType } from '../src/global'
 
@@ -12,13 +12,14 @@ const everpay = new Everpay({
   debug: true
 })
 
-test(`check ${ethWalletHasUSDT.address} deposit usdt`, async () => {
-  return await everpay.deposit({
+test(`check ${ethWalletHasUSDT.address} transfer usdt to ${ethWalletHasUSDT2.address}`, async () => {
+  return await everpay.transfer({
     chainType: ChainType.ethereum,
     symbol: 'usdt',
-    amount: 100
-  }).then(usdtTx => {
-    console.log('usdtTx', usdtTx)
-    expect(usdtTx).toBeTruthy()
+    amount: 9,
+    to: ethWalletHasUSDT2.address
+  }).then(transferResult => {
+    console.log('transfer usdt result', transferResult)
+    expect(transferResult.status).toBe('ok')
   })
 })

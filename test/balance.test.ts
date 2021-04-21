@@ -1,13 +1,10 @@
-import { ethWalletHasUSDT } from './constants/wallet'
+import { ethWalletHasUSDT, ethWalletHasUSDT2 } from './constants/wallet'
 import { ChainType } from '../src/global'
 import Everpay from '../src/index'
 import { ERRORS } from '../src/utils/errors'
 
-const address1 = '0xa06b79E655Db7D7C3B3E7B2ccEEb068c3259d0C9'
-const address2 = ethWalletHasUSDT.address
-
 const everpay1 = new Everpay({
-  account: address1,
+  account: ethWalletHasUSDT.address,
   debug: true
 })
 
@@ -16,24 +13,24 @@ const everpay2 = new Everpay({
 })
 
 describe('test balance', () => {
-  test(`${address1} balance is greater than 0`, async () => {
+  test(`${ethWalletHasUSDT.address} eth balance is greater than 0`, async () => {
     return await everpay1.balance({
       chainType: ChainType.ethereum,
       symbol: 'eth'
     }).then(balance => {
-      console.log(`${address1} balance: ${balance}`)
+      console.log(`${ethWalletHasUSDT.address} balance: ${balance}`)
       expect(balance).toBeGreaterThan(0)
     })
   })
 
-  test(`${address2} balance is greater than or equal 0`, async () => {
+  test(`${ethWalletHasUSDT2.address} usdt balance is greater than or equal 0`, async () => {
     return await everpay2.balance({
       chainType: ChainType.ethereum,
       account: ethWalletHasUSDT.address,
-      symbol: 'eth'
+      symbol: 'usdt'
     }).then(balance => {
-      console.log(`${address2} balance: ${balance}`)
-      expect(balance).toBeGreaterThanOrEqual(0)
+      console.log(`${ethWalletHasUSDT2.address} balance: ${balance}`)
+      expect(balance).toBeGreaterThan(0)
     })
   })
 })
@@ -54,7 +51,7 @@ describe('test balance error', () => {
     await expect(
       everpay2.balance({
         chainType: ChainType.ethereum,
-        account: address2,
+        account: ethWalletHasUSDT2.address,
         symbol: ''
       })
     )
@@ -66,7 +63,7 @@ describe('test balance error', () => {
     await expect(
       everpay2.balance({
         chainType: ChainType.ethereum,
-        account: address2,
+        account: ethWalletHasUSDT2.address,
         symbol: 'btc'
       })
     )
