@@ -68,8 +68,8 @@ class Everpay extends EverpayBase {
     const connectedSigner = this._config?.connectedSigner as Signer
     const token = getTokenBySymbol(symbol, this._cachedInfo?.tokenList)
     const value = ethers.utils.parseUnits(amount.toString(), token?.decimals)
-    const from = this._config.account
-    const to = this._cachedInfo?.ethLocker
+    const from = this._config.account?.toLowerCase()
+    const to = this._cachedInfo?.ethLocker.toLowerCase()
     let everpayTx: TransactionResponse
     checkParams({ account: from, symbol, token, signer: connectedSigner, amount })
 
@@ -101,6 +101,7 @@ class Everpay extends EverpayBase {
       'nonce',
       'tokenID',
       'chainType',
+      'chainID',
       'data',
       'version'
     ] as const
@@ -111,9 +112,10 @@ class Everpay extends EverpayBase {
 
   async sendEverpayTx (action: EverpayAction, params: TransferParams): Promise<PostEverpayTxResult> {
     await this.info()
-    const { chainType, symbol, to, amount } = params
+    const { chainType, symbol, amount } = params
+    const to = params?.to.toLowerCase()
     const token = getTokenBySymbol(symbol, this._cachedInfo?.tokenList)
-    const from = this._config.account as string
+    const from = this._config.account?.toLowerCase() as string
     const everpayTxWithoutSig: EverpayTxWithoutSig = {
       tokenSymbol: symbol,
       action,
@@ -122,10 +124,11 @@ class Everpay extends EverpayBase {
       amount: ethers.utils.parseUnits(amount.toString(), token?.decimals).toString(),
       // Warning: 写死 0
       fee: '0',
-      feeRecipient: this._cachedInfo?.feeRecipient ?? '',
+      feeRecipient: this._cachedInfo?.feeRecipient.toLowerCase() ?? '',
       nonce: Date.now().toString(),
-      tokenID: token?.id as string,
+      tokenID: token?.id.toLowerCase() as string,
       chainType: chainType,
+      chainID: this._cachedInfo?.ethChainID.toString() ?? '',
       data: '',
       version: this._cachedInfo?.txVersion ?? 'v1'
     }

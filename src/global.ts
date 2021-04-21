@@ -46,6 +46,7 @@ export interface EverpayTxWithoutSig {
   nonce: string
   tokenID: string
   chainType: ChainType
+  chainID: string
   data: string
   version: string
 }
