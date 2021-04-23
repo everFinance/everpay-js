@@ -12,8 +12,8 @@ export default async (): Promise<void> => {
 
 test('everpey info got correct', async () => {
   return await everpay.info().then(info => {
-    const { ethLocker, owner, txVersion, ethChainID, feeRecipient, tokenList } = info
-    for (const item of [ethLocker, owner, txVersion, feeRecipient]) {
+    const { ethLocker, owner, ethChainID, feeRecipient, tokenList } = info
+    for (const item of [ethLocker, owner, feeRecipient]) {
       expect(isString(item)).toBe(true)
     }
     expect(+ethChainID).toBeGreaterThanOrEqual(0)

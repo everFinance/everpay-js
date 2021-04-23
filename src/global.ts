@@ -15,14 +15,14 @@ export interface Token {
   id: string
   symbol: string
   decimals: number
-  totalSupply: number
+  totalSupply: string
+  burnFee: string
   chainType: ChainType
 }
 
 export interface EverpayInfo {
   ethLocker: string
   owner: string
-  txVersion: string
   ethChainID: string
   feeRecipient: string
   tokenList: Token[]

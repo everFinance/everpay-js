@@ -1,5 +1,3 @@
-export const burnFeeAmount = 0.01
-
 export const everpayTxVersion = 'v1'
 
 export const getEverpayHost = (debug?: boolean): string => {

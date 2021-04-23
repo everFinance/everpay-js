@@ -23,7 +23,17 @@ describe('test balance', () => {
     })
   })
 
-  test(`${ethWalletHasUSDT2.address} usdt balance is greater than or equal 0`, async () => {
+  test(`${ethWalletHasUSDT.address} usdt balance is greater than 0`, async () => {
+    return await everpay1.balance({
+      chainType: ChainType.ethereum,
+      symbol: 'usdt'
+    }).then(balance => {
+      console.log(`${ethWalletHasUSDT.address} balance: ${balance}`)
+      expect(balance).toBeGreaterThan(0)
+    })
+  })
+
+  test(`${ethWalletHasUSDT2.address} usdt balance is greater than 0`, async () => {
     return await everpay2.balance({
       chainType: ChainType.ethereum,
       account: ethWalletHasUSDT.address,

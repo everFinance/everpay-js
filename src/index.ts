@@ -4,7 +4,7 @@ import {
   TransferParams, WithdrawParams, EverpayTxWithoutSig, EverpayAction, EverpayTransaction
 } from './global'
 import { getEverpayBalance, getEverpayInfo, getEverpayTransactions, postTx } from './api'
-import { burnFeeAmount, everpayTxVersion, getEverpayHost } from './config'
+import { everpayTxVersion, getEverpayHost } from './config'
 import { getTimestamp, getTokenBySymbol, toBN } from './utils/util'
 import { GetEverpayBalanceParams, PostEverpayTxResult } from './api/interface'
 import erc20Abi from './constants/abi/erc20'
@@ -111,7 +111,6 @@ class Everpay extends EverpayBase {
   }
 
   async sendEverpayTx (action: EverpayAction, params: TransferParams): Promise<PostEverpayTxResult> {
-    await this.info()
     const { chainType, symbol, amount } = params
     const to = params?.to.toLowerCase()
     const token = getTokenBySymbol(symbol, this._cachedInfo?.tokenList)
@@ -143,12 +142,15 @@ class Everpay extends EverpayBase {
   }
 
   async transfer (params: TransferParams): Promise<PostEverpayTxResult> {
+    await this.info()
     return await this.sendEverpayTx(EverpayAction.transfer, params)
   }
 
   async withdraw (params: WithdrawParams): Promise<PostEverpayTxResult> {
-    // Warning: 提现 收 0.01，还需要针对 erc 20，单独定义
-    const amount = params.amount - burnFeeAmount
+    await this.info()
+    const token = getTokenBySymbol(params.symbol, this._cachedInfo?.tokenList)
+    checkParams({ token })
+    const amount = toBN(params.amount).minus(toBN(ethers.utils.formatUnits(token?.burnFee ?? '', token?.decimals))).toNumber()
     const to = params.to ?? this._config.account as string
     return await this.sendEverpayTx(EverpayAction.withdraw, {
       ...params,
