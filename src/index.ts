@@ -6,7 +6,7 @@ import {
 import { getEverpayBalance, getEverpayInfo, getEverpayTransactions, postTx } from './api'
 import { everpayTxVersion, getEverpayHost } from './config'
 import { getTimestamp, getTokenBySymbol, toBN } from './utils/util'
-import { GetEverpayBalanceParams, PostEverpayTxResult } from './api/interface'
+import { GetEverpayBalanceParams } from './api/interface'
 import erc20Abi from './constants/abi/erc20'
 import { Signer, ethers } from 'ethers'
 import { checkParams } from './utils/check'
@@ -146,12 +146,12 @@ class Everpay extends EverpayBase {
     }
   }
 
-  async transfer (params: TransferParams): Promise<PostEverpayTxResult> {
+  async transfer (params: TransferParams): Promise<TransferOrWithdrawResult> {
     await this.info()
     return await this.sendEverpayTx(EverpayAction.transfer, params)
   }
 
-  async withdraw (params: WithdrawParams): Promise<PostEverpayTxResult> {
+  async withdraw (params: WithdrawParams): Promise<TransferOrWithdrawResult> {
     await this.info()
     const token = getTokenBySymbol(params.symbol, this._cachedInfo?.tokenList)
     checkParams({ token })
