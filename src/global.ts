@@ -17,6 +17,7 @@ export interface Token {
   decimals: number
   totalSupply: string
   burnFee: string
+  transferFee: string
   chainType: ChainType
 }
 
@@ -106,6 +107,10 @@ export interface WithdrawParams {
 
 export interface TransferParams extends WithdrawParams {
   to: string
+}
+
+export interface TransferOrWithdrawResult extends PostEverpayTxResult {
+  everpayTx: EverpayTx
 }
 
 export abstract class EverpayBase {

@@ -1,4 +1,4 @@
-import { ChainType, EverpayTx } from '../global'
+import { ChainType } from '../global'
 
 export interface GetEverpayBalanceParams {
   chainType: ChainType
@@ -10,10 +10,6 @@ export interface GetEverpayBalanceParams {
 export interface GetEverpayBalanceResult {
   accid: string
   balance: string
-}
-
-export interface PostEverpayTxParams extends EverpayTx {
-  chainID: string
 }
 
 export interface PostEverpayTxResult {

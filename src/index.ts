@@ -1,6 +1,6 @@
 import { TransactionResponse } from '@ethersproject/abstract-provider'
 import {
-  ChainType, Config, EverpayInfo, EverpayBase, BalanceParams, DepositParams,
+  ChainType, Config, EverpayInfo, EverpayBase, BalanceParams, DepositParams, TransferOrWithdrawResult,
   TransferParams, WithdrawParams, EverpayTxWithoutSig, EverpayAction, EverpayTransaction
 } from './global'
 import { getEverpayBalance, getEverpayInfo, getEverpayTransactions, postTx } from './api'
@@ -70,7 +70,7 @@ class Everpay extends EverpayBase {
     const value = ethers.utils.parseUnits(amount.toString(), token?.decimals)
     const from = this._config.account?.toLowerCase()
     const to = this._cachedInfo?.ethLocker.toLowerCase()
-    let everpayTx: TransactionResponse
+    let transactionResponse: TransactionResponse
     checkParams({ account: from, symbol, token, signer: connectedSigner, amount })
 
     // TODO: check balance
@@ -80,13 +80,13 @@ class Everpay extends EverpayBase {
         to,
         value
       }
-      everpayTx = await connectedSigner.sendTransaction(transactionRequest)
+      transactionResponse = await connectedSigner.sendTransaction(transactionRequest)
     } else {
       const erc20RW = new ethers.Contract(token?.id ?? '', erc20Abi, connectedSigner)
-      everpayTx = await erc20RW.transfer(to, value)
+      transactionResponse = await erc20RW.transfer(to, value)
     }
 
-    return everpayTx
+    return transactionResponse
   }
 
   async getEverpaySignMessage (everpayTxWithoutSig: EverpayTxWithoutSig): Promise<string> {
@@ -110,7 +110,7 @@ class Everpay extends EverpayBase {
     return connectedSigner.signMessage(message)
   }
 
-  async sendEverpayTx (action: EverpayAction, params: TransferParams): Promise<PostEverpayTxResult> {
+  async sendEverpayTx (action: EverpayAction, params: TransferParams): Promise<TransferOrWithdrawResult> {
     const { chainType, symbol, amount } = params
     const to = params?.to.toLowerCase()
     const token = getTokenBySymbol(symbol, this._cachedInfo?.tokenList)
@@ -134,11 +134,16 @@ class Everpay extends EverpayBase {
     checkParams({ symbol, account: from, token, signer: this._config?.connectedSigner, amount })
 
     const sig = await this.getEverpaySignMessage(everpayTxWithoutSig)
-    return await postTx(this._apiHost, {
+    const everpayTx = {
       ...everpayTxWithoutSig,
       sig,
       chainID: this._cachedInfo?.ethChainID.toString() ?? '1'
-    })
+    }
+    const postEverpayTxResult = await postTx(this._apiHost, everpayTx)
+    return {
+      ...postEverpayTxResult,
+      everpayTx
+    }
   }
 
   async transfer (params: TransferParams): Promise<PostEverpayTxResult> {
