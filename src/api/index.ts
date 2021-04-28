@@ -1,5 +1,5 @@
 import axios, { AxiosRequestConfig, AxiosResponse } from 'axios'
-import { isObject, isString } from 'lodash'
+import { isObject, isString } from 'lodash-es'
 import { EverpayInfo, EverpayTransaction, EverpayTx } from '../global'
 import { GetEverpayBalanceParams, GetEverpayBalanceResult, PostEverpayTxResult } from './interface'
 
