@@ -5,10 +5,10 @@ import { ChainType } from '../src/global'
 
 const provider = new ethers.providers.InfuraProvider('kovan')
 
-test(`${ethWalletHasUSDT2.address} withdraw USDT to ${ethWalletHasUSDT.address}`, async () => {
-  const signer = new ethers.Wallet(ethWalletHasUSDT2.privateKey, provider)
+test(`${ethWalletHasUSDT.address} withdraw USDT to ${ethWalletHasUSDT2.address}`, async () => {
+  const signer = new ethers.Wallet(ethWalletHasUSDT.privateKey, provider)
   const everpay = new Everpay({
-    account: ethWalletHasUSDT2.address,
+    account: ethWalletHasUSDT.address,
     connectedSigner: signer,
     debug: true
   })
@@ -16,8 +16,8 @@ test(`${ethWalletHasUSDT2.address} withdraw USDT to ${ethWalletHasUSDT.address}`
   return await everpay.withdraw({
     chainType: ChainType.ethereum,
     symbol: 'usdt',
-    amount: 8,
-    to: ethWalletHasUSDT.address
+    amount: 30,
+    to: ethWalletHasUSDT2.address
   }).then(withdrawResult => {
     console.log('withdrawResult', withdrawResult)
     expect(withdrawResult.status).toBe('ok')
@@ -36,7 +36,7 @@ test(`use another ${ethWalletHasUSDT.address} singer to sign ${ethWalletHasUSDT2
     everpay.withdraw({
       chainType: ChainType.ethereum,
       symbol: 'usdt',
-      amount: 8,
+      amount: 30,
       to: ethWalletHasUSDT.address
     })
   )
