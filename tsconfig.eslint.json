@@ -4,6 +4,7 @@
     "src",
     "test",
     ".eslintrc.js",
-    "jest.config.js"
+    "jest.config.js",
+    "babel.config.js"
   ]
 }
