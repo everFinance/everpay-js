@@ -82,6 +82,7 @@ export interface EverpayTransaction {
   fee: string
   feeRecipient: string
   sig: string
+  everHash: string
   status: EverpayTransactionStatus
   timestamp: number
 }
