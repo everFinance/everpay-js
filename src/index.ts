@@ -122,7 +122,7 @@ class Everpay extends EverpayBase {
       to,
       amount: ethers.utils.parseUnits(amount.toString(), token?.decimals).toString(),
       // Warning: 写死 0
-      fee: '0',
+      fee: action === EverpayAction.withdraw ? (token?.burnFee ?? '0') : '0',
       feeRecipient: this._cachedInfo?.feeRecipient.toLowerCase() ?? '',
       nonce: Date.now().toString(),
       tokenID: token?.id.toLowerCase() as string,
