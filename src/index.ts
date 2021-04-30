@@ -8,7 +8,7 @@ import { everpayTxVersion, getEverpayHost } from './config'
 import { getTimestamp, getTokenBySymbol, toBN } from './utils/util'
 import { GetEverpayBalanceParams } from './api/interface'
 import erc20Abi from './constants/abi/erc20'
-import { Signer, ethers } from 'ethers'
+import { Contract, Signer, utils } from 'ethers'
 import { checkParams } from './utils/check'
 
 class Everpay extends EverpayBase {
@@ -50,7 +50,7 @@ class Everpay extends EverpayBase {
       account: acc
     }
     const everpayBalance = await getEverpayBalance(this._apiHost, mergedParams)
-    return toBN(ethers.utils.formatUnits(everpayBalance.balance, token?.decimals)).toNumber()
+    return toBN(utils.formatUnits(everpayBalance.balance, token?.decimals)).toNumber()
   }
 
   async txs (): Promise<EverpayTransaction[]> {
@@ -67,7 +67,7 @@ class Everpay extends EverpayBase {
     const { amount, symbol } = params
     const connectedSigner = this._config?.connectedSigner as Signer
     const token = getTokenBySymbol(symbol, this._cachedInfo?.tokenList)
-    const value = ethers.utils.parseUnits(amount.toString(), token?.decimals)
+    const value = utils.parseUnits(amount.toString(), token?.decimals)
     const from = this._config.account?.toLowerCase()
     const to = this._cachedInfo?.ethLocker.toLowerCase()
     let transactionResponse: TransactionResponse
@@ -82,7 +82,7 @@ class Everpay extends EverpayBase {
       }
       transactionResponse = await connectedSigner.sendTransaction(transactionRequest)
     } else {
-      const erc20RW = new ethers.Contract(token?.id ?? '', erc20Abi, connectedSigner)
+      const erc20RW = new Contract(token?.id ?? '', erc20Abi, connectedSigner)
       transactionResponse = await erc20RW.transfer(to, value)
     }
 
@@ -120,8 +120,7 @@ class Everpay extends EverpayBase {
       action,
       from,
       to,
-      amount: ethers.utils.parseUnits(amount.toString(), token?.decimals).toString(),
-      // Warning: 写死 0
+      amount: utils.parseUnits(amount.toString(), token?.decimals).toString(),
       fee: action === EverpayAction.withdraw ? (token?.burnFee ?? '0') : '0',
       feeRecipient: this._cachedInfo?.feeRecipient.toLowerCase() ?? '',
       nonce: Date.now().toString(),
@@ -155,7 +154,7 @@ class Everpay extends EverpayBase {
     await this.info()
     const token = getTokenBySymbol(params.symbol, this._cachedInfo?.tokenList)
     checkParams({ token })
-    const amount = toBN(params.amount).minus(toBN(ethers.utils.formatUnits(token?.burnFee ?? '', token?.decimals))).toNumber()
+    const amount = toBN(params.amount).minus(toBN(utils.formatUnits(token?.burnFee ?? '', token?.decimals))).toNumber()
     const to = params.to ?? this._config.account as string
     return await this.sendEverpayTx(EverpayAction.withdraw, {
       ...params,
