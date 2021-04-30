@@ -5,7 +5,7 @@ import {
 } from './global'
 import { getEverpayBalance, getEverpayInfo, getEverpayTransactions, postTx } from './api'
 import { everpayTxVersion, getEverpayHost } from './config'
-import { getTimestamp, getTokenBySymbol } from './utils/util'
+import { getTimestamp, getTokenBySymbol, toBN } from './utils/util'
 import { GetEverpayBalanceParams } from './api/interface'
 import erc20Abi from './constants/abi/erc20'
 import { Contract, Signer, utils } from 'ethers'
@@ -36,7 +36,7 @@ class Everpay extends EverpayBase {
     return this._cachedInfo
   }
 
-  async balance (params?: BalanceParams): Promise<string> {
+  async balance (params?: BalanceParams): Promise<number> {
     await this.info()
     params = (params ?? {}) as BalanceParams
     const { symbol, account } = params
@@ -50,7 +50,7 @@ class Everpay extends EverpayBase {
       account: acc
     }
     const everpayBalance = await getEverpayBalance(this._apiHost, mergedParams)
-    return utils.formatUnits(everpayBalance.balance, token?.decimals)
+    return toBN(utils.formatUnits(everpayBalance.balance, token?.decimals)).toNumber()
   }
 
   async txs (): Promise<EverpayTransaction[]> {
@@ -154,7 +154,7 @@ class Everpay extends EverpayBase {
     await this.info()
     const token = getTokenBySymbol(params.symbol, this._cachedInfo?.tokenList)
     checkParams({ token })
-    const amount = utils.formatUnits(utils.parseUnits(`${params.amount}`, token?.decimals).sub(token?.burnFee ?? 0), token?.decimals)
+    const amount = toBN(params.amount).minus(toBN(utils.formatUnits(token?.burnFee ?? '', token?.decimals))).toNumber()
     const to = params.to ?? this._config.account as string
     return await this.sendEverpayTx(EverpayAction.withdraw, {
       ...params,

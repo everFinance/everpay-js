@@ -19,7 +19,7 @@ describe('test balance', () => {
       symbol: 'eth'
     }).then(balance => {
       console.log(`${ethWalletHasUSDT.address} balance: ${balance}`)
-      expect(+balance).toBeGreaterThan(0)
+      expect(balance).toBeGreaterThan(0)
     })
   })
 
@@ -29,7 +29,7 @@ describe('test balance', () => {
       symbol: 'usdt'
     }).then(balance => {
       console.log(`${ethWalletHasUSDT.address} balance: ${balance}`)
-      expect(+balance).toBeGreaterThan(0)
+      expect(balance).toBeGreaterThan(0)
     })
   })
 
@@ -40,7 +40,7 @@ describe('test balance', () => {
       symbol: 'usdt'
     }).then(balance => {
       console.log(`${ethWalletHasUSDT2.address} balance: ${balance}`)
-      expect(+balance).toBeGreaterThan(0)
+      expect(balance).toBeGreaterThan(0)
     })
   })
 })
