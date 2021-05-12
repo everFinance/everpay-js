@@ -8,6 +8,7 @@
   "scripts": {
     "lint": "eslint src test",
     "test": "jest",
+    "check-balance": "ts-node ./src/checkBalance/index.ts",
     "build": "tsc"
   },
   "devDependencies": {
@@ -36,6 +37,7 @@
   "dependencies": {
     "axios": "^0.21.1",
     "bignumber.js": "^9.0.1",
+    "csv-parser": "^3.0.0",
     "ethers": "^5.1.2",
     "lodash-es": "^4.17.21"
   },
