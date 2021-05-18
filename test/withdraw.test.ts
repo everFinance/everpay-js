@@ -16,7 +16,7 @@ test(`${ethWalletHasUSDT.address} withdraw USDT to ${ethWalletHasUSDT2.address}`
   return await everpay.withdraw({
     chainType: ChainType.ethereum,
     symbol: 'usdt',
-    amount: 30,
+    amount: 100,
     to: ethWalletHasUSDT2.address
   }).then(withdrawResult => {
     console.log('withdrawResult', withdrawResult)
@@ -36,7 +36,7 @@ test(`use another ${ethWalletHasUSDT.address} singer to sign ${ethWalletHasUSDT2
     everpay.withdraw({
       chainType: ChainType.ethereum,
       symbol: 'usdt',
-      amount: 30,
+      amount: 101,
       to: ethWalletHasUSDT.address
     })
   )

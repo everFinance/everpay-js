@@ -1,7 +1,7 @@
 import axios, { AxiosRequestConfig, AxiosResponse } from 'axios'
 import { isObject, isString } from 'lodash-es'
 import { EverpayInfo, EverpayTransaction, EverpayTx } from '../global'
-import { GetEverpayBalanceParams, GetEverpayBalanceResult, PostEverpayTxResult } from './interface'
+import { GetEverpayBalanceParams, GetEverpayBalanceResult, GetEverpayBalancesParams, GetEverpayBalancesResult, PostEverpayTxResult } from './interface'
 
 // `validateStatus` defines whether to resolve or reject the promise for a given
 // HTTP response status code. If `validateStatus` returns `true` (or is set to `null`
@@ -56,6 +56,17 @@ export const getEverpayBalance = async (apiHost: string, {
   account
 }: GetEverpayBalanceParams): Promise<GetEverpayBalanceResult> => {
   const url = `${apiHost}/balanceOf/${chainType}-${symbol}-${id}/${account}`
+  const result = await sendRequest({
+    url,
+    method: 'GET'
+  })
+  return result.data
+}
+
+export const getEverpayBalances = async (apiHost: string, {
+  account
+}: GetEverpayBalancesParams): Promise<GetEverpayBalancesResult> => {
+  const url = `${apiHost}/balances/${account}`
   const result = await sendRequest({
     url,
     method: 'GET'

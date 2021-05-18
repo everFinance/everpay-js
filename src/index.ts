@@ -1,12 +1,13 @@
 import { TransactionResponse } from '@ethersproject/abstract-provider'
 import {
-  ChainType, Config, EverpayInfo, EverpayBase, BalanceParams, DepositParams, TransferOrWithdrawResult,
-  TransferParams, WithdrawParams, EverpayTxWithoutSig, EverpayAction, EverpayTransaction
+  ChainType, Config, EverpayInfo, EverpayBase, BalanceParams, BalancesParams, DepositParams,
+  TransferOrWithdrawResult, TransferParams, WithdrawParams, EverpayTxWithoutSig, EverpayAction,
+  EverpayTransaction, BalanceItem
 } from './global'
-import { getEverpayBalance, getEverpayInfo, getEverpayTransactions, postTx } from './api'
+import { getEverpayBalance, getEverpayBalances, getEverpayInfo, getEverpayTransactions, postTx } from './api'
 import { everpayTxVersion, getEverpayHost } from './config'
 import { getTimestamp, getTokenBySymbol, toBN } from './utils/util'
-import { GetEverpayBalanceParams } from './api/interface'
+import { GetEverpayBalanceParams, GetEverpayBalancesParams } from './api/interface'
 import erc20Abi from './constants/abi/erc20'
 import { Contract, Signer, utils } from 'ethers'
 import { checkParams } from './utils/check'
@@ -36,9 +37,8 @@ class Everpay extends EverpayBase {
     return this._cachedInfo
   }
 
-  async balance (params?: BalanceParams): Promise<number> {
+  async balance (params: BalanceParams): Promise<number> {
     await this.info()
-    params = (params ?? {}) as BalanceParams
     const { symbol, account } = params
     const acc = account ?? this._config.account as string
     const token = getTokenBySymbol(symbol, this._cachedInfo?.tokenList)
@@ -50,7 +50,30 @@ class Everpay extends EverpayBase {
       account: acc
     }
     const everpayBalance = await getEverpayBalance(this._apiHost, mergedParams)
-    return toBN(utils.formatUnits(everpayBalance.balance, token?.decimals)).toNumber()
+    return toBN(utils.formatUnits(everpayBalance.balance.amount, everpayBalance.balance.decimals)).toNumber()
+  }
+
+  async balances (params?: BalancesParams): Promise<BalanceItem[]> {
+    await this.info()
+    params = (params ?? {}) as BalanceParams
+    const { account } = params
+    const acc = account ?? this._config.account as string
+    checkParams({ account: acc })
+    const mergedParams: GetEverpayBalancesParams = {
+      account: acc
+    }
+    const everpayBalances = await getEverpayBalances(this._apiHost, mergedParams)
+    const balances = everpayBalances.balances.map(item => {
+      const tag = item.tag
+      const [chainType, symbol, address] = tag.split('-')
+      return {
+        chainType,
+        symbol: symbol.toUpperCase(),
+        address,
+        balance: toBN(utils.formatUnits(item.amount, item.decimals)).toNumber()
+      }
+    })
+    return balances
   }
 
   async txs (): Promise<EverpayTransaction[]> {

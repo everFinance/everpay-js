@@ -1,5 +1,10 @@
 import { ChainType } from '../global'
 
+export interface BalanceItemFromServer {
+  tag: string
+  amount: string
+  decimals: number
+}
 export interface GetEverpayBalanceParams {
   chainType: ChainType
   id: string
@@ -9,9 +14,16 @@ export interface GetEverpayBalanceParams {
 
 export interface GetEverpayBalanceResult {
   accid: string
-  balance: string
+  balance: BalanceItemFromServer
+}
+export interface GetEverpayBalancesParams {
+  account: string
 }
 
+export interface GetEverpayBalancesResult {
+  accid: string
+  balances: BalanceItemFromServer[]
+}
 export interface PostEverpayTxResult {
   // TODO: ok or other status
   status: string

@@ -16,7 +16,7 @@ test(`check ${ethWalletHasUSDT.address} deposit usdt`, async () => {
   return await everpay.deposit({
     chainType: ChainType.ethereum,
     symbol: 'usdt',
-    amount: 100
+    amount: 1000
   }).then(usdtTx => {
     console.log('usdtTx', usdtTx)
     expect(usdtTx).toBeTruthy()

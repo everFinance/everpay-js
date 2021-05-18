@@ -93,6 +93,17 @@ export interface BalanceParams {
   account?: string
 }
 
+export interface BalancesParams {
+  account?: string
+}
+
+export interface BalanceItem {
+  chainType: string
+  symbol: string
+  balance: number
+  address: string
+}
+
 export interface DepositParams {
   chainType: ChainType
   symbol: string
