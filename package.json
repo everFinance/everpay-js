@@ -37,6 +37,7 @@
     "arweave": "^1.10.14",
     "axios": "^0.21.1",
     "bignumber.js": "^9.0.1",
+    "ethereumjs-util": "^7.0.10",
     "ethers": "^5.1.2",
     "lodash-es": "^4.17.21"
   },

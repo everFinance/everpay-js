@@ -11,6 +11,7 @@ import { getTimestamp, getTokenBySymbol, toBN } from './utils/util'
 import { GetEverpayBalanceParams, GetEverpayBalancesParams } from './api/interface'
 import { utils } from 'ethers'
 import { checkParams } from './utils/check'
+import { ArTransferResult } from './lib/interface'
 
 class Everpay extends EverpayBase {
   constructor (config?: Config) {
@@ -85,20 +86,18 @@ class Everpay extends EverpayBase {
     return await getEverpayTransactions(this._apiHost, account ?? this._config.account)
   }
 
-  async deposit (params: DepositParams): Promise<TransactionResponse> {
+  async deposit (params: DepositParams): Promise<TransactionResponse | ArTransferResult> {
     await this.info()
     const { amount, symbol } = params
     const token = getTokenBySymbol(symbol, this._cachedInfo?.tokenList)
     const value = utils.parseUnits(amount.toString(), token?.decimals)
     const from = this._config.account?.toLowerCase()
-    const to = this._cachedInfo?.ethLocker.toLowerCase()
-    checkParams({ account: from, symbol, token, amount, to })
+    checkParams({ account: from, symbol, token, amount })
 
-    return await transferAsync(this._config, {
+    return await transferAsync(this._config, this._cachedInfo as EverpayInfo, {
       symbol,
       tokenID: token?.id ?? '',
       from: from ?? '',
-      to: to ?? '',
       value
     })
   }

@@ -2,6 +2,7 @@ import { Signer } from 'ethers'
 import { TransactionResponse } from '@ethersproject/abstract-provider'
 import { JWKInterface } from 'arweave/node/lib/wallet'
 import { PostEverpayTxResult } from './api/interface'
+import { ArTransferResult } from './lib/interface'
 
 export enum ChainType {
   ethereum = 'ethereum',
@@ -26,6 +27,7 @@ export interface Token {
 
 export interface EverpayInfo {
   ethLocker: string
+  arLocker: string
   owner: string
   ethChainID: string
   feeRecipient: string
@@ -133,7 +135,7 @@ export abstract class EverpayBase {
   abstract balance (params?: BalanceParams): Promise<number>
   abstract txs (): Promise<EverpayTransaction[]>
   abstract txsByAccount (): Promise<EverpayTransaction[]>
-  abstract deposit (params: DepositParams): Promise<TransactionResponse>
+  abstract deposit (params: DepositParams): Promise<TransactionResponse | ArTransferResult>
   abstract withdraw (params: WithdrawParams): Promise<PostEverpayTxResult>
   abstract transfer (params: TransferParams): Promise<PostEverpayTxResult>
 }
