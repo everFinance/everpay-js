@@ -1,14 +1,17 @@
 import { Signer } from 'ethers'
 import { TransactionResponse } from '@ethersproject/abstract-provider'
+import { JWKInterface } from 'arweave/node/lib/wallet'
 import { PostEverpayTxResult } from './api/interface'
 
 export enum ChainType {
-  ethereum = 'ethereum'
+  ethereum = 'ethereum',
+  arweave = 'arweave'
 }
 export interface Config {
   debug?: boolean
   account?: string
-  connectedSigner?: Signer
+  ethConnectedSigner?: Signer
+  arJWK?: JWKInterface
 }
 
 export interface Token {

@@ -8,7 +8,7 @@ const signer = new ethers.Wallet(ethWalletHasUSDT.privateKey, provider)
 
 const everpay = new Everpay({
   account: ethWalletHasUSDT.address,
-  connectedSigner: signer,
+  ethConnectedSigner: signer,
   debug: true
 })
 

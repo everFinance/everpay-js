@@ -4,12 +4,12 @@ import {
   TransferOrWithdrawResult, TransferParams, WithdrawParams, EverpayTxWithoutSig, EverpayAction,
   EverpayTransaction, BalanceItem
 } from './global'
+import { signMessageAsync, transferAsync } from './lib/sign'
 import { getEverpayBalance, getEverpayBalances, getEverpayInfo, getEverpayTransactions, postTx } from './api'
 import { everpayTxVersion, getEverpayHost } from './config'
 import { getTimestamp, getTokenBySymbol, toBN } from './utils/util'
 import { GetEverpayBalanceParams, GetEverpayBalancesParams } from './api/interface'
-import erc20Abi from './constants/abi/erc20'
-import { Contract, Signer, utils } from 'ethers'
+import { utils } from 'ethers'
 import { checkParams } from './utils/check'
 
 class Everpay extends EverpayBase {
@@ -88,49 +88,19 @@ class Everpay extends EverpayBase {
   async deposit (params: DepositParams): Promise<TransactionResponse> {
     await this.info()
     const { amount, symbol } = params
-    const connectedSigner = this._config?.connectedSigner as Signer
     const token = getTokenBySymbol(symbol, this._cachedInfo?.tokenList)
     const value = utils.parseUnits(amount.toString(), token?.decimals)
     const from = this._config.account?.toLowerCase()
     const to = this._cachedInfo?.ethLocker.toLowerCase()
-    let transactionResponse: TransactionResponse
-    checkParams({ account: from, symbol, token, signer: connectedSigner, amount })
+    checkParams({ account: from, symbol, token, amount, to })
 
-    // TODO: check balance
-    if (symbol.toLowerCase() === 'eth') {
-      const transactionRequest = {
-        from,
-        to,
-        value
-      }
-      transactionResponse = await connectedSigner.sendTransaction(transactionRequest)
-    } else {
-      const erc20RW = new Contract(token?.id ?? '', erc20Abi, connectedSigner)
-      transactionResponse = await erc20RW.transfer(to, value)
-    }
-
-    return transactionResponse
-  }
-
-  async getEverpaySignMessage (everpayTxWithoutSig: EverpayTxWithoutSig): Promise<string> {
-    const keys = [
-      'tokenSymbol',
-      'action',
-      'from',
-      'to',
-      'amount',
-      'fee',
-      'feeRecipient',
-      'nonce',
-      'tokenID',
-      'chainType',
-      'chainID',
-      'data',
-      'version'
-    ] as const
-    const message = keys.map(key => `${key}:${everpayTxWithoutSig[key]}`).join('\n')
-    const connectedSigner = this._config?.connectedSigner as Signer
-    return connectedSigner.signMessage(message)
+    return await transferAsync(this._config, {
+      symbol,
+      tokenID: token?.id ?? '',
+      from: from ?? '',
+      to: to ?? '',
+      value
+    })
   }
 
   async sendEverpayTx (action: EverpayAction, params: TransferParams): Promise<TransferOrWithdrawResult> {
@@ -153,9 +123,9 @@ class Everpay extends EverpayBase {
       data: '',
       version: everpayTxVersion
     }
-    checkParams({ symbol, account: from, token, signer: this._config?.connectedSigner, amount })
+    checkParams({ account: from, symbol, token, amount, to })
 
-    const sig = await this.getEverpaySignMessage(everpayTxWithoutSig)
+    const sig = await signMessageAsync(this._config, everpayTxWithoutSig)
     const everpayTx = {
       ...everpayTxWithoutSig,
       sig,
