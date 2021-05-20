@@ -8,11 +8,14 @@ export enum ChainType {
   ethereum = 'ethereum',
   arweave = 'arweave'
 }
+
+export type ArJWK = JWKInterface | 'use_wallet'
+
 export interface Config {
   debug?: boolean
   account?: string
   ethConnectedSigner?: Signer
-  arJWK?: JWKInterface
+  arJWK?: ArJWK
 }
 
 export interface Token {

@@ -1,11 +1,10 @@
 import { TransactionResponse } from '@ethersproject/abstract-provider'
-import { JWKInterface } from 'arweave/node/lib/wallet'
 import { hashPersonalMessage } from 'ethereumjs-util'
 import { ArTransferResult, TransferAsyncParams } from './interface'
 import { isAddress } from '@ethersproject/address'
 import ethereumLib from './ethereum'
 import arweaveLib from './arweave'
-import { ChainType, Config, EverpayInfo, EverpayTxWithoutSig } from '../global'
+import { ArJWK, ChainType, Config, EverpayInfo, EverpayTxWithoutSig } from '../global'
 import { checkSignConfig } from '../utils/check'
 import { Signer } from '@ethersproject/abstract-signer'
 import { ERRORS } from '../utils/errors'
@@ -63,7 +62,7 @@ export const signMessageAsync = async (config: Config, everpayTxWithoutSig: Ever
   if (accountChainType === ChainType.ethereum) {
     return await ethereumLib.signMessageAsync(config.ethConnectedSigner as Signer, message)
   } else if (accountChainType === ChainType.arweave) {
-    return await arweaveLib.signMessageAsync(config.arJWK as JWKInterface, personalMsgMash)
+    return await arweaveLib.signMessageAsync(config.arJWK as ArJWK, personalMsgMash)
   }
 
   throw new Error(ERRORS.INVALID_ACCOUNT_TYPE)
@@ -79,7 +78,7 @@ export const transferAsync = async (config: Config, info: EverpayInfo, params: T
   if (accountChainType === ChainType.ethereum) {
     return await ethereumLib.transferAsync(config.ethConnectedSigner as Signer, paramsMergedTo)
   } else if (accountChainType === ChainType.arweave) {
-    return await arweaveLib.transferAsync(config.arJWK as JWKInterface, paramsMergedTo)
+    return await arweaveLib.transferAsync(config.arJWK as ArJWK, paramsMergedTo)
   }
 
   throw new Error(ERRORS.INVALID_ACCOUNT_TYPE)

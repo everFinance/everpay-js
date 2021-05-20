@@ -1,6 +1,6 @@
 import Arweave from 'arweave'
+import { ArJWK } from '../global'
 import { ArTransferResult, TransferAsyncParams } from './interface'
-import { JWKInterface } from 'arweave/node/lib/wallet'
 
 const options = {
   host: 'arweave.net', // Hostname or IP address for a Arweave host
@@ -10,13 +10,35 @@ const options = {
   logging: false // Enable network request logging
 }
 
-const signMessageAsync = async (arJWK: JWKInterface, personalMsgMash: Buffer): Promise<string> => {
-  const arweave = Arweave.init(options)
-  const buf = await arweave.crypto.sign(arJWK, personalMsgMash)
-  return Buffer.from(buf).toString('base64')
+const ab2Base64 = (buf: Uint8Array): string => {
+  const str = String.fromCharCode.apply(null, new Uint8Array(buf) as any)
+  return btoa(str)
 }
 
-const transferAsync = async (arJWK: JWKInterface, {
+const signMessageAsync = async (arJWK: ArJWK, personalMsgMash: Buffer): Promise<string> => {
+  const arweave = Arweave.init(options)
+  // web
+  if (arJWK === 'use_wallet') {
+    const algorithm = {
+      name: 'RSA-PSS'
+    }
+    // eslint-disable-next-line
+    const signature = await window.arweaveWallet.signature(
+      personalMsgMash,
+      algorithm
+    )
+    // TODO: to fix arConnect return result and interface
+    const signatureUnit8Array = new Uint8Array(Object.values(signature))
+    const signatureBase64 = ab2Base64(signatureUnit8Array)
+    return signatureBase64
+  // node
+  } else {
+    const buf = await arweave.crypto.sign(arJWK, personalMsgMash)
+    return Buffer.from(buf).toString('base64')
+  }
+}
+
+const transferAsync = async (arJWK: ArJWK, {
   to,
   value
 }: TransferAsyncParams): Promise<ArTransferResult> => {
