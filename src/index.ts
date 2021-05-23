@@ -90,7 +90,7 @@ class Everpay extends EverpayBase {
     await this.info()
     const { amount, symbol } = params
     const token = getTokenBySymbol(symbol, this._cachedInfo?.tokenList)
-    const value = utils.parseUnits(amount.toString(), token?.decimals)
+    const value = utils.parseUnits(toBN(amount).toString(), token?.decimals)
     const from = this._config.account?.toLowerCase()
     checkParams({ account: from, symbol, token, amount })
 
@@ -112,7 +112,7 @@ class Everpay extends EverpayBase {
       action,
       from,
       to,
-      amount: utils.parseUnits(amount.toString(), token?.decimals).toString(),
+      amount: utils.parseUnits(toBN(amount).toString(), token?.decimals).toString(),
       fee: action === EverpayAction.withdraw ? (token?.burnFee ?? '0') : '0',
       feeRecipient: this._cachedInfo?.feeRecipient.toLowerCase() ?? '',
       nonce: Date.now().toString(),
