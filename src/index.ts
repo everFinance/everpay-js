@@ -70,7 +70,7 @@ class Everpay extends EverpayBase {
         chainType,
         symbol: symbol.toUpperCase(),
         address,
-        balance: toBN(utils.formatUnits(item.amount, item.decimals)).toNumber()
+        balance: toBN(utils.formatUnits(item.amount, item.decimals)).toString()
       }
     })
     return balances
@@ -177,7 +177,7 @@ class Everpay extends EverpayBase {
     await this.info()
     const token = getTokenBySymbol(params.symbol, this._cachedInfo?.tokenList)
     checkParams({ token })
-    const amount = toBN(params.amount).minus(toBN(utils.formatUnits(token?.burnFee ?? '', token?.decimals))).toNumber()
+    const amount = toBN(params.amount).minus(toBN(utils.formatUnits(token?.burnFee ?? '', token?.decimals))).toString()
     const to = params.to ?? this._config.account as string
     return await this.sendEverpayTx(EverpayAction.withdraw, {
       ...params,
