@@ -108,20 +108,20 @@ export interface BalancesParams {
 export interface BalanceItem {
   chainType: string
   symbol: string
-  balance: number
+  balance: string
   address: string
 }
 
 export interface DepositParams {
   chainType: ChainType
   symbol: string
-  amount: number
+  amount: string
 }
 
 export interface WithdrawParams {
   chainType: ChainType
   symbol: string
-  amount: number
+  amount: string
   to?: string
 }
 
