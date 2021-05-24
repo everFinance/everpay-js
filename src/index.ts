@@ -7,7 +7,7 @@ import {
 import { signMessageAsync, transferAsync } from './lib/sign'
 import { getEverpayBalance, getEverpayBalances, getEverpayInfo, getEverpayTransactions, postTx } from './api'
 import { everpayTxVersion, getEverpayHost } from './config'
-import { getTimestamp, getTokenBySymbol, toBN } from './utils/util'
+import { getTimestamp, getTokenBySymbol, toBN, getAccountChainType } from './utils/util'
 import { GetEverpayBalanceParams, GetEverpayBalancesParams } from './api/interface'
 import { utils } from 'ethers'
 import { checkParams } from './utils/check'
@@ -28,6 +28,8 @@ class Everpay extends EverpayBase {
   private readonly _config: Config
   private _cachedInfo?: EverpayInfo
   private _cachedTimestamp: number
+
+  getAccountChainType = getAccountChainType
 
   async info (): Promise<EverpayInfo> {
     // cache info 3 mins

@@ -1,26 +1,13 @@
 import { TransactionResponse } from '@ethersproject/abstract-provider'
 import { hashPersonalMessage } from 'ethereumjs-util'
 import { ArTransferResult, TransferAsyncParams } from './interface'
-import { isAddress } from '@ethersproject/address'
 import ethereumLib from './ethereum'
 import arweaveLib from './arweave'
 import { ArJWK, ChainType, Config, EverpayInfo, EverpayTxWithoutSig } from '../global'
 import { checkSignConfig } from '../utils/check'
 import { Signer } from '@ethersproject/abstract-signer'
 import { ERRORS } from '../utils/errors'
-
-const getAccountChainType = (from: string): ChainType => {
-  if (isAddress(from)) {
-    return ChainType.ethereum
-  }
-
-  // TODO: for test
-  if (from === '5NPqYBdIsIpJzPeYixuz7BEH_W7BEk_mb8HxBD3OHXo'.toLowerCase()) {
-    return ChainType.arweave
-  }
-
-  throw new Error(ERRORS.INVALID_ACCOUNT_TYPE)
-}
+import { getAccountChainType } from '../utils/util'
 
 const getDepositAddr = (info: EverpayInfo, accountChainType: ChainType): string => {
   if (accountChainType === ChainType.ethereum) {
