@@ -109,6 +109,7 @@ class Everpay extends EverpayBase {
     const to = params?.to.toLowerCase()
     const token = getTokenBySymbol(symbol, this._cachedInfo?.tokenList)
     const from = this._config.account?.toLowerCase() as string
+    const accountChainType = getAccountChainType(from)
     const everpayTxWithoutSig: EverpayTxWithoutSig = {
       tokenSymbol: symbol,
       action,
@@ -121,7 +122,7 @@ class Everpay extends EverpayBase {
       tokenID: token?.id.toLowerCase() as string,
       chainType: chainType,
       chainID: getChainId(this._cachedInfo as EverpayInfo, chainType),
-      data: await getEverpayTxDataField(this._config, chainType),
+      data: await getEverpayTxDataField(this._config, accountChainType),
       version: everpayTxVersion
     }
     checkParams({ account: from, symbol, token, amount, to })

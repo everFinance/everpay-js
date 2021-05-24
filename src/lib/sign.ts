@@ -9,6 +9,15 @@ import { Signer } from '@ethersproject/abstract-signer'
 import { ERRORS } from '../utils/errors'
 import { getAccountChainType } from '../utils/util'
 
+export const getChainId = (info: EverpayInfo, chainType: ChainType): string => {
+  if (chainType === ChainType.ethereum) {
+    return info?.ethChainID.toString() ?? ''
+  } else if (chainType === ChainType.arweave) {
+    return info?.arChainID.toString() ?? ''
+  }
+  throw new Error(ERRORS.INVALID_ACCOUNT_TYPE)
+}
+
 const getDepositAddr = (info: EverpayInfo, accountChainType: ChainType): string => {
   if (accountChainType === ChainType.ethereum) {
     return info?.ethLocker.toLowerCase()
@@ -20,19 +29,10 @@ const getDepositAddr = (info: EverpayInfo, accountChainType: ChainType): string 
   throw new Error(ERRORS.INVALID_ACCOUNT_TYPE)
 }
 
-export const getChainId = (info: EverpayInfo, chainType: ChainType): string => {
-  if (chainType === ChainType.ethereum) {
-    return info?.ethChainID.toString() ?? ''
-  } else if (chainType === ChainType.arweave) {
-    return info?.arChainID.toString() ?? ''
-  }
-  throw new Error(ERRORS.INVALID_ACCOUNT_TYPE)
-}
-
-export const getEverpayTxDataField = async (config: Config, chainType: ChainType): Promise<string> => {
-  if (chainType === ChainType.ethereum) {
+export const getEverpayTxDataField = async (config: Config, accountChainType: ChainType): Promise<string> => {
+  if (accountChainType === ChainType.ethereum) {
     return ''
-  } else if (chainType === ChainType.arweave) {
+  } else if (accountChainType === ChainType.arweave) {
     let arOwner = ''
     if (config?.arJWK === 'use_wallet') {
       arOwner = await window.arweaveWallet.getActivePublicKey()
