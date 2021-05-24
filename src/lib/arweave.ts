@@ -20,7 +20,8 @@ const signMessageAsync = async (arJWK: ArJWK, personalMsgMash: Buffer): Promise<
   // web
   if (arJWK === 'use_wallet') {
     const algorithm = {
-      name: 'RSA-PSS'
+      name: 'RSA-PSS',
+      saltLength: 0
     }
     // eslint-disable-next-line
     const signature = await window.arweaveWallet.signature(
