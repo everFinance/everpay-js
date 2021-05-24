@@ -125,9 +125,13 @@ class Everpay extends EverpayBase {
       data: await getEverpayTxDataField(this._config, accountChainType),
       version: everpayTxVersion
     }
+    console.log('owner', everpayTxWithoutSig.data)
+    console.log('everpayTxWithoutSig', JSON.stringify(everpayTxWithoutSig))
     checkParams({ account: from, symbol, token, amount, to })
 
     const sig = await signMessageAsync(this._config, everpayTxWithoutSig)
+    console.log('sig', sig)
+
     const everpayTx = {
       ...everpayTxWithoutSig,
       sig,
