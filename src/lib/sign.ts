@@ -44,7 +44,7 @@ export const getEverpayTxDataField = async (config: Config, accountChainType: Ch
   throw new Error(ERRORS.INVALID_ACCOUNT_TYPE)
 }
 
-const getEverpayTxMessage = (everpayTxWithoutSig: EverpayTxWithoutSig): string => {
+export const getEverpayTxMessage = (everpayTxWithoutSig: EverpayTxWithoutSig): string => {
   const keys = [
     'tokenSymbol',
     'action',
