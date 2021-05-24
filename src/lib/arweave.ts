@@ -46,7 +46,7 @@ const transferAsync = async (arJWK: ArJWK, {
 
   const transactionTransfer = await arweave.createTransaction({
     target: to,
-    quantity: value.toString()
+    quantity: value
   }, arJWK)
   // 直接给原来 transaction 赋值了 signature 值
   await arweave.transactions.sign(transactionTransfer, arJWK)
