@@ -53,7 +53,7 @@ export const getTokenBySymbol = (symbol: string, tokenList?: Token[]): Token | u
 const isEthereumAddress = isAddress
 
 const isArweaveAddress = (address: string): boolean => {
-  return isString(address) && address.length === 43 && address.search(/[a-z0-9A-Z_]{43}/g) === 0
+  return isString(address) && address.length === 43 && address.search(/[a-z0-9A-Z_-]{43}/g) === 0
 }
 
 export const getAccountChainType = (from: string): ChainType => {
