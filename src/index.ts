@@ -92,7 +92,7 @@ class Everpay extends EverpayBase {
     await this.info()
     const { amount, symbol } = params
     const token = getTokenBySymbol(symbol, this._cachedInfo?.tokenList)
-    const value = utils.parseUnits(toBN(amount).toString(), token?.decimals)
+    const value = utils.parseUnits(toBN(amount).toString(), token?.decimals).toString()
     const from = this._config.account?.toLowerCase()
     checkParams({ account: from, symbol, token, amount })
 

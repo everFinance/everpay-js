@@ -1,11 +1,11 @@
-import { BigNumber } from 'ethers'
+import { BigNumberish } from 'ethers'
 
 export interface TransferAsyncParams {
   symbol: string
   tokenID: string
   from: string
   to?: string
-  value: BigNumber
+  value: BigNumberish
 }
 
 export interface ArTransferResult {
