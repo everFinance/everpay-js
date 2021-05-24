@@ -33,6 +33,7 @@ export interface EverpayInfo {
   arLocker: string
   owner: string
   ethChainID: string
+  arChainID: string
   feeRecipient: string
   tokenList: Token[]
 }

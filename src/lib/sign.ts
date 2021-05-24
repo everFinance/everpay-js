@@ -20,6 +20,30 @@ const getDepositAddr = (info: EverpayInfo, accountChainType: ChainType): string 
   throw new Error(ERRORS.INVALID_ACCOUNT_TYPE)
 }
 
+export const getChainId = (info: EverpayInfo, chainType: ChainType): string => {
+  if (chainType === ChainType.ethereum) {
+    return info?.ethChainID.toString() ?? ''
+  } else if (chainType === ChainType.arweave) {
+    return info?.arChainID.toString() ?? ''
+  }
+  throw new Error(ERRORS.INVALID_ACCOUNT_TYPE)
+}
+
+export const getEverpayTxDataField = async (config: Config, chainType: ChainType): Promise<string> => {
+  if (chainType === ChainType.ethereum) {
+    return ''
+  } else if (chainType === ChainType.arweave) {
+    let arOwner = ''
+    if (config?.arJWK === 'use_wallet') {
+      arOwner = await window.arweaveWallet.getActivePublicKey()
+    } else if (config.arJWK !== undefined) {
+      arOwner = config.arJWK.n
+    }
+    return JSON.stringify({ arOwner })
+  }
+  throw new Error(ERRORS.INVALID_ACCOUNT_TYPE)
+}
+
 const getEverpayTxMessage = (everpayTxWithoutSig: EverpayTxWithoutSig): string => {
   const keys = [
     'tokenSymbol',
