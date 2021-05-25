@@ -30,6 +30,6 @@ export const checkSignConfig = (accountType: ChainType, config: Config): void =>
   if (accountType === ChainType.ethereum) {
     checkItem('ethConnectedSigner', config.ethConnectedSigner)
   } else if (accountType === ChainType.arweave) {
-    // TODO:
+    checkItem('arJWK', config.arJWK)
   }
 }
