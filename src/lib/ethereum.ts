@@ -19,7 +19,7 @@ const transferAsync = async (ethConnectedSigner: Signer, {
   // TODO: check balance
   if (symbol.toLowerCase() === 'eth') {
     const transactionRequest = {
-      from,
+      from: from.toLowerCase(),
       to,
       value
     }

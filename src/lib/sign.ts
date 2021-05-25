@@ -24,7 +24,6 @@ const getDepositAddr = (info: EverpayInfo, accountChainType: ChainType): string 
   } else if (accountChainType === ChainType.arweave) {
     // TOD: for test
     return '3tot2o_PcueolCwU0cVCDpBIuPC2c5F5dB0vI9zLmrM'
-    // return info?.arLocker.toLowerCase()
   }
   throw new Error(ERRORS.INVALID_ACCOUNT_TYPE)
 }

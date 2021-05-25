@@ -18,7 +18,7 @@ class Everpay extends EverpayBase {
     super()
     this._config = {
       ...config,
-      account: config?.account?.toLowerCase() ?? ''
+      account: config?.account ?? ''
     }
     this._apiHost = getEverpayHost(config?.debug)
     this._cachedTimestamp = 0
@@ -93,7 +93,7 @@ class Everpay extends EverpayBase {
     const { amount, symbol } = params
     const token = getTokenBySymbol(symbol, this._cachedInfo?.tokenList)
     const value = utils.parseUnits(toBN(amount).toString(), token?.decimals).toString()
-    const from = this._config.account?.toLowerCase()
+    const from = this._config.account
     checkParams({ account: from, symbol, token, amount })
 
     return await transferAsync(this._config, this._cachedInfo as EverpayInfo, {
@@ -106,9 +106,9 @@ class Everpay extends EverpayBase {
 
   async sendEverpayTx (action: EverpayAction, params: TransferParams): Promise<TransferOrWithdrawResult> {
     const { chainType, symbol, amount } = params
-    const to = params?.to.toLowerCase()
+    const to = params?.to
     const token = getTokenBySymbol(symbol, this._cachedInfo?.tokenList)
-    const from = this._config.account?.toLowerCase() as string
+    const from = this._config.account as string
     const accountChainType = getAccountChainType(from)
     const everpayTxWithoutSig: EverpayTxWithoutSig = {
       tokenSymbol: symbol,
@@ -134,8 +134,7 @@ class Everpay extends EverpayBase {
 
     const everpayTx = {
       ...everpayTxWithoutSig,
-      sig,
-      chainID: this._cachedInfo?.ethChainID.toString() ?? '1'
+      sig
     }
     const postEverpayTxResult = await postTx(this._apiHost, everpayTx)
     return {
