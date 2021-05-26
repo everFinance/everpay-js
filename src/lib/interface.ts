@@ -1,9 +1,11 @@
+import { BigNumber } from '@ethersproject/bignumber'
+
 export interface TransferAsyncParams {
   symbol: string
   tokenID: string
   from: string
   to?: string
-  value: string
+  value: BigNumber
 }
 
 export interface ArTransferResult {
