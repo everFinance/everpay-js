@@ -16,7 +16,7 @@ describe('test balance', () => {
     return await everpay1.balances({
     }).then(balances => {
       expect(balances.length).toBeGreaterThan(0)
-      expect(balances.find(i => i.symbol === 'ETH').balance).toBeGreaterThan(0)
+      expect(+balances.find(i => i.symbol === 'ETH').balance).toBeGreaterThan(0)
     })
   })
 
@@ -25,7 +25,7 @@ describe('test balance', () => {
       account: ethWalletHasUSDT.address
     }).then(balances => {
       expect(balances.length).toBeGreaterThan(0)
-      expect(balances.find(i => i.symbol === 'USDT').balance).toBeGreaterThan(0)
+      expect(+balances.find(i => i.symbol === 'USDT').balance).toBeGreaterThan(0)
     })
   })
 })

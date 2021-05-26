@@ -15,10 +15,21 @@ const everpay = new Everpay({
 test(`check ${ethWalletHasUSDT.address} deposit usdt`, async () => {
   return await everpay.deposit({
     chainType: ChainType.ethereum,
-    symbol: 'usdt',
-    amount: 1000
+    symbol: 'eth',
+    amount: '0.01'
   }).then(usdtTx => {
     console.log('usdtTx', usdtTx)
     expect(usdtTx).toBeTruthy()
   })
 })
+
+// test(`check ${ethWalletHasUSDT.address} deposit usdt`, async () => {
+//   return await everpay.deposit({
+//     chainType: ChainType.ethereum,
+//     symbol: 'usd',
+//     amount: '1000'
+//   }).then(usdtTx => {
+//     console.log('usdtTx', usdtTx)
+//     expect(usdtTx).toBeTruthy()
+//   })
+// })
