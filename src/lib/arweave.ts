@@ -16,6 +16,16 @@ const signMessageAsync = async (arJWK: ArJWK, personalMsgHash: Buffer): Promise<
   const arweave = Arweave.init(options)
   // web
   if (arJWK === 'use_wallet') {
+    try {
+      const existingPermissions = await window.arweaveWallet.getPermissions()
+
+      if (!existingPermissions.includes('SIGNATURE' as any)) {
+        await window.arweaveWallet.connect(['SIGNATURE' as any])
+      }
+    } catch {
+      // Permission is already granted
+    }
+
     const algorithm = {
       name: 'RSA-PSS',
       saltLength: 0
