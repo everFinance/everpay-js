@@ -54,8 +54,9 @@ export const getEverpayInfo = async (apiHost: string): Promise<EverpayInfo> => {
     method: 'GET'
   })
 
-  // const tokenList = result.data.tokenList
   // TODO: for test
+  // const tokenList = result.data.tokenList
+  // result.data.arChainID = '2'
   // tokenList.push({
   //   id: '0x0000000000000000000000000000000000000000',
   //   symbol: 'AR',
