@@ -11,3 +11,8 @@ export interface ArTransferResult {
   statusText: string
   data: any
 }
+
+export interface SignMessageAsyncResult {
+  sig: string
+  everHash: string
+}

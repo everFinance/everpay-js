@@ -1,6 +1,6 @@
 import { TransactionResponse } from '@ethersproject/abstract-provider'
 import { hashPersonalMessage } from 'ethereumjs-util'
-import { ArTransferResult, TransferAsyncParams } from './interface'
+import { ArTransferResult, SignMessageAsyncResult, TransferAsyncParams } from './interface'
 import ethereumLib from './ethereum'
 import arweaveLib from './arweave'
 import { ArJWK, ChainType, Config, EverpayInfo, EverpayTxWithoutSig } from '../global'
@@ -62,20 +62,23 @@ export const getEverpayTxMessage = (everpayTxWithoutSig: EverpayTxWithoutSig): s
   return keys.map(key => `${key}:${everpayTxWithoutSig[key]}`).join('\n')
 }
 
-export const signMessageAsync = async (config: Config, everpayTxWithoutSig: EverpayTxWithoutSig): Promise<string> => {
+export const signMessageAsync = async (config: Config, everpayTxWithoutSig: EverpayTxWithoutSig): Promise<SignMessageAsyncResult> => {
   const accountChainType = getAccountChainType(everpayTxWithoutSig.from)
   const message = getEverpayTxMessage(everpayTxWithoutSig)
-  const personalMsgMash = hashPersonalMessage(Buffer.from(message))
-  console.log(personalMsgMash.toString('hex'))
+  const personalMsgHash = hashPersonalMessage(Buffer.from(message))
+  const everHash = `0x${personalMsgHash.toString('hex')}`
+  let sig = ''
+  console.log('everHash', everHash)
   checkSignConfig(accountChainType, config)
 
   if (accountChainType === ChainType.ethereum) {
-    return await ethereumLib.signMessageAsync(config.ethConnectedSigner as Signer, message)
+    sig = await ethereumLib.signMessageAsync(config.ethConnectedSigner as Signer, message)
   } else if (accountChainType === ChainType.arweave) {
-    return await arweaveLib.signMessageAsync(config.arJWK as ArJWK, personalMsgMash)
+    sig = await arweaveLib.signMessageAsync(config.arJWK as ArJWK, personalMsgHash)
+  } else {
+    throw new Error(ERRORS.INVALID_ACCOUNT_TYPE)
   }
-
-  throw new Error(ERRORS.INVALID_ACCOUNT_TYPE)
+  return { everHash, sig }
 }
 
 export const transferAsync = async (config: Config, info: EverpayInfo, params: TransferAsyncParams): Promise<TransactionResponse | ArTransferResult> => {

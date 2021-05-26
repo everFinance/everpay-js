@@ -146,6 +146,7 @@ export interface TransferParams extends WithdrawParams {
 
 export interface TransferOrWithdrawResult extends PostEverpayTxResult {
   everpayTx: EverpayTx
+  everHash: string
 }
 
 export abstract class EverpayBase {

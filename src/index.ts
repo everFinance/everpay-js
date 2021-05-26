@@ -139,7 +139,7 @@ class Everpay extends EverpayBase {
     console.log('everpayTxWithoutSig', JSON.stringify(everpayTxWithoutSig))
     checkParams({ account: from, symbol, token, amount, to })
 
-    const sig = await signMessageAsync(this._config, everpayTxWithoutSig)
+    const { everHash, sig } = await signMessageAsync(this._config, everpayTxWithoutSig)
     console.log('sig', sig)
 
     const everpayTx = {
@@ -149,7 +149,8 @@ class Everpay extends EverpayBase {
     const postEverpayTxResult = await postTx(this._apiHost, everpayTx)
     return {
       ...postEverpayTxResult,
-      everpayTx
+      everpayTx,
+      everHash
     }
   }
 

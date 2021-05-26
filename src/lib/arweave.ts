@@ -12,7 +12,7 @@ const options = {
   logging: false // Enable network request logging
 }
 
-const signMessageAsync = async (arJWK: ArJWK, personalMsgMash: Buffer): Promise<string> => {
+const signMessageAsync = async (arJWK: ArJWK, personalMsgHash: Buffer): Promise<string> => {
   const arweave = Arweave.init(options)
   // web
   if (arJWK === 'use_wallet') {
@@ -22,7 +22,7 @@ const signMessageAsync = async (arJWK: ArJWK, personalMsgMash: Buffer): Promise<
     }
     // eslint-disable-next-line
     const signature = await window.arweaveWallet.signature(
-      personalMsgMash,
+      personalMsgHash,
       algorithm
     )
     // TODO: to fix arConnect return result and interface
@@ -31,7 +31,7 @@ const signMessageAsync = async (arJWK: ArJWK, personalMsgMash: Buffer): Promise<
 
   // node
   } else {
-    const buf = await arweave.crypto.sign(arJWK, personalMsgMash)
+    const buf = await arweave.crypto.sign(arJWK, personalMsgHash)
     return bufferTob64Url(buf)
   }
 }
