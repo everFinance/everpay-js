@@ -1,6 +1,6 @@
 import axios, { AxiosRequestConfig, AxiosResponse } from 'axios'
 import { isObject, isString } from 'lodash-es'
-import { EverpayInfo, EverpayTx, TxsResult } from '../global'
+import { EverpayInfo, EverpayTransaction, EverpayTx, TxsResult } from '../global'
 import {
   GetEverpayTransactionsParams,
   GetEverpayBalanceParams,
@@ -103,6 +103,16 @@ export const getEverpayTransactions = async (apiHost: string, params: GetEverpay
     method: 'GET'
   })
   return result.data
+}
+
+export const getEverpayTransaction = async (apiHost: string, everHash: string): Promise<EverpayTransaction> => {
+  const url = `${apiHost}/tx/${everHash}`
+  const result = await sendRequest({
+    ...rConfig,
+    url,
+    method: 'GET'
+  })
+  return result.data.tx
 }
 
 export const postTx = async (apiHost: string, params: EverpayTx): Promise<PostEverpayTxResult> => {
