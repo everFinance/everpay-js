@@ -2,7 +2,7 @@ import { TransactionResponse } from '@ethersproject/abstract-provider'
 import {
   ChainType, Config, EverpayInfo, EverpayBase, BalanceParams, BalancesParams, DepositParams,
   TransferOrWithdrawResult, TransferParams, WithdrawParams, EverpayTxWithoutSig, EverpayAction,
-  EverpayTransaction, BalanceItem
+  BalanceItem, TxsParams, TxsByAccountParams, TxsResult
 } from './global'
 import { getChainId, getEverpayTxDataField, signMessageAsync, transferAsync } from './lib/sign'
 import { getEverpayBalance, getEverpayBalances, getEverpayInfo, getEverpayTransactions, postTx } from './api'
@@ -79,13 +79,18 @@ class Everpay extends EverpayBase {
     return balances
   }
 
-  async txs (): Promise<EverpayTransaction[]> {
-    return await getEverpayTransactions(this._apiHost)
+  async txs (params: TxsParams): Promise<TxsResult> {
+    const { page } = params
+    return await getEverpayTransactions(this._apiHost, { page })
   }
 
-  async txsByAccount (account?: string): Promise<EverpayTransaction[]> {
+  async txsByAccount (params: TxsByAccountParams): Promise<TxsResult> {
+    const { page, account } = params
     checkParams({ account: account ?? this._config.account })
-    return await getEverpayTransactions(this._apiHost, account ?? this._config.account)
+    return await getEverpayTransactions(this._apiHost, {
+      page,
+      account: account ?? this._config.account
+    })
   }
 
   async deposit (params: DepositParams): Promise<TransactionResponse | ArTransferResult> {

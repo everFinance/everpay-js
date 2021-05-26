@@ -1,7 +1,14 @@
 import axios, { AxiosRequestConfig, AxiosResponse } from 'axios'
 import { isObject, isString } from 'lodash-es'
-import { EverpayInfo, EverpayTransaction, EverpayTx } from '../global'
-import { GetEverpayBalanceParams, GetEverpayBalanceResult, GetEverpayBalancesParams, GetEverpayBalancesResult, PostEverpayTxResult } from './interface'
+import { EverpayInfo, EverpayTx, TxsResult } from '../global'
+import {
+  GetEverpayTransactionsParams,
+  GetEverpayBalanceParams,
+  GetEverpayBalanceResult,
+  GetEverpayBalancesParams,
+  GetEverpayBalancesResult,
+  PostEverpayTxResult
+} from './interface'
 
 // `validateStatus` defines whether to resolve or reject the promise for a given
 // HTTP response status code. If `validateStatus` returns `true` (or is set to `null`
@@ -87,14 +94,15 @@ export const getEverpayBalances = async (apiHost: string, {
   return result.data
 }
 
-export const getEverpayTransactions = async (apiHost: string, account?: string): Promise<EverpayTransaction[]> => {
-  const url = account !== undefined ? `${apiHost}/txs/${account}` : `${apiHost}/txs/`
+export const getEverpayTransactions = async (apiHost: string, params: GetEverpayTransactionsParams): Promise<TxsResult> => {
+  const { account, page } = params
+  const url = account !== undefined ? `${apiHost}/txs/${account}?page=${page}` : `${apiHost}/txs?page=${page}`
   const result = await sendRequest({
     ...rConfig,
     url,
     method: 'GET'
   })
-  return result.data.txs
+  return result.data
 }
 
 export const postTx = async (apiHost: string, params: EverpayTx): Promise<PostEverpayTxResult> => {

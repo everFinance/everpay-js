@@ -94,6 +94,13 @@ export interface EverpayTransaction {
   timestamp: number
 }
 
+export interface TxsResult {
+  accid: string
+  currentPage: number
+  totalPages: number
+  txs: EverpayTransaction[]
+}
+
 export interface BalanceParams {
   chainType: ChainType
   symbol: string
@@ -124,6 +131,15 @@ export interface WithdrawParams {
   to?: string
 }
 
+export interface TxsParams {
+  page: number
+}
+
+export interface TxsByAccountParams {
+  page: number
+  account?: string
+}
+
 export interface TransferParams extends WithdrawParams {
   to: string
 }
@@ -136,8 +152,8 @@ export abstract class EverpayBase {
   abstract getAccountChainType (address: string): ChainType
   abstract info (): Promise<EverpayInfo>
   abstract balance (params?: BalanceParams): Promise<number>
-  abstract txs (): Promise<EverpayTransaction[]>
-  abstract txsByAccount (): Promise<EverpayTransaction[]>
+  abstract txs (params: TxsParams): Promise<TxsResult>
+  abstract txsByAccount (params: TxsByAccountParams): Promise<TxsResult>
   abstract deposit (params: DepositParams): Promise<TransactionResponse | ArTransferResult>
   abstract withdraw (params: WithdrawParams): Promise<PostEverpayTxResult>
   abstract transfer (params: TransferParams): Promise<PostEverpayTxResult>
