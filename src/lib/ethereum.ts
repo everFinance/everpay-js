@@ -2,6 +2,11 @@ import { Contract, Signer } from 'ethers'
 import { TransactionResponse } from '@ethersproject/abstract-provider'
 import { TransferAsyncParams } from './interface'
 import erc20Abi from '../constants/abi/erc20'
+import { ChainType, Config } from '../global'
+
+const getEverpayTxDataFieldAsync = async (): Promise<string> => {
+  return ''
+}
 
 const signMessageAsync = async (ethConnectedSigner: Signer, message: string): Promise<string> => {
   return await ethConnectedSigner.signMessage(message)
@@ -32,6 +37,7 @@ const transferAsync = async (ethConnectedSigner: Signer, {
 }
 
 export default {
+  getEverpayTxDataFieldAsync,
   signMessageAsync,
   transferAsync
 }
