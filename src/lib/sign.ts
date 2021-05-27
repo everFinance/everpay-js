@@ -2,7 +2,7 @@ import { TransactionResponse } from '@ethersproject/abstract-provider'
 import { hashPersonalMessage } from 'ethereumjs-util'
 import { ArTransferResult, SignMessageAsyncResult, TransferAsyncParams } from './interface'
 import ethereumLib from './ethereum'
-import arweaveLib, { checkArPermissions } from './arweave'
+import arweaveLib from './arweave'
 import { ArJWK, ChainType, Config, EverpayInfo, EverpayTxWithoutSig } from '../global'
 import { checkSignConfig } from '../utils/check'
 import { Signer } from '@ethersproject/abstract-signer'
@@ -30,9 +30,9 @@ const getDepositAddr = (info: EverpayInfo, accountChainType: ChainType): string 
 
 export const getEverpayTxDataField = async (config: Config, accountChainType: ChainType): Promise<string> => {
   if (accountChainType === ChainType.ethereum) {
-    return ethereumLib.getEverpayTxDataFieldAsync()
+    return await ethereumLib.getEverpayTxDataFieldAsync()
   } else if (accountChainType === ChainType.arweave) {
-    return arweaveLib.getEverpayTxDataFieldAsync(config.arJWK as ArJWK)
+    return await arweaveLib.getEverpayTxDataFieldAsync(config.arJWK as ArJWK)
   }
   throw new Error(ERRORS.INVALID_ACCOUNT_TYPE)
 }
