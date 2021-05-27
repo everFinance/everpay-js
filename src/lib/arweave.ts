@@ -2,7 +2,7 @@ import Arweave from 'arweave'
 // TODO: node
 import { bufferTob64Url } from 'arweave/web/lib/utils'
 import { isString } from 'lodash-es'
-import { ArJWK, Config } from '../global'
+import { ArJWK } from '../global'
 import { ArTransferResult, TransferAsyncParams } from './interface'
 
 const options = {
@@ -24,7 +24,7 @@ enum ERRORS {
   ACCESS_PUBLIC_KEY_FAILED = 'ACCESS_PUBLIC_KEY_FAILED'
 }
 
-export const checkArPermissions = async (permissions: string[] | string) => {
+export const checkArPermissions = async (permissions: string[] | string): Promise<void> => {
   let existingPermissions: string[] = []
   permissions = isString(permissions) ? [permissions] : permissions
 
@@ -35,34 +35,34 @@ export const checkArPermissions = async (permissions: string[] | string) => {
     throw new Error(ERRORS.PLEASE_INSTALL_ARCONNECT)
   }
 
-  if (!permissions.length) {
+  if (permissions.length === 0) {
     return
   }
 
   if (permissions.some(permission => {
     return !existingPermissions.includes(permission)
   })) {
-    await window.arweaveWallet.connect(permissions)
-  }  
+    await window.arweaveWallet.connect(permissions as any[])
+  }
 }
 
 const getEverpayTxDataFieldAsync = async (arJWK: ArJWK): Promise<string> => {
   let arOwner = ''
-    if (arJWK === 'use_wallet') {
-      try {
-        await checkArPermissions('ACCESS_PUBLIC_KEY')
-      } catch {
-        throw new Error(ERRORS.ACCESS_PUBLIC_KEY_PERMISSION_NEEDED)
-      }
-      try {
-        arOwner = await window.arweaveWallet.getActivePublicKey()
-      } catch {
-        throw new Error(ERRORS.ACCESS_PUBLIC_KEY_FAILED)
-      }
-    } else if (arJWK !== undefined) {
-      arOwner = arJWK.n
+  if (arJWK === 'use_wallet') {
+    try {
+      await checkArPermissions('ACCESS_PUBLIC_KEY')
+    } catch {
+      throw new Error(ERRORS.ACCESS_PUBLIC_KEY_PERMISSION_NEEDED)
     }
-    return JSON.stringify({ arOwner })
+    try {
+      arOwner = await window.arweaveWallet.getActivePublicKey()
+    } catch {
+      throw new Error(ERRORS.ACCESS_PUBLIC_KEY_FAILED)
+    }
+  } else if (arJWK !== undefined) {
+    arOwner = arJWK.n
+  }
+  return JSON.stringify({ arOwner })
 }
 
 const signMessageAsync = async (arJWK: ArJWK, personalMsgHash: Buffer): Promise<string> => {
