@@ -1,6 +1,6 @@
 import Arweave from 'arweave'
 import arweaveLib from '../src/lib/arweave'
-import { hashPersonalMessage } from 'ethereumjs-util'
+import hashPersonalMessage from '../src/lib/hashPersonalMessage'
 import { getEverpayTxMessage } from '../src/lib/sign'
 import { b64UrlToBuffer } from 'arweave/web/lib/utils'
 import { arWallet1 } from './constants/wallet'

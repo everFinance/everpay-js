@@ -1,5 +1,4 @@
 import { TransactionResponse } from '@ethersproject/abstract-provider'
-import { hashPersonalMessage } from 'ethereumjs-util'
 import { ArTransferResult, SignMessageAsyncResult, TransferAsyncParams } from './interface'
 import ethereumLib from './ethereum'
 import arweaveLib from './arweave'
@@ -8,6 +7,7 @@ import { checkSignConfig } from '../utils/check'
 import { Signer } from '@ethersproject/abstract-signer'
 import { ERRORS } from '../utils/errors'
 import { getAccountChainType } from '../utils/util'
+import hashPersonalMessage from './hashPersonalMessage'
 
 export const getChainId = (info: EverpayInfo, chainType: ChainType): string => {
   if (chainType === ChainType.ethereum) {
