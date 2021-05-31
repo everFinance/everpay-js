@@ -11,7 +11,7 @@ const everpay = new Everpay({
   debug: true,
   // etherjs connected signer
   // 可以不传递，如果不传递，只能使用 everpay 最基础的查询接口
-  connectedSigner: signer,
+  ethConnectedSigner: signer,
 })
 ```
 
@@ -45,7 +45,7 @@ await everpay.txs()
 await everpay.txsByAccount(account)
 ```
 ## 操作类接口
-**注意**：everpay 实例创建时，必须传递 connectedSigner 才可调用操作类接口
+**注意**：everpay 实例创建时，必须传递 ethConnectedSigner 才可调用操作类接口
 
 ### deposit
 ```ts

@@ -1,5 +1,10 @@
 import { ChainType } from '../global'
 
+export interface GetEverpayTransactionsParams {
+  account?: string
+  page: number
+}
+
 export interface BalanceItemFromServer {
   tag: string
   amount: string

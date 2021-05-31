@@ -1,5 +1,8 @@
+import { isAddress } from '@ethersproject/address'
+import { isString } from 'lodash-es'
 import BN from 'bignumber.js'
-import { Token } from '../global'
+import { ERRORS } from './errors'
+import { ChainType, Token } from '../global'
 
 BN.config({
   EXPONENTIAL_AT: 1000
@@ -45,4 +48,22 @@ export function stripHexPrefix (str: string): string {
 
 export const getTokenBySymbol = (symbol: string, tokenList?: Token[]): Token | undefined => {
   return tokenList?.find(t => t.symbol.toUpperCase() === symbol.toUpperCase())
+}
+
+const isEthereumAddress = isAddress
+
+const isArweaveAddress = (address: string): boolean => {
+  return isString(address) && address.length === 43 && address.search(/[a-z0-9A-Z_-]{43}/g) === 0
+}
+
+export const getAccountChainType = (from: string): ChainType => {
+  if (isEthereumAddress(from)) {
+    return ChainType.ethereum
+  }
+
+  if (isArweaveAddress(from)) {
+    return ChainType.arweave
+  }
+
+  throw new Error(ERRORS.INVALID_ACCOUNT_TYPE)
 }

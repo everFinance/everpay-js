@@ -1,7 +1,14 @@
 import axios, { AxiosRequestConfig, AxiosResponse } from 'axios'
 import { isObject, isString } from 'lodash-es'
-import { EverpayInfo, EverpayTransaction, EverpayTx } from '../global'
-import { GetEverpayBalanceParams, GetEverpayBalanceResult, GetEverpayBalancesParams, GetEverpayBalancesResult, PostEverpayTxResult } from './interface'
+import { EverpayInfo, EverpayTransaction, EverpayTx, TxsResult } from '../global'
+import {
+  GetEverpayTransactionsParams,
+  GetEverpayBalanceParams,
+  GetEverpayBalanceResult,
+  GetEverpayBalancesParams,
+  GetEverpayBalancesResult,
+  PostEverpayTxResult
+} from './interface'
 
 // `validateStatus` defines whether to resolve or reject the promise for a given
 // HTTP response status code. If `validateStatus` returns `true` (or is set to `null`
@@ -46,6 +53,20 @@ export const getEverpayInfo = async (apiHost: string): Promise<EverpayInfo> => {
     url,
     method: 'GET'
   })
+
+  // TODO: for test
+  // const tokenList = result.data.tokenList
+  // result.data.arChainID = '2'
+  // tokenList.push({
+  //   id: '0x0000000000000000000000000000000000000000',
+  //   symbol: 'AR',
+  //   decimals: 12,
+  //   totalSupply: '70000000000000000',
+  //   chainType: 'arweave',
+  //   burnFee: '20000000000000000',
+  //   transferFee: '0'
+  // })
+
   return result.data
 }
 
@@ -74,14 +95,25 @@ export const getEverpayBalances = async (apiHost: string, {
   return result.data
 }
 
-export const getEverpayTransactions = async (apiHost: string, account?: string): Promise<EverpayTransaction[]> => {
-  const url = account !== undefined ? `${apiHost}/txs/${account}` : `${apiHost}/txs/`
+export const getEverpayTransactions = async (apiHost: string, params: GetEverpayTransactionsParams): Promise<TxsResult> => {
+  const { account, page } = params
+  const url = account !== undefined ? `${apiHost}/txs/${account}?page=${page}` : `${apiHost}/txs?page=${page}`
   const result = await sendRequest({
     ...rConfig,
     url,
     method: 'GET'
   })
-  return result.data.txs
+  return result.data
+}
+
+export const getEverpayTransaction = async (apiHost: string, everHash: string): Promise<EverpayTransaction> => {
+  const url = `${apiHost}/tx/${everHash}`
+  const result = await sendRequest({
+    ...rConfig,
+    url,
+    method: 'GET'
+  })
+  return result.data.tx
 }
 
 export const postTx = async (apiHost: string, params: EverpayTx): Promise<PostEverpayTxResult> => {

@@ -9,7 +9,7 @@ test(`${ethWalletHasUSDT.address} withdraw USDT to ${ethWalletHasUSDT2.address}`
   const signer = new ethers.Wallet(ethWalletHasUSDT.privateKey, provider)
   const everpay = new Everpay({
     account: ethWalletHasUSDT.address,
-    connectedSigner: signer,
+    ethConnectedSigner: signer,
     debug: true
   })
 
@@ -28,7 +28,7 @@ test(`use another ${ethWalletHasUSDT.address} singer to sign ${ethWalletHasUSDT2
   const signer = new ethers.Wallet(ethWalletHasUSDT.privateKey, provider)
   const everpay = new Everpay({
     account: ethWalletHasUSDT2.address,
-    connectedSigner: signer,
+    ethConnectedSigner: signer,
     debug: true
   })
 
