@@ -115,7 +115,7 @@ class Everpay extends EverpayBase {
   }
 
   async getEverpayTxWithoutSig (type: 'transfer' | 'withdraw', params: TransferParams): Promise<EverpayTxWithoutSig> {
-    const { chainType, symbol, amount } = params
+    const { chainType, symbol, amount, data } = params
     const to = params?.to
     const token = getTokenBySymbol(symbol, this._cachedInfo?.tokenList)
     const from = this._config.account as string
@@ -132,7 +132,7 @@ class Everpay extends EverpayBase {
       tokenID: token?.id.toLowerCase() as string,
       chainType: chainType,
       chainID: getChainId(this._cachedInfo as EverpayInfo, chainType),
-      data: await getEverpayTxDataField(this._config, accountChainType),
+      data: await getEverpayTxDataField(this._config, accountChainType, data),
       version: everpayTxVersion
     }
     return everpayTxWithoutSig
