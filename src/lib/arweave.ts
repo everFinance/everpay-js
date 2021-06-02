@@ -46,7 +46,7 @@ export const checkArPermissions = async (permissions: string[] | string): Promis
   }
 }
 
-const getEverpayTxDataFieldAsync = async (arJWK: ArJWK): Promise<string> => {
+const getEverpayTxDataFieldAsync = async (arJWK: ArJWK, data?: Record<string, unknown>): Promise<string> => {
   let arOwner = ''
   if (arJWK === 'use_wallet') {
     try {
@@ -62,7 +62,7 @@ const getEverpayTxDataFieldAsync = async (arJWK: ArJWK): Promise<string> => {
   } else if (arJWK !== undefined) {
     arOwner = arJWK.n
   }
-  return JSON.stringify({ arOwner })
+  return JSON.stringify(data !== undefined ? { ...data, arOwner } : { arOwner })
 }
 
 const signMessageAsync = async (arJWK: ArJWK, personalMsgHash: Buffer): Promise<string> => {

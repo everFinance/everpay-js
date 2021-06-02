@@ -128,6 +128,7 @@ export interface WithdrawParams {
   chainType: ChainType
   symbol: string
   amount: string
+  data?: Record<string, unknown>
   to?: string
 }
 
