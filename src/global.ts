@@ -157,6 +157,7 @@ export abstract class EverpayBase {
   abstract txs (params: TxsParams): Promise<TxsResult>
   abstract txsByAccount (params: TxsByAccountParams): Promise<TxsResult>
   abstract txByHash (everHash: string): Promise<EverpayTransaction>
+  abstract mintedTxByChainTxHash (chainTxHash: string): Promise<EverpayTransaction>
   abstract getEverpayTxMessage (type: 'transfer' | 'withdraw', params: TransferParams): Promise<string>
   abstract deposit (params: DepositParams): Promise<TransactionResponse | ArTransferResult>
   abstract withdraw (params: WithdrawParams): Promise<PostEverpayTxResult>

@@ -98,6 +98,11 @@ class Everpay extends EverpayBase {
     return await getEverpayTransaction(this._apiHost, everHash)
   }
 
+  async mintedTxByChainTxHash (chainTxHash: string): Promise<EverpayTransaction> {
+    checkParams({ chainTxHash })
+    return await getEverpayTransaction(this._apiHost, chainTxHash)
+  }
+
   async deposit (params: DepositParams): Promise<TransactionResponse | ArTransferResult> {
     await this.info()
     const { amount, symbol } = params

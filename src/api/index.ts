@@ -116,6 +116,16 @@ export const getEverpayTransaction = async (apiHost: string, everHash: string): 
   return result.data.tx
 }
 
+export const getMintdEverpayTransactionByChainTxHash = async (apiHost: string, chainHash: string): Promise<EverpayTransaction> => {
+  const url = `${apiHost}/minted/${chainHash}`
+  const result = await sendRequest({
+    ...rConfig,
+    url,
+    method: 'GET'
+  })
+  return result.data.tx
+}
+
 export const postTx = async (apiHost: string, params: EverpayTx): Promise<PostEverpayTxResult> => {
   const url = `${apiHost}/tx`
   const result = await sendRequest({
