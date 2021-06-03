@@ -40,7 +40,7 @@ class Everpay extends EverpayBase {
     return this._cachedInfo
   }
 
-  async balance (params: BalanceParams): Promise<number> {
+  async balance (params: BalanceParams): Promise<string> {
     await this.info()
     const { symbol, account } = params
     const acc = account ?? this._config.account as string
@@ -53,7 +53,7 @@ class Everpay extends EverpayBase {
       account: acc
     }
     const everpayBalance = await getEverpayBalance(this._apiHost, mergedParams)
-    return toBN(utils.formatUnits(everpayBalance.balance.amount, everpayBalance.balance.decimals)).toNumber()
+    return toBN(utils.formatUnits(everpayBalance.balance.amount, everpayBalance.balance.decimals)).toString()
   }
 
   async balances (params?: BalancesParams): Promise<BalanceItem[]> {
