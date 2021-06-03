@@ -5,7 +5,7 @@ import {
   BalanceItem, TxsParams, TxsByAccountParams, TxsResult, EverpayTransaction
 } from './global'
 import { getChainId, getEverpayTxDataField, getEverpayTxMessage, signMessageAsync, transferAsync } from './lib/sign'
-import { getEverpayBalance, getEverpayBalances, getEverpayInfo, getEverpayTransaction, getEverpayTransactions, postTx } from './api'
+import { getEverpayBalance, getEverpayBalances, getEverpayInfo, getEverpayTransaction, getEverpayTransactions, getMintdEverpayTransactionByChainTxHash, postTx } from './api'
 import { everpayTxVersion, getEverpayHost } from './config'
 import { getTimestamp, getTokenBySymbol, toBN, getAccountChainType } from './utils/util'
 import { GetEverpayBalanceParams, GetEverpayBalancesParams } from './api/interface'
@@ -100,7 +100,7 @@ class Everpay extends EverpayBase {
 
   async mintedTxByChainTxHash (chainTxHash: string): Promise<EverpayTransaction> {
     checkParams({ chainTxHash })
-    return await getEverpayTransaction(this._apiHost, chainTxHash)
+    return await getMintdEverpayTransactionByChainTxHash(this._apiHost, chainTxHash)
   }
 
   async deposit (params: DepositParams): Promise<TransactionResponse | ArTransferResult> {
