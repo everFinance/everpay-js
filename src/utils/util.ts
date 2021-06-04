@@ -20,6 +20,22 @@ export const toBN = (x: number | string | BN): BN => {
   return new BN(x)
 }
 
+export const fromUnitToDecimalBN = (x: number | string | BN, decimals: number): BN => {
+  return toBN(x).times(toBN(10).pow(decimals))
+}
+
+export const fromUnitToDecimal = (x: number | string | BN, decimals: number): string => {
+  return fromUnitToDecimalBN(x, decimals).toString()
+}
+
+export const fromDecimalToUnitBN = (x: number | string | BN, decimals: number): BN => {
+  return toBN(x).dividedBy(toBN(10).pow(decimals))
+}
+
+export const fromDecimalToUnit = (x: number | string | BN, decimals: number): string => {
+  return fromDecimalToUnitBN(x, decimals).toString()
+}
+
 export const getTimestamp = (): number => Math.round(Date.now() / 1000)
 
 export const padLeft = (n: string, width: number, z?: string): string => {
