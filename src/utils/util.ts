@@ -83,3 +83,13 @@ export const getAccountChainType = (from: string): ChainType => {
 
   throw new Error(ERRORS.INVALID_ACCOUNT_TYPE)
 }
+
+export const getTokenAddrByChainType = (token: Token, chainType: ChainType): string => {
+  const chainTypes = token.chainType.split(',') as ChainType[]
+  const tokenAddrs = token.id.split(',')
+  const index = chainTypes.findIndex(c => c === chainType)
+  if (index === -1) {
+    throw new Error(ERRORS.TOKEN_NOT_FOUND)
+  }
+  return tokenAddrs[index]
+}

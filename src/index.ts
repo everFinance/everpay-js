@@ -2,7 +2,7 @@ import { TransactionResponse } from '@ethersproject/abstract-provider'
 import {
   ChainType, Config, EverpayInfo, EverpayBase, BalanceParams, BalancesParams, DepositParams,
   TransferOrWithdrawResult, TransferParams, WithdrawParams, EverpayTxWithoutSig, EverpayAction,
-  BalanceItem, TxsParams, TxsByAccountParams, TxsResult, EverpayTransaction
+  BalanceItem, TxsParams, TxsByAccountParams, TxsResult, EverpayTransaction, Token
 } from './global'
 import { getChainId, getEverpayTxDataField, getEverpayTxMessage, signMessageAsync, transferAsync } from './lib/sign'
 import { getEverpayBalance, getEverpayBalances, getEverpayInfo, getEverpayTransaction, getEverpayTransactions, getMintdEverpayTransactionByChainTxHash, postTx } from './api'
@@ -107,14 +107,14 @@ class Everpay extends EverpayBase {
   async deposit (params: DepositParams): Promise<TransactionResponse | ArTransferResult> {
     await this.info()
     const { amount, symbol } = params
-    const token = getTokenBySymbol(symbol, this._cachedInfo?.tokenList)
+    const token = getTokenBySymbol(symbol, this._cachedInfo?.tokenList) as Token
     const value = utils.parseUnits(toBN(amount).toString(), token?.decimals)
     const from = this._config.account
     checkParams({ account: from, symbol, token, amount })
 
     return await transferAsync(this._config, this._cachedInfo as EverpayInfo, {
       symbol,
-      tokenID: token?.id ?? '',
+      token,
       from: from ?? '',
       value
     })
@@ -130,7 +130,7 @@ class Everpay extends EverpayBase {
 
     // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
     if (type === 'withdraw' && token?.chainType !== chainType && token?.chainType.includes(chainType)) {
-      data = data !== undefined ? { ...data, withdrawChainType: chainType } : { withdrawChainType: chainType }
+      data = data !== undefined ? { ...data, burnChainType: chainType } : { burnChainType: chainType }
     }
 
     const everpayTxWithoutSig: EverpayTxWithoutSig = {
