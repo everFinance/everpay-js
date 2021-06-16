@@ -13,7 +13,7 @@ test(`check ${arWallet1.address} deposit ar`, async () => {
   return await everpay.deposit({
     chainType: ChainType.arweave,
     symbol: 'ar',
-    amount: 0.01
+    amount: '0.01'
   }).then((arTx) => {
     console.log('arTx', arTx as ArTransferResult)
     expect((arTx as ArTransferResult).status).toBeTruthy()
