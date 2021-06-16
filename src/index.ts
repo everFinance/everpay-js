@@ -12,6 +12,7 @@ import { GetEverpayBalanceParams, GetEverpayBalancesParams } from './api/interfa
 import { utils } from 'ethers'
 import { checkParams } from './utils/check'
 import { ArTransferResult } from './lib/interface'
+import { ERRORS } from './utils/errors'
 
 class Everpay extends EverpayBase {
   constructor (config?: Config) {
@@ -189,7 +190,11 @@ class Everpay extends EverpayBase {
     await this.info()
     const token = getTokenBySymbol(params.symbol, this._cachedInfo?.tokenList)
     checkParams({ token })
-    const amount = toBN(params.amount).minus(toBN(utils.formatUnits(token?.burnFee ?? '', token?.decimals))).toString()
+    const amountBN = toBN(params.amount).minus(toBN(utils.formatUnits(token?.burnFee ?? '', token?.decimals)))
+    if (amountBN.lte(0)) {
+      throw new Error(ERRORS.WITHDRAW_AMOUNT_LESS_THAN_FEE)
+    }
+    const amount = amountBN.toString()
     const to = params.to ?? this._config.account as string
     return await this.sendEverpayTx('withdraw', {
       ...params,

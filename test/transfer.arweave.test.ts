@@ -12,7 +12,7 @@ test(`check ${arWallet1.address} transfer ar`, async () => {
   return await everpay.transfer({
     chainType: ChainType.arweave,
     symbol: 'ar',
-    amount: 0.01,
+    amount: '0.01',
     to: ethWalletHasUSDT.address
   }).then((transferResult) => {
     console.log('transfer ar result', transferResult)
