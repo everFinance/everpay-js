@@ -130,7 +130,7 @@ class Everpay extends EverpayBase {
 
     // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
     if (type === 'withdraw' && token?.chainType !== chainType && token?.chainType.includes(chainType)) {
-      data = data !== undefined ? { ...data, burnChainType: chainType } : { burnChainType: chainType }
+      data = data !== undefined ? { ...data, targetChainType: chainType } : { targetChainType: chainType }
     }
 
     const everpayTxWithoutSig: EverpayTxWithoutSig = {
