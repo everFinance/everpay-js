@@ -9,15 +9,6 @@ import { ERRORS } from '../utils/errors'
 import { getAccountChainType } from '../utils/util'
 import hashPersonalMessage from './hashPersonalMessage'
 
-export const getChainId = (info: EverpayInfo, chainType: ChainType): string => {
-  if (chainType === ChainType.ethereum) {
-    return info?.ethChainID.toString() ?? ''
-  } else if (chainType === ChainType.arweave) {
-    return info?.arChainID.toString() ?? ''
-  }
-  throw new Error(ERRORS.INVALID_ACCOUNT_TYPE)
-}
-
 const getDepositAddr = (info: EverpayInfo, accountChainType: ChainType): string => {
   if (accountChainType === ChainType.ethereum) {
     return info?.ethLocker.toLowerCase()

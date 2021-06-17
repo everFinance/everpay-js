@@ -4,7 +4,7 @@ import {
   TransferOrWithdrawResult, TransferParams, WithdrawParams, EverpayTxWithoutSig, EverpayAction,
   BalanceItem, TxsParams, TxsByAccountParams, TxsResult, EverpayTransaction, Token
 } from './global'
-import { getChainId, getEverpayTxDataField, getEverpayTxMessage, signMessageAsync, transferAsync } from './lib/sign'
+import { getEverpayTxDataField, getEverpayTxMessage, signMessageAsync, transferAsync } from './lib/sign'
 import { getEverpayBalance, getEverpayBalances, getEverpayInfo, getEverpayTransaction, getEverpayTransactions, getMintdEverpayTransactionByChainTxHash, postTx } from './api'
 import { everpayTxVersion, getEverpayHost } from './config'
 import { getTimestamp, getTokenBySymbol, toBN, getAccountChainType } from './utils/util'
@@ -144,7 +144,7 @@ class Everpay extends EverpayBase {
       nonce: Date.now().toString(),
       tokenID: token?.id.toLowerCase() as string,
       chainType: token?.chainType ?? chainType,
-      chainID: getChainId(this._cachedInfo as EverpayInfo, chainType),
+      chainID: token?.chainID as string,
       data: await getEverpayTxDataField(this._config, accountChainType, data),
       version: everpayTxVersion
     }

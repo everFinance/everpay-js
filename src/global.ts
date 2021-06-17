@@ -25,7 +25,8 @@ export interface Token {
   totalSupply: string
   burnFee: string
   transferFee: string
-  chainType: ChainType
+  chainID: string
+  chainType: ChainType | string
 }
 
 export interface EverpayInfo {
@@ -33,7 +34,6 @@ export interface EverpayInfo {
   arLocker: string
   owner: string
   ethChainID: string
-  arChainID: string
   feeRecipient: string
   tokenList: Token[]
 }
@@ -53,7 +53,7 @@ export interface EverpayTxWithoutSig {
   feeRecipient: string
   nonce: string
   tokenID: string
-  chainType: ChainType
+  chainType: ChainType | string
   chainID: string
   data: string
   version: string
