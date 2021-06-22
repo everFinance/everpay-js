@@ -54,19 +54,6 @@ export const getEverpayInfo = async (apiHost: string): Promise<EverpayInfo> => {
     method: 'GET'
   })
 
-  // TODO: for test
-  // const tokenList = result.data.tokenList
-  // result.data.arChainID = '2'
-  // tokenList.push({
-  //   id: '0x0000000000000000000000000000000000000000',
-  //   symbol: 'AR',
-  //   decimals: 12,
-  //   totalSupply: '70000000000000000',
-  //   chainType: 'arweave',
-  //   burnFee: '20000000000000000',
-  //   transferFee: '0'
-  // })
-
   return result.data
 }
 
