@@ -1,8 +1,7 @@
-import { TransactionResponse } from '@ethersproject/abstract-provider'
-import { ArTransferResult, SignMessageAsyncResult, TransferAsyncParams } from './interface'
+import { SignMessageAsyncResult, TransferAsyncParams } from './interface'
 import ethereumLib from './ethereum'
 import arweaveLib from './arweave'
-import { ArJWK, ChainType, Config, EverpayInfo, EverpayTxWithoutSig } from '../global'
+import { ArJWK, ChainType, Config, EverpayInfo, EverpayTxWithoutSig, EthereumTransaction, ArweaveTransaction } from '../global'
 import { checkSignConfig } from '../utils/check'
 import { Signer } from '@ethersproject/abstract-signer'
 import { ERRORS } from '../utils/errors'
@@ -11,9 +10,10 @@ import hashPersonalMessage from './hashPersonalMessage'
 
 const getDepositAddr = (info: EverpayInfo, accountChainType: ChainType): string => {
   if (accountChainType === ChainType.ethereum) {
-    return info?.ethLocker.toLowerCase()
+    return info?.ethLocker
   } else if (accountChainType === ChainType.arweave) {
-    return info?.arLocker.toLowerCase()
+    // AR 大小写敏感
+    return info?.arLocker
   }
   throw new Error(ERRORS.INVALID_ACCOUNT_TYPE)
 }
@@ -56,7 +56,6 @@ export const signMessageAsync = async (config: Config, everpayTxWithoutSig: Ever
   const personalMsgHash = hashPersonalMessage(Buffer.from(message))
   const everHash = `0x${personalMsgHash.toString('hex')}`
   let sig = ''
-  console.log('everHash', everHash)
   checkSignConfig(accountChainType, config)
 
   if (accountChainType === ChainType.ethereum) {
@@ -69,7 +68,11 @@ export const signMessageAsync = async (config: Config, everpayTxWithoutSig: Ever
   return { everHash, sig }
 }
 
-export const transferAsync = async (config: Config, info: EverpayInfo, params: TransferAsyncParams): Promise<TransactionResponse | ArTransferResult> => {
+export const transferAsync = async (
+  config: Config,
+  info: EverpayInfo,
+  params: TransferAsyncParams
+): Promise<EthereumTransaction | ArweaveTransaction> => {
   const accountChainType = getAccountChainType(params.from)
   checkSignConfig(accountChainType, config)
 

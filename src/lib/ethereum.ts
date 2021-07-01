@@ -1,9 +1,8 @@
 import { Contract, Signer } from 'ethers'
-import { TransactionResponse } from '@ethersproject/abstract-provider'
 import { TransferAsyncParams } from './interface'
 import erc20Abi from '../constants/abi/erc20'
 import { getTokenAddrByChainType } from '../utils/util'
-import { ChainType } from '../global'
+import { ChainType, EthereumTransaction } from '../global'
 
 const getEverpayTxDataFieldAsync = async (data?: Record<string, unknown>): Promise<string> => {
   return data !== undefined ? JSON.stringify(data) : ''
@@ -19,20 +18,20 @@ const transferAsync = async (ethConnectedSigner: Signer, {
   from,
   to,
   value
-}: TransferAsyncParams): Promise<TransactionResponse> => {
-  let transactionResponse: TransactionResponse
+}: TransferAsyncParams): Promise<EthereumTransaction> => {
+  let transactionResponse: EthereumTransaction
 
   // TODO: check balance
   if (symbol.toLowerCase() === 'eth') {
     const transactionRequest = {
       from: from.toLowerCase(),
-      to,
+      to: to?.toLowerCase(),
       value
     }
     transactionResponse = await ethConnectedSigner.sendTransaction(transactionRequest)
   } else {
     const tokenID = getTokenAddrByChainType(token, ChainType.ethereum)
-    const erc20RW = new Contract(tokenID, erc20Abi, ethConnectedSigner)
+    const erc20RW = new Contract(tokenID.toLowerCase(), erc20Abi, ethConnectedSigner)
     transactionResponse = await erc20RW.transfer(to, value)
   }
   return transactionResponse

@@ -16,7 +16,7 @@ test(`check ${ethWalletHasUSDT.address} transfer usdt to ${ethWalletHasUSDT2.add
   return await everpay.transfer({
     chainType: ChainType.ethereum,
     symbol: 'usdt',
-    amount: 9,
+    amount: '9',
     to: ethWalletHasUSDT2.address
   }).then(transferResult => {
     console.log('transfer usdt result', transferResult)

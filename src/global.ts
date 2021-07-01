@@ -1,8 +1,8 @@
 import { Signer } from 'ethers'
-import { TransactionResponse } from '@ethersproject/abstract-provider'
 import { JWKInterface } from 'arweave/node/lib/wallet'
 import { PostEverpayTxResult } from './api/interface'
-import { ArTransferResult } from './lib/interface'
+import { TransactionResponse as EthereumTransaction } from '@ethersproject/abstract-provider'
+import { TransactionInterface as ArweaveTransaction } from 'arweave/node/lib/transaction'
 
 export enum ChainType {
   ethereum = 'ethereum',
@@ -10,6 +10,8 @@ export enum ChainType {
 }
 
 export type ArJWK = JWKInterface | 'use_wallet'
+
+export { EthereumTransaction, ArweaveTransaction }
 
 export interface Config {
   debug?: boolean
@@ -92,6 +94,7 @@ export interface EverpayTransaction {
   everHash: string
   status: EverpayTransactionStatus
   timestamp: number
+  targetChainTxHash?: string
 }
 
 export interface TxsResult {
@@ -159,7 +162,7 @@ export abstract class EverpayBase {
   abstract txByHash (everHash: string): Promise<EverpayTransaction>
   abstract mintedTxByChainTxHash (chainTxHash: string): Promise<EverpayTransaction>
   abstract getEverpayTxMessage (type: 'transfer' | 'withdraw', params: TransferParams): Promise<string>
-  abstract deposit (params: DepositParams): Promise<TransactionResponse | ArTransferResult>
+  abstract deposit (params: DepositParams): Promise<EthereumTransaction | ArweaveTransaction>
   abstract withdraw (params: WithdrawParams): Promise<PostEverpayTxResult>
   abstract transfer (params: TransferParams): Promise<PostEverpayTxResult>
 }

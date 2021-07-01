@@ -63,7 +63,7 @@ export const getEverpayBalance = async (apiHost: string, {
   id,
   account
 }: GetEverpayBalanceParams): Promise<GetEverpayBalanceResult> => {
-  const url = `${apiHost}/balanceOf/${chainType}-${symbol}-${id}/${account}`
+  const url = `${apiHost}/balance/${chainType}-${symbol}-${id}/${account}`
   const result = await sendRequest({
     url,
     method: 'GET'
@@ -103,8 +103,8 @@ export const getEverpayTransaction = async (apiHost: string, everHash: string): 
   return result.data.tx
 }
 
-export const getMintdEverpayTransactionByChainTxHash = async (apiHost: string, chainHash: string): Promise<EverpayTransaction> => {
-  const url = `${apiHost}/minted/${chainHash}`
+export const getMintdEverpayTransactionByChainTxHash = async (apiHost: string, chainTxHash: string): Promise<EverpayTransaction> => {
+  const url = `${apiHost}/minted/${chainTxHash}`
   const result = await sendRequest({
     ...rConfig,
     url,

@@ -9,12 +9,6 @@ export interface TransferAsyncParams {
   value: BigNumber
 }
 
-export interface ArTransferResult {
-  status: number
-  statusText: string
-  data: any
-}
-
 export interface SignMessageAsyncResult {
   sig: string
   everHash: string
