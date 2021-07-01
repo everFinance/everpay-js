@@ -15,10 +15,17 @@ const everpayForEthereum = new Everpay({
   ethConnectedSigner: signer,
 })
 
-// arweave
+// arweave on node
 const everpayForArweave = new Everpay({
   account: arWallet.address,
   arJWK: arWallet.jwk,
+  debug: true
+})
+
+// arweave on web(arConnect)
+const everpayForArweave = new Everpay({
+  account: arWallet.address,
+  arJWK: 'use_wallet',
   debug: true
 })
 ```

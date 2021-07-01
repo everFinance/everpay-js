@@ -42,7 +42,7 @@ export const checkArPermissions = async (permissions: string[] | string): Promis
   if (permissions.some(permission => {
     return !existingPermissions.includes(permission)
   })) {
-    await window.arweaveWallet.connect(permissions as any[])
+    await window.arweaveWallet.connect(permissions as never[])
   }
 }
 
