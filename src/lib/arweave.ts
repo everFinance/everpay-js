@@ -1,6 +1,4 @@
 import Arweave from 'arweave'
-// TODO: node
-import { bufferTob64Url } from 'arweave/web/lib/utils'
 import { isString } from 'lodash-es'
 import { ArJWK, ArweaveTransaction } from '../global'
 import { TransferAsyncParams } from './interface'
@@ -87,7 +85,7 @@ const signMessageAsync = async (arJWK: ArJWK, personalMsgHash: Buffer): Promise<
         algorithm
       )
       const buf = new Uint8Array(Object.values(signature))
-      return bufferTob64Url(buf)
+      return Arweave.utils.bufferTob64Url(buf)
     } catch {
       throw new Error(ERRORS.SIGNATURE_FAILED)
     }
@@ -95,7 +93,7 @@ const signMessageAsync = async (arJWK: ArJWK, personalMsgHash: Buffer): Promise<
   // node
   } else {
     const buf = await arweave.crypto.sign(arJWK, personalMsgHash)
-    return bufferTob64Url(buf)
+    return Arweave.utils.bufferTob64Url(buf)
   }
 }
 
