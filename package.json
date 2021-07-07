@@ -20,7 +20,7 @@
   "scripts": {
     "lint": "eslint src test",
     "test": "jest",
-    "build": "tsc -p tsconfig.json && tsc -p tsconfig.cjs.json"
+    "build": "rm -rf ./lib && tsc -p tsconfig.json && tsc -p tsconfig.cjs.json"
   },
   "sideEffects": false,
   "devDependencies": {
