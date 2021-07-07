@@ -1,4 +1,4 @@
-import { ChainType, Config } from '../global'
+import { ChainType, Config } from '../types/global'
 import { ERRORS } from './errors'
 
 interface CaseObject {

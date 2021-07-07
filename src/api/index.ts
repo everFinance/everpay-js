@@ -1,6 +1,6 @@
 import axios, { AxiosRequestConfig, AxiosResponse } from 'axios'
 import { isObject, isString } from 'lodash-es'
-import { EverpayInfo, EverpayTransaction, EverpayTx, TxsResult } from '../global'
+import { EverpayInfo, EverpayTransaction, EverpayTx, TxsResult } from '../types/global'
 import {
   GetEverpayTransactionsParams,
   GetEverpayBalanceParams,
@@ -8,7 +8,7 @@ import {
   GetEverpayBalancesParams,
   GetEverpayBalancesResult,
   PostEverpayTxResult
-} from './interface'
+} from '../types/api'
 
 // `validateStatus` defines whether to resolve or reject the promise for a given
 // HTTP response status code. If `validateStatus` returns `true` (or is set to `null`

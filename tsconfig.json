@@ -5,9 +5,9 @@
     "allowJs": true,
     "jsx": "preserve",
     "declarationMap": true,
-    "outDir": "./dist",
+    "outDir": "./lib/esm",
     "declaration": true,
-    "declarationDir": "./dist",
+    "declarationDir": "./lib/esm",
     "strict": true,
     "moduleResolution": "node",
     "rootDirs": [

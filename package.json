@@ -1,7 +1,8 @@
 {
   "name": "everpay",
   "version": "0.0.1",
-  "main": "dist/index.js",
+  "main": "lib/cjs/index.js",
+  "module": "lib/esm/index.js",
   "repository": "git@github.com:everFinance/everpay-js.git",
   "keywords": [
     "everPay",
@@ -19,7 +20,7 @@
   "scripts": {
     "lint": "eslint src test",
     "test": "jest",
-    "build": "tsc"
+    "build": "tsc -p tsconfig.json && tsc -p tsconfig.cjs.json"
   },
   "sideEffects": false,
   "devDependencies": {

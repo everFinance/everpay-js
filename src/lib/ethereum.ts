@@ -2,7 +2,7 @@ import { Contract, Signer } from 'ethers'
 import { TransferAsyncParams } from './interface'
 import erc20Abi from '../constants/abi/erc20'
 import { getTokenAddrByChainType } from '../utils/util'
-import { ChainType, EthereumTransaction } from '../global'
+import { ChainType, EthereumTransaction } from '../types/global'
 
 const getEverpayTxDataFieldAsync = async (data?: Record<string, unknown>): Promise<string> => {
   return data !== undefined ? JSON.stringify(data) : ''

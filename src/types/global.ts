@@ -1,6 +1,6 @@
 import { Signer } from 'ethers'
 import { JWKInterface } from 'arweave/node/lib/wallet'
-import { PostEverpayTxResult } from './api/interface'
+import { PostEverpayTxResult } from './api'
 import { TransactionResponse as EthereumTransaction } from '@ethersproject/abstract-provider'
 import { TransactionInterface as ArweaveTransaction } from 'arweave/node/lib/transaction'
 

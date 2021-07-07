@@ -1,6 +1,6 @@
 import Arweave from 'arweave'
 import { isString } from 'lodash-es'
-import { ArJWK, ArweaveTransaction } from '../global'
+import { ArJWK, ArweaveTransaction } from '../types/global'
 import { TransferAsyncParams } from './interface'
 
 const options = {

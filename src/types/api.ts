@@ -1,4 +1,4 @@
-import { ChainType } from '../global'
+import { ChainType } from './global'
 
 export interface GetEverpayTransactionsParams {
   account?: string
