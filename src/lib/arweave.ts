@@ -53,7 +53,8 @@ const getEverpayTxDataFieldAsync = async (arJWK: ArJWK, data?: Record<string, un
       throw new Error(ERRORS.ACCESS_PUBLIC_KEY_PERMISSION_NEEDED)
     }
     try {
-      arOwner = await window.arweaveWallet.getActivePublicKey()
+      // TODO: wait arweave-js update arconnect.d.ts
+      arOwner = await (window.arweaveWallet as any).getActivePublicKey()
     } catch {
       throw new Error(ERRORS.ACCESS_PUBLIC_KEY_FAILED)
     }
@@ -79,8 +80,8 @@ const signMessageAsync = async (arJWK: ArJWK, personalMsgHash: Buffer): Promise<
     }
 
     try {
-      // eslint-disable-next-line
-      const signature = await window.arweaveWallet.signature(
+      // TODO: wait arweave-js update arconnect.d.ts
+      const signature = await (window.arweaveWallet as any).signature(
         personalMsgHash,
         algorithm
       )
