@@ -3,13 +3,25 @@
   "version": "0.0.1",
   "main": "dist/index.js",
   "repository": "git@github.com:everFinance/everpay-js.git",
-  "author": "Xaber <xaber.twt@gmail.com>",
+  "keywords": [
+    "everPay",
+    "ethereum",
+    "arweave",
+    "js",
+    "blockchain",
+    "crypto"
+  ],
+  "author": "everFinance Team <dev@ever.finance>",
+  "contributors": [
+    "Xaber <xaber@ever.finance>"
+  ],
   "license": "MIT",
   "scripts": {
     "lint": "eslint src test",
     "test": "jest",
     "build": "tsc"
   },
+  "sideEffects": false,
   "devDependencies": {
     "@babel/core": "^7.13.16",
     "@babel/plugin-transform-modules-commonjs": "^7.13.8",
