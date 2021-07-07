@@ -1,11 +1,11 @@
 import { getEverpayTxDataField, getEverpayTxMessage, signMessageAsync, transferAsync } from './lib/sign'
 import { getEverpayBalance, getEverpayBalances, getEverpayInfo, getEverpayTransaction, getEverpayTransactions, getMintdEverpayTransactionByChainTxHash, postTx } from './api'
 import { everpayTxVersion, getEverpayHost } from './config'
-import { getTimestamp, getTokenBySymbol, toBN, getAccountChainType } from './utils/util'
+import { getTimestamp, getTokenBySymbol, toBN, getAccountChainType, fromDecimalToUnit, fromUnitToDecimal, fromDecimalToUnitBN } from './utils/util'
 import { GetEverpayBalanceParams, GetEverpayBalancesParams } from './types/api'
-import { utils } from 'ethers'
 import { checkParams } from './utils/check'
 import { ERRORS } from './utils/errors'
+import { utils } from 'ethers'
 import {
   ChainType, Config, EverpayInfo, EverpayBase, BalanceParams, BalancesParams, DepositParams,
   TransferOrWithdrawResult, TransferParams, WithdrawParams, EverpayTxWithoutSig, EverpayAction,
@@ -53,7 +53,7 @@ class Everpay extends EverpayBase {
       account: acc
     }
     const everpayBalance = await getEverpayBalance(this._apiHost, mergedParams)
-    return toBN(utils.formatUnits(everpayBalance.balance.amount, everpayBalance.balance.decimals)).toString()
+    return fromDecimalToUnit(everpayBalance.balance.amount, everpayBalance.balance.decimals)
   }
 
   async balances (params?: BalancesParams): Promise<BalanceItem[]> {
@@ -73,7 +73,7 @@ class Everpay extends EverpayBase {
         chainType,
         symbol: symbol.toUpperCase(),
         address,
-        balance: toBN(utils.formatUnits(item.amount, item.decimals)).toString()
+        balance: fromDecimalToUnit(item.amount, item.decimals)
       }
     })
     return balances
@@ -137,7 +137,7 @@ class Everpay extends EverpayBase {
       action: type === 'transfer' ? EverpayAction.transfer : EverpayAction.withdraw,
       from,
       to,
-      amount: utils.parseUnits(toBN(amount).toString(), token?.decimals).toString(),
+      amount: fromUnitToDecimal(amount, token?.decimals ?? 0),
       fee: type === 'withdraw' ? (token?.burnFee ?? '0') : '0',
       feeRecipient: this._cachedInfo?.feeRecipient ?? '',
       nonce: Date.now().toString(),
@@ -186,7 +186,7 @@ class Everpay extends EverpayBase {
     await this.info()
     const token = getTokenBySymbol(params.symbol, this._cachedInfo?.tokenList)
     checkParams({ token })
-    const amountBN = toBN(params.amount).minus(toBN(utils.formatUnits(token?.burnFee ?? '', token?.decimals)))
+    const amountBN = toBN(params.amount).minus(fromDecimalToUnitBN(token?.burnFee ?? '', token?.decimals ?? 0))
     if (amountBN.lte(0)) {
       throw new Error(ERRORS.WITHDRAW_AMOUNT_LESS_THAN_FEE)
     }
