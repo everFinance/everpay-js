@@ -1,8 +1,3 @@
-import {
-  ChainType, Config, EverpayInfo, EverpayBase, BalanceParams, BalancesParams, DepositParams,
-  TransferOrWithdrawResult, TransferParams, WithdrawParams, EverpayTxWithoutSig, EverpayAction,
-  BalanceItem, TxsParams, TxsByAccountParams, TxsResult, EverpayTransaction, Token, EthereumTransaction, ArweaveTransaction
-} from './types'
 import { getEverpayTxDataField, getEverpayTxMessage, signMessageAsync, transferAsync } from './lib/sign'
 import { getEverpayBalance, getEverpayBalances, getEverpayInfo, getEverpayTransaction, getEverpayTransactions, getMintdEverpayTransactionByChainTxHash, postTx } from './api'
 import { everpayTxVersion, getEverpayHost } from './config'
@@ -11,7 +6,13 @@ import { GetEverpayBalanceParams, GetEverpayBalancesParams } from './types/api'
 import { utils } from 'ethers'
 import { checkParams } from './utils/check'
 import { ERRORS } from './utils/errors'
+import {
+  ChainType, Config, EverpayInfo, EverpayBase, BalanceParams, BalancesParams, DepositParams,
+  TransferOrWithdrawResult, TransferParams, WithdrawParams, EverpayTxWithoutSig, EverpayAction,
+  BalanceItem, TxsParams, TxsByAccountParams, TxsResult, EverpayTransaction, Token, EthereumTransaction, ArweaveTransaction
+} from './types'
 
+export * from './types'
 class Everpay extends EverpayBase {
   constructor (config?: Config) {
     super()

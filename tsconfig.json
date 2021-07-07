@@ -7,7 +7,7 @@
     "declarationMap": true,
     "outDir": "./lib/esm",
     "declaration": true,
-    "declarationDir": "./lib/esm",
+    "declarationDir": "./lib",
     "strict": true,
     "moduleResolution": "node",
     "rootDirs": [

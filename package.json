@@ -3,6 +3,7 @@
   "version": "0.0.1",
   "main": "lib/cjs/index.js",
   "module": "lib/esm/index.js",
+  "types": "lib",
   "repository": "git@github.com:everFinance/everpay-js.git",
   "keywords": [
     "everPay",
