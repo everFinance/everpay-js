@@ -1,6 +1,6 @@
 import Everpay from '../src/index'
 import { arWallet1, ethWalletHasUSDT } from './constants/wallet'
-import { ChainType } from '../src/types/global'
+import { ChainType } from '../src/types'
 
 test(`${arWallet1.address} withdraw ar to ${arWallet1.address}`, async () => {
   const everpay = new Everpay({

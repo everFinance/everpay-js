@@ -1,5 +1,5 @@
 import { BigNumber } from '@ethersproject/bignumber'
-import { Token } from '../types/global'
+import { Token } from '../types'
 
 export interface TransferAsyncParams {
   symbol: string

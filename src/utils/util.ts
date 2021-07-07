@@ -2,7 +2,7 @@ import { isAddress } from '@ethersproject/address'
 import { isString } from 'lodash-es'
 import BN from 'bignumber.js'
 import { ERRORS } from './errors'
-import { ChainType, Token } from '../types/global'
+import { ChainType, Token } from '../types'
 
 BN.config({
   EXPONENTIAL_AT: 1000

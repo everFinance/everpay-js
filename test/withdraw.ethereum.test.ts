@@ -1,7 +1,7 @@
 import Everpay from '../src/index'
 import { ethWalletHasUSDT, ethWalletHasUSDT2 } from './constants/wallet'
 import { ethers } from 'ethers'
-import { ChainType } from '../src/types/global'
+import { ChainType } from '../src/types'
 
 const provider = new ethers.providers.InfuraProvider('kovan')
 

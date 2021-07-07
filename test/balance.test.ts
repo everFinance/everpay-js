@@ -1,5 +1,5 @@
 import { ethWalletHasUSDT, ethWalletHasUSDT2 } from './constants/wallet'
-import { ChainType } from '../src/types/global'
+import { ChainType } from '../src/types'
 import Everpay from '../src/index'
 import { ERRORS } from '../src/utils/errors'
 

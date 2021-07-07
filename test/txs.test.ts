@@ -1,5 +1,5 @@
 // import { isString } from 'lodash'
-// import { EverpayAction } from '../src/types/global'
+// import { EverpayAction } from '../src/types'
 import Everpay from '../src/index'
 
 const everpay = new Everpay({
