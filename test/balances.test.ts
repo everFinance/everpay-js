@@ -15,6 +15,7 @@ describe('test balance', () => {
   test(`${ethWalletHasUSDT.address} eth balance is greater than 0`, async () => {
     return await everpay1.balances({
     }).then(balances => {
+      console.log('balances', balances)
       expect(balances.length).toBeGreaterThan(0)
       expect(+balances.find(i => i.symbol === 'ETH').balance).toBeGreaterThan(0)
     })

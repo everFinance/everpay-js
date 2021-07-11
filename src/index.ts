@@ -119,17 +119,21 @@ class Everpay extends EverpayBase {
     })
   }
 
-  async getEverpayTxWithoutSig (type: 'transfer' | 'withdraw', params: TransferParams): Promise<EverpayTxWithoutSig> {
-    const { chainType, symbol, amount } = params
-    const to = params?.to
+  async getEverpayTxWithoutSig (type: 'transfer' | 'withdraw', params: TransferParams | WithdrawParams): Promise<EverpayTxWithoutSig> {
+    const { symbol, amount } = params
+    const to = params?.to as string
     const token = getTokenBySymbol(symbol, this._cachedInfo?.tokenList)
     const from = this._config.account as string
     const accountChainType = getAccountChainType(from)
     let data = params.data
 
     // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
-    if (type === 'withdraw' && token?.chainType !== chainType && token?.chainType.includes(chainType)) {
-      data = data !== undefined ? { ...data, targetChainType: chainType } : { targetChainType: chainType }
+    if (type === 'withdraw') {
+      const chainType = (params as WithdrawParams).chainType
+      const tokenChainType = token?.chainType as string
+      if (tokenChainType !== chainType && tokenChainType.includes(chainType)) {
+        data = data !== undefined ? { ...data, targetChainType: chainType } : { targetChainType: chainType }
+      }
     }
 
     const everpayTxWithoutSig: EverpayTxWithoutSig = {
@@ -142,7 +146,7 @@ class Everpay extends EverpayBase {
       feeRecipient: this._cachedInfo?.feeRecipient ?? '',
       nonce: Date.now().toString(),
       tokenID: token?.id as string,
-      chainType: token?.chainType ?? chainType,
+      chainType: token?.chainType as string,
       chainID: token?.chainID as string,
       data: await getEverpayTxDataField(this._config, accountChainType, data),
       version: everpayTxVersion
