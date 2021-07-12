@@ -76,7 +76,7 @@ const signMessageAsync = async (arJWK: ArJWK, personalMsgHash: Buffer): Promise<
 
     const algorithm = {
       name: 'RSA-PSS',
-      saltLength: 0
+      saltLength: 32
     }
 
     try {
