@@ -1,29 +1,19 @@
-import { TransactionResponse } from '@ethersproject/abstract-provider'
-import { ArTransferResult, SignMessageAsyncResult, TransferAsyncParams } from './interface'
+import { SignMessageAsyncResult, TransferAsyncParams } from './interface'
 import ethereumLib from './ethereum'
 import arweaveLib from './arweave'
-import { ArJWK, ChainType, Config, EverpayInfo, EverpayTxWithoutSig } from '../global'
+import { ArJWK, ChainType, Config, EverpayInfo, EverpayTxWithoutSig, EthereumTransaction, ArweaveTransaction } from '../types'
 import { checkSignConfig } from '../utils/check'
 import { Signer } from '@ethersproject/abstract-signer'
 import { ERRORS } from '../utils/errors'
 import { getAccountChainType } from '../utils/util'
 import hashPersonalMessage from './hashPersonalMessage'
 
-export const getChainId = (info: EverpayInfo, chainType: ChainType): string => {
-  if (chainType === ChainType.ethereum) {
-    return info?.ethChainID.toString() ?? ''
-  } else if (chainType === ChainType.arweave) {
-    return info?.arChainID.toString() ?? ''
-  }
-  throw new Error(ERRORS.INVALID_ACCOUNT_TYPE)
-}
-
 const getDepositAddr = (info: EverpayInfo, accountChainType: ChainType): string => {
   if (accountChainType === ChainType.ethereum) {
-    return info?.ethLocker.toLowerCase()
+    return info?.ethLocker
   } else if (accountChainType === ChainType.arweave) {
-    // TOD: for test
-    return '3tot2o_PcueolCwU0cVCDpBIuPC2c5F5dB0vI9zLmrM'
+    // AR 大小写敏感
+    return info?.arLocker
   }
   throw new Error(ERRORS.INVALID_ACCOUNT_TYPE)
 }
@@ -66,7 +56,6 @@ export const signMessageAsync = async (config: Config, everpayTxWithoutSig: Ever
   const personalMsgHash = hashPersonalMessage(Buffer.from(message))
   const everHash = `0x${personalMsgHash.toString('hex')}`
   let sig = ''
-  console.log('everHash', everHash)
   checkSignConfig(accountChainType, config)
 
   if (accountChainType === ChainType.ethereum) {
@@ -79,7 +68,11 @@ export const signMessageAsync = async (config: Config, everpayTxWithoutSig: Ever
   return { everHash, sig }
 }
 
-export const transferAsync = async (config: Config, info: EverpayInfo, params: TransferAsyncParams): Promise<TransactionResponse | ArTransferResult> => {
+export const transferAsync = async (
+  config: Config,
+  info: EverpayInfo,
+  params: TransferAsyncParams
+): Promise<EthereumTransaction | ArweaveTransaction> => {
   const accountChainType = getAccountChainType(params.from)
   checkSignConfig(accountChainType, config)
 

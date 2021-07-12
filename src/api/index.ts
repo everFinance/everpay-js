@@ -1,6 +1,6 @@
 import axios, { AxiosRequestConfig, AxiosResponse } from 'axios'
 import { isObject, isString } from 'lodash-es'
-import { EverpayInfo, EverpayTransaction, EverpayTx, TxsResult } from '../global'
+import { EverpayInfo, EverpayTransaction, EverpayTx, TxsResult } from '../types'
 import {
   GetEverpayTransactionsParams,
   GetEverpayBalanceParams,
@@ -8,7 +8,7 @@ import {
   GetEverpayBalancesParams,
   GetEverpayBalancesResult,
   PostEverpayTxResult
-} from './interface'
+} from '../types/api'
 
 // `validateStatus` defines whether to resolve or reject the promise for a given
 // HTTP response status code. If `validateStatus` returns `true` (or is set to `null`
@@ -54,19 +54,6 @@ export const getEverpayInfo = async (apiHost: string): Promise<EverpayInfo> => {
     method: 'GET'
   })
 
-  // TODO: for test
-  // const tokenList = result.data.tokenList
-  // result.data.arChainID = '2'
-  // tokenList.push({
-  //   id: '0x0000000000000000000000000000000000000000',
-  //   symbol: 'AR',
-  //   decimals: 12,
-  //   totalSupply: '70000000000000000',
-  //   chainType: 'arweave',
-  //   burnFee: '20000000000000000',
-  //   transferFee: '0'
-  // })
-
   return result.data
 }
 
@@ -76,7 +63,7 @@ export const getEverpayBalance = async (apiHost: string, {
   id,
   account
 }: GetEverpayBalanceParams): Promise<GetEverpayBalanceResult> => {
-  const url = `${apiHost}/balanceOf/${chainType}-${symbol}-${id}/${account}`
+  const url = `${apiHost}/balance/${chainType}-${symbol}-${id}/${account}`
   const result = await sendRequest({
     url,
     method: 'GET'
@@ -116,8 +103,8 @@ export const getEverpayTransaction = async (apiHost: string, everHash: string): 
   return result.data.tx
 }
 
-export const getMintdEverpayTransactionByChainTxHash = async (apiHost: string, chainHash: string): Promise<EverpayTransaction> => {
-  const url = `${apiHost}/minted/${chainHash}`
+export const getMintdEverpayTransactionByChainTxHash = async (apiHost: string, chainTxHash: string): Promise<EverpayTransaction> => {
+  const url = `${apiHost}/minted/${chainTxHash}`
   const result = await sendRequest({
     ...rConfig,
     url,

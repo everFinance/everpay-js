@@ -1,17 +1,12 @@
 import { BigNumber } from '@ethersproject/bignumber'
+import { Token } from '../types'
 
 export interface TransferAsyncParams {
   symbol: string
-  tokenID: string
+  token: Token
   from: string
   to?: string
   value: BigNumber
-}
-
-export interface ArTransferResult {
-  status: number
-  statusText: string
-  data: any
 }
 
 export interface SignMessageAsyncResult {

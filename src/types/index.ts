@@ -1,8 +1,8 @@
 import { Signer } from 'ethers'
-import { TransactionResponse } from '@ethersproject/abstract-provider'
 import { JWKInterface } from 'arweave/node/lib/wallet'
-import { PostEverpayTxResult } from './api/interface'
-import { ArTransferResult } from './lib/interface'
+import { PostEverpayTxResult } from './api'
+import { TransactionResponse as EthereumTransaction } from '@ethersproject/abstract-provider'
+import { TransactionInterface as ArweaveTransaction } from 'arweave/node/lib/transaction'
 
 export enum ChainType {
   ethereum = 'ethereum',
@@ -10,6 +10,8 @@ export enum ChainType {
 }
 
 export type ArJWK = JWKInterface | 'use_wallet'
+
+export { EthereumTransaction, ArweaveTransaction }
 
 export interface Config {
   debug?: boolean
@@ -25,16 +27,18 @@ export interface Token {
   totalSupply: string
   burnFee: string
   transferFee: string
-  chainType: ChainType
+  chainID: string
+  chainType: ChainType | string
 }
 
 export interface EverpayInfo {
   ethLocker: string
   arLocker: string
-  owner: string
   ethChainID: string
-  arChainID: string
   feeRecipient: string
+  owner: string
+  everRootHash: string
+  rootHash: string
   tokenList: Token[]
 }
 
@@ -53,7 +57,7 @@ export interface EverpayTxWithoutSig {
   feeRecipient: string
   nonce: string
   tokenID: string
-  chainType: ChainType
+  chainType: ChainType | string
   chainID: string
   data: string
   version: string
@@ -92,17 +96,17 @@ export interface EverpayTransaction {
   everHash: string
   status: EverpayTransactionStatus
   timestamp: number
+  targetChainTxHash?: string
 }
 
 export interface TxsResult {
-  accid: string
+  accid?: string
   currentPage: number
   totalPages: number
   txs: EverpayTransaction[]
 }
 
 export interface BalanceParams {
-  chainType: ChainType
   symbol: string
   account?: string
 }
@@ -119,7 +123,6 @@ export interface BalanceItem {
 }
 
 export interface DepositParams {
-  chainType: ChainType
   symbol: string
   amount: string
 }
@@ -132,6 +135,13 @@ export interface WithdrawParams {
   to?: string
 }
 
+export interface TransferParams {
+  symbol: string
+  amount: string
+  data?: Record<string, unknown>
+  to: string
+}
+
 export interface TxsParams {
   page: number
 }
@@ -139,10 +149,6 @@ export interface TxsParams {
 export interface TxsByAccountParams {
   page: number
   account?: string
-}
-
-export interface TransferParams extends WithdrawParams {
-  to: string
 }
 
 export interface TransferOrWithdrawResult extends PostEverpayTxResult {
@@ -159,7 +165,7 @@ export abstract class EverpayBase {
   abstract txByHash (everHash: string): Promise<EverpayTransaction>
   abstract mintedTxByChainTxHash (chainTxHash: string): Promise<EverpayTransaction>
   abstract getEverpayTxMessage (type: 'transfer' | 'withdraw', params: TransferParams): Promise<string>
-  abstract deposit (params: DepositParams): Promise<TransactionResponse | ArTransferResult>
-  abstract withdraw (params: WithdrawParams): Promise<PostEverpayTxResult>
-  abstract transfer (params: TransferParams): Promise<PostEverpayTxResult>
+  abstract deposit (params: DepositParams): Promise<EthereumTransaction | ArweaveTransaction>
+  abstract withdraw (params: WithdrawParams): Promise<TransferOrWithdrawResult>
+  abstract transfer (params: TransferParams): Promise<TransferOrWithdrawResult>
 }

@@ -1,7 +1,6 @@
 import Everpay from '../src/index'
 import { ethWalletHasUSDT, ethWalletHasUSDT2 } from './constants/wallet'
 import { ethers } from 'ethers'
-import { ChainType } from '../src/global'
 
 const provider = new ethers.providers.InfuraProvider('kovan')
 const signer = new ethers.Wallet(ethWalletHasUSDT.privateKey, provider)
@@ -14,10 +13,10 @@ const everpay = new Everpay({
 
 test(`check ${ethWalletHasUSDT.address} transfer usdt to ${ethWalletHasUSDT2.address}`, async () => {
   return await everpay.transfer({
-    chainType: ChainType.ethereum,
     symbol: 'usdt',
-    amount: 9,
-    to: ethWalletHasUSDT2.address
+    amount: '5.26',
+    to: '5NPqYBdIsIpJzPeYixuz7BEH_W7BEk_mb8HxBD3OHXo',
+    data: { hello: 'world', this: 'is everpay' }
   }).then(transferResult => {
     console.log('transfer usdt result', transferResult)
     expect(transferResult.status).toBe('ok')

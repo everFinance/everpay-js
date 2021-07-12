@@ -5,6 +5,7 @@ node_modules
 jest.config.js
 package-lock.json
 tsconfig.eslint.json
+tsconfig.cjs.json
 tsconfig.json
 yarn-error.log
 yarn.lock

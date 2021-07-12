@@ -1,18 +1,18 @@
-import { TransactionResponse } from '@ethersproject/abstract-provider'
+import { getEverpayTxDataField, getEverpayTxMessage, signMessageAsync, transferAsync } from './lib/sign'
+import { getEverpayBalance, getEverpayBalances, getEverpayInfo, getEverpayTransaction, getEverpayTransactions, getMintdEverpayTransactionByChainTxHash, postTx } from './api'
+import { everpayTxVersion, getEverpayHost } from './config'
+import { getTimestamp, getTokenBySymbol, toBN, getAccountChainType, fromDecimalToUnit, fromUnitToDecimal, fromDecimalToUnitBN } from './utils/util'
+import { GetEverpayBalanceParams, GetEverpayBalancesParams } from './types/api'
+import { checkParams } from './utils/check'
+import { ERRORS } from './utils/errors'
+import { utils } from 'ethers'
 import {
   ChainType, Config, EverpayInfo, EverpayBase, BalanceParams, BalancesParams, DepositParams,
   TransferOrWithdrawResult, TransferParams, WithdrawParams, EverpayTxWithoutSig, EverpayAction,
-  BalanceItem, TxsParams, TxsByAccountParams, TxsResult, EverpayTransaction
-} from './global'
-import { getChainId, getEverpayTxDataField, getEverpayTxMessage, signMessageAsync, transferAsync } from './lib/sign'
-import { getEverpayBalance, getEverpayBalances, getEverpayInfo, getEverpayTransaction, getEverpayTransactions, getMintdEverpayTransactionByChainTxHash, postTx } from './api'
-import { everpayTxVersion, getEverpayHost } from './config'
-import { getTimestamp, getTokenBySymbol, toBN, getAccountChainType } from './utils/util'
-import { GetEverpayBalanceParams, GetEverpayBalancesParams } from './api/interface'
-import { utils } from 'ethers'
-import { checkParams } from './utils/check'
-import { ArTransferResult } from './lib/interface'
+  BalanceItem, TxsParams, TxsByAccountParams, TxsResult, EverpayTransaction, Token, EthereumTransaction, ArweaveTransaction
+} from './types'
 
+export * from './types'
 class Everpay extends EverpayBase {
   constructor (config?: Config) {
     super()
@@ -53,7 +53,7 @@ class Everpay extends EverpayBase {
       account: acc
     }
     const everpayBalance = await getEverpayBalance(this._apiHost, mergedParams)
-    return toBN(utils.formatUnits(everpayBalance.balance.amount, everpayBalance.balance.decimals)).toString()
+    return fromDecimalToUnit(everpayBalance.balance.amount, everpayBalance.balance.decimals)
   }
 
   async balances (params?: BalancesParams): Promise<BalanceItem[]> {
@@ -73,7 +73,7 @@ class Everpay extends EverpayBase {
         chainType,
         symbol: symbol.toUpperCase(),
         address,
-        balance: toBN(utils.formatUnits(item.amount, item.decimals)).toString()
+        balance: fromDecimalToUnit(item.amount, item.decimals)
       }
     })
     return balances
@@ -103,40 +103,51 @@ class Everpay extends EverpayBase {
     return await getMintdEverpayTransactionByChainTxHash(this._apiHost, chainTxHash)
   }
 
-  async deposit (params: DepositParams): Promise<TransactionResponse | ArTransferResult> {
+  async deposit (params: DepositParams): Promise<EthereumTransaction | ArweaveTransaction> {
     await this.info()
     const { amount, symbol } = params
-    const token = getTokenBySymbol(symbol, this._cachedInfo?.tokenList)
+    const token = getTokenBySymbol(symbol, this._cachedInfo?.tokenList) as Token
     const value = utils.parseUnits(toBN(amount).toString(), token?.decimals)
     const from = this._config.account
     checkParams({ account: from, symbol, token, amount })
 
     return await transferAsync(this._config, this._cachedInfo as EverpayInfo, {
       symbol,
-      tokenID: token?.id ?? '',
+      token,
       from: from ?? '',
       value
     })
   }
 
-  async getEverpayTxWithoutSig (type: 'transfer' | 'withdraw', params: TransferParams): Promise<EverpayTxWithoutSig> {
-    const { chainType, symbol, amount, data } = params
-    const to = params?.to
+  async getEverpayTxWithoutSig (type: 'transfer' | 'withdraw', params: TransferParams | WithdrawParams): Promise<EverpayTxWithoutSig> {
+    const { symbol, amount } = params
+    const to = params?.to as string
     const token = getTokenBySymbol(symbol, this._cachedInfo?.tokenList)
     const from = this._config.account as string
     const accountChainType = getAccountChainType(from)
+    let data = params.data
+
+    // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
+    if (type === 'withdraw') {
+      const chainType = (params as WithdrawParams).chainType
+      const tokenChainType = token?.chainType as string
+      if (tokenChainType !== chainType && tokenChainType.includes(chainType)) {
+        data = data !== undefined ? { ...data, targetChainType: chainType } : { targetChainType: chainType }
+      }
+    }
+
     const everpayTxWithoutSig: EverpayTxWithoutSig = {
       tokenSymbol: symbol,
       action: type === 'transfer' ? EverpayAction.transfer : EverpayAction.withdraw,
       from,
       to,
-      amount: utils.parseUnits(toBN(amount).toString(), token?.decimals).toString(),
+      amount: fromUnitToDecimal(amount, token?.decimals ?? 0),
       fee: type === 'withdraw' ? (token?.burnFee ?? '0') : '0',
-      feeRecipient: this._cachedInfo?.feeRecipient.toLowerCase() ?? '',
+      feeRecipient: this._cachedInfo?.feeRecipient ?? '',
       nonce: Date.now().toString(),
-      tokenID: token?.id.toLowerCase() as string,
-      chainType: chainType,
-      chainID: getChainId(this._cachedInfo as EverpayInfo, chainType),
+      tokenID: token?.id as string,
+      chainType: token?.chainType as string,
+      chainID: token?.chainID as string,
       data: await getEverpayTxDataField(this._config, accountChainType, data),
       version: everpayTxVersion
     }
@@ -154,13 +165,10 @@ class Everpay extends EverpayBase {
     const token = getTokenBySymbol(symbol, this._cachedInfo?.tokenList)
     const from = this._config.account as string
     const everpayTxWithoutSig = await this.getEverpayTxWithoutSig(type, params)
-    console.log('owner', everpayTxWithoutSig.data)
-    console.log('everpayTxWithoutSig', JSON.stringify(everpayTxWithoutSig))
+
     checkParams({ account: from, symbol, token, amount, to })
 
     const { everHash, sig } = await signMessageAsync(this._config, everpayTxWithoutSig)
-    console.log('sig', sig)
-
     const everpayTx = {
       ...everpayTxWithoutSig,
       sig
@@ -182,7 +190,11 @@ class Everpay extends EverpayBase {
     await this.info()
     const token = getTokenBySymbol(params.symbol, this._cachedInfo?.tokenList)
     checkParams({ token })
-    const amount = toBN(params.amount).minus(toBN(utils.formatUnits(token?.burnFee ?? '', token?.decimals))).toString()
+    const amountBN = toBN(params.amount).minus(fromDecimalToUnitBN(token?.burnFee ?? '', token?.decimals ?? 0))
+    if (amountBN.lte(0)) {
+      throw new Error(ERRORS.WITHDRAW_AMOUNT_LESS_THAN_FEE)
+    }
+    const amount = amountBN.toString()
     const to = params.to ?? this._config.account as string
     return await this.sendEverpayTx('withdraw', {
       ...params,

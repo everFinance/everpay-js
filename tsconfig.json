@@ -1,13 +1,13 @@
 {
   "compilerOptions": {
     "target": "es2019",
-    "module": "commonjs",
+    "module": "es2020",
     "allowJs": true,
     "jsx": "preserve",
     "declarationMap": true,
-    "outDir": "./dist",
+    "outDir": "./lib/esm",
     "declaration": true,
-    "declarationDir": "./dist",
+    "declarationDir": "./lib",
     "strict": true,
     "moduleResolution": "node",
     "rootDirs": [

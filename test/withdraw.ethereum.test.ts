@@ -1,7 +1,7 @@
 import Everpay from '../src/index'
 import { ethWalletHasUSDT, ethWalletHasUSDT2 } from './constants/wallet'
 import { ethers } from 'ethers'
-import { ChainType } from '../src/global'
+import { ChainType } from '../src/types'
 
 const provider = new ethers.providers.InfuraProvider('kovan')
 
@@ -16,7 +16,7 @@ test(`${ethWalletHasUSDT.address} withdraw USDT to ${ethWalletHasUSDT2.address}`
   return await everpay.withdraw({
     chainType: ChainType.ethereum,
     symbol: 'usdt',
-    amount: 100,
+    amount: '100',
     to: ethWalletHasUSDT2.address
   }).then(withdrawResult => {
     console.log('withdrawResult', withdrawResult)
@@ -36,7 +36,7 @@ test(`use another ${ethWalletHasUSDT.address} singer to sign ${ethWalletHasUSDT2
     everpay.withdraw({
       chainType: ChainType.ethereum,
       symbol: 'usdt',
-      amount: 101,
+      amount: '101',
       to: ethWalletHasUSDT.address
     })
   )

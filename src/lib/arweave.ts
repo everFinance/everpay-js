@@ -1,9 +1,7 @@
 import Arweave from 'arweave'
-// TODO: node
-import { bufferTob64Url } from 'arweave/web/lib/utils'
 import { isString } from 'lodash-es'
-import { ArJWK } from '../global'
-import { ArTransferResult, TransferAsyncParams } from './interface'
+import { ArJWK, ArweaveTransaction } from '../types'
+import { TransferAsyncParams } from './interface'
 
 const options = {
   host: 'arweave.net', // Hostname or IP address for a Arweave host
@@ -21,6 +19,7 @@ enum ERRORS {
   SIGNATURE_PERMISSION_NEEDED = 'NEED_SIGNATURE_PERMISSION',
   SIGN_TRANSACTION_PERMISSION_NEEDED = 'SIGN_TRANSACTION_PERMISSION_NEEDED',
   SIGNATURE_FAILED = 'SIGNATURE_FAILED',
+  TRANSACTION_POST_ERROR = 'TRANSACTION_POST_ERROR',
   ACCESS_PUBLIC_KEY_FAILED = 'ACCESS_PUBLIC_KEY_FAILED'
 }
 
@@ -30,7 +29,6 @@ export const checkArPermissions = async (permissions: string[] | string): Promis
 
   try {
     existingPermissions = await window.arweaveWallet.getPermissions()
-    console.log('existingPermissions', existingPermissions)
   } catch {
     throw new Error(ERRORS.PLEASE_INSTALL_ARCONNECT)
   }
@@ -42,7 +40,7 @@ export const checkArPermissions = async (permissions: string[] | string): Promis
   if (permissions.some(permission => {
     return !existingPermissions.includes(permission)
   })) {
-    await window.arweaveWallet.connect(permissions as any[])
+    await window.arweaveWallet.connect(permissions as never[])
   }
 }
 
@@ -55,7 +53,8 @@ const getEverpayTxDataFieldAsync = async (arJWK: ArJWK, data?: Record<string, un
       throw new Error(ERRORS.ACCESS_PUBLIC_KEY_PERMISSION_NEEDED)
     }
     try {
-      arOwner = await window.arweaveWallet.getActivePublicKey()
+      // TODO: wait arweave-js update arconnect.d.ts
+      arOwner = await (window.arweaveWallet as any).getActivePublicKey()
     } catch {
       throw new Error(ERRORS.ACCESS_PUBLIC_KEY_FAILED)
     }
@@ -77,17 +76,17 @@ const signMessageAsync = async (arJWK: ArJWK, personalMsgHash: Buffer): Promise<
 
     const algorithm = {
       name: 'RSA-PSS',
-      saltLength: 0
+      saltLength: 32
     }
 
     try {
-      // eslint-disable-next-line
-      const signature = await window.arweaveWallet.signature(
+      // TODO: wait arweave-js update arconnect.d.ts
+      const signature = await (window.arweaveWallet as any).signature(
         personalMsgHash,
         algorithm
       )
       const buf = new Uint8Array(Object.values(signature))
-      return bufferTob64Url(buf)
+      return Arweave.utils.bufferTob64Url(buf)
     } catch {
       throw new Error(ERRORS.SIGNATURE_FAILED)
     }
@@ -95,16 +94,15 @@ const signMessageAsync = async (arJWK: ArJWK, personalMsgHash: Buffer): Promise<
   // node
   } else {
     const buf = await arweave.crypto.sign(arJWK, personalMsgHash)
-    return bufferTob64Url(buf)
+    return Arweave.utils.bufferTob64Url(buf)
   }
 }
 
 const transferAsync = async (arJWK: ArJWK, {
   to,
   value
-}: TransferAsyncParams): Promise<ArTransferResult> => {
+}: TransferAsyncParams): Promise<ArweaveTransaction> => {
   const arweave = Arweave.init(options)
-
   const transactionTransfer = await arweave.createTransaction({
     target: to,
     quantity: value.toString()
@@ -112,7 +110,14 @@ const transferAsync = async (arJWK: ArJWK, {
   // 直接给原来 transaction 赋值了 signature 值
   await arweave.transactions.sign(transactionTransfer, arJWK)
   const responseTransfer = await arweave.transactions.post(transactionTransfer)
-  return responseTransfer
+  if (responseTransfer.status === 200) {
+    // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
+    if (responseTransfer.data.error) {
+      throw new Error(responseTransfer.data.error)
+    }
+    return transactionTransfer
+  }
+  throw new Error(ERRORS.TRANSACTION_POST_ERROR)
 }
 
 export default {

@@ -2,16 +2,31 @@
 
 ## 参数
 ```ts
+// ethereum
 const provider = new ethers.providers.InfuraProvider('kovan')
 const signer = new ethers.Wallet(ethWalletHasUSDT.privateKey, provider)
 
-const everpay = new Everpay({
+const everpayForEthereum = new Everpay({
   account: address,
   // true 使用 everpay 开发环境, false 或者不传递，使用 everpay 正式环境
   debug: true,
   // etherjs connected signer
   // 可以不传递，如果不传递，只能使用 everpay 最基础的查询接口
   ethConnectedSigner: signer,
+})
+
+// arweave on node
+const everpayForArweave = new Everpay({
+  account: arWallet.address,
+  arJWK: arWallet.jwk,
+  debug: true
+})
+
+// arweave on web(arConnect)
+const everpayForArweave = new Everpay({
+  account: arWallet.address,
+  arJWK: 'use_wallet',
+  debug: true
 })
 ```
 
@@ -53,14 +68,14 @@ await everpay.txsByAccount(account)
 await everpay.deposit({
   chainType: ChainType.ethereum,
   symbol: 'eth',
-  amount: 100
+  amount: '100'
 })
 
 // erc20
 await everpay.deposit({
   chainType: ChainType.ethereum,
   symbol: 'usdt',
-  amount: 100
+  amount: '100'
 })
 ```
 
@@ -70,7 +85,7 @@ await everpay.deposit({
 await everpay.withdraw({
   chainType: ChainType.ethereum,
   symbol: 'eth',
-  amount: 100,
+  amount: '100',
   // to 可不传递，默认为当前账户
   to,
 })

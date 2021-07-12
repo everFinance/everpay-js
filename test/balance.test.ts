@@ -1,5 +1,4 @@
 import { ethWalletHasUSDT, ethWalletHasUSDT2 } from './constants/wallet'
-import { ChainType } from '../src/global'
 import Everpay from '../src/index'
 import { ERRORS } from '../src/utils/errors'
 
@@ -15,27 +14,33 @@ const everpay2 = new Everpay({
 describe('test balance', () => {
   test(`${ethWalletHasUSDT.address} eth balance is greater than 0`, async () => {
     return await everpay1.balance({
-      chainType: ChainType.ethereum,
       symbol: 'eth'
     }).then(balance => {
-      console.log(`${ethWalletHasUSDT.address} balance: ${balance}`)
+      console.log(`${ethWalletHasUSDT.address} eth balance: ${balance}`)
+      expect(+balance).toBeGreaterThan(0)
+    })
+  })
+
+  test(`${ethWalletHasUSDT.address} ar balance is greater than 0`, async () => {
+    return await everpay1.balance({
+      symbol: 'ar'
+    }).then(balance => {
+      console.log(`${ethWalletHasUSDT.address} ar balance: ${balance}`)
       expect(+balance).toBeGreaterThan(0)
     })
   })
 
   test(`${ethWalletHasUSDT.address} usdt balance is greater than 0`, async () => {
     return await everpay1.balance({
-      chainType: ChainType.ethereum,
       symbol: 'usdt'
     }).then(balance => {
-      console.log(`${ethWalletHasUSDT.address} balance: ${balance}`)
+      console.log(`${ethWalletHasUSDT.address} usdt balance: ${balance}`)
       expect(+balance).toBeGreaterThan(0)
     })
   })
 
   test(`${ethWalletHasUSDT2.address} usdt balance is greater than 0`, async () => {
     return await everpay2.balance({
-      chainType: ChainType.ethereum,
       account: ethWalletHasUSDT.address,
       symbol: 'usdt'
     }).then(balance => {
@@ -49,7 +54,6 @@ describe('test balance error', () => {
   test('no account', async () => {
     await expect(
       everpay2.balance({
-        chainType: ChainType.ethereum,
         symbol: 'eth'
       })
     )
@@ -60,7 +64,6 @@ describe('test balance error', () => {
   test('no symbol', async () => {
     await expect(
       everpay2.balance({
-        chainType: ChainType.ethereum,
         account: ethWalletHasUSDT2.address,
         symbol: ''
       })
@@ -72,7 +75,6 @@ describe('test balance error', () => {
   test('no token', async () => {
     await expect(
       everpay2.balance({
-        chainType: ChainType.ethereum,
         account: ethWalletHasUSDT2.address,
         symbol: 'btc'
       })
