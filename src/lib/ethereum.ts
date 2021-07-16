@@ -1,4 +1,4 @@
-import { Contract, Signer } from 'ethers'
+import { Contract, Signer, utils, providers } from 'ethers'
 import { TransferAsyncParams } from './interface'
 import erc20Abi from '../constants/abi/erc20'
 import { getTokenAddrByChainType } from '../utils/util'
@@ -8,8 +8,26 @@ const getEverpayTxDataFieldAsync = async (data?: Record<string, unknown>): Promi
   return data !== undefined ? JSON.stringify(data) : ''
 }
 
-const signMessageAsync = async (ethConnectedSigner: Signer, message: string): Promise<string> => {
-  return await ethConnectedSigner.signMessage(message)
+// 参考自 zkSync
+// https://github.com/WalletConnect/walletconnect-monorepo/issues/347#issuecomment-880553018
+const signMessageAsync = async (ethConnectedSigner: Signer, address: string, message: string): Promise<string> => {
+  const messageBytes = utils.toUtf8Bytes(message)
+  if (ethConnectedSigner instanceof providers.JsonRpcSigner) {
+    try {
+      const signature = await ethConnectedSigner.provider.send('personal_sign', [
+        utils.hexlify(messageBytes),
+        address.toLowerCase()
+      ])
+      return signature
+    } catch (e) {
+      if (e.message.includes('personal_sign')) {
+        return await ethConnectedSigner.signMessage(messageBytes)
+      }
+      throw e
+    }
+  } else {
+    return await ethConnectedSigner.signMessage(messageBytes)
+  }
 }
 
 const transferAsync = async (ethConnectedSigner: Signer, {

@@ -15,7 +15,7 @@ const options = {
 
 test('check arweaveLib.signMessageAsync', async () => {
   const dataBuf = Buffer.from('helloworldhelloworldhellow')
-  const msgBase64 = await arweaveLib.signMessageAsync(arWallet1.jwk, dataBuf)
+  const msgBase64 = await arweaveLib.signMessageAsync(arWallet1.jwk, arWallet1.address, dataBuf)
 
   const arweave = Arweave.init(options)
   const verified = await arweave.crypto.verify(arWallet1.jwk.n, dataBuf, Buffer.from(msgBase64, 'base64'))

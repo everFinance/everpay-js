@@ -64,7 +64,7 @@ const getEverpayTxDataFieldAsync = async (arJWK: ArJWK, data?: Record<string, un
   return JSON.stringify(data !== undefined ? { ...data, arOwner } : { arOwner })
 }
 
-const signMessageAsync = async (arJWK: ArJWK, personalMsgHash: Buffer): Promise<string> => {
+const signMessageAsync = async (arJWK: ArJWK, address: string, personalMsgHash: Buffer): Promise<string> => {
   const arweave = Arweave.init(options)
   // web
   if (arJWK === 'use_wallet') {
