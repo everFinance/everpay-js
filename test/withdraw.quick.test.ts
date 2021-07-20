@@ -14,7 +14,7 @@ test(`${ethWalletHasUSDT.address} withdraw USDT to ${ethWalletHasUSDT.address}`,
   })
 
   return await everpay.withdraw({
-    chainType: ChainType.arweave,
+    chainType: ChainType.ethereum,
     symbol: 'usdt',
     amount: '99',
     quickMode: true
