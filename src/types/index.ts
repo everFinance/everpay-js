@@ -42,6 +42,16 @@ export interface EverpayInfo {
   tokenList: Token[]
 }
 
+interface ExpressTokenItem {
+  token_tag: string
+  withdraw_fee: string
+  balance: string
+}
+export interface ExpressInfo {
+  address: string
+  tokens: ExpressTokenItem[]
+}
+
 export enum EverpayAction {
   transfer = 'transfer',
   withdraw = 'burn',
@@ -131,6 +141,7 @@ export interface WithdrawParams {
   chainType: ChainType
   symbol: string
   amount: string
+  quickMode?: boolean
   data?: Record<string, unknown>
   to?: string
 }

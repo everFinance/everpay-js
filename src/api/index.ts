@@ -1,6 +1,6 @@
 import axios, { AxiosRequestConfig, AxiosResponse } from 'axios'
 import { isObject, isString } from 'lodash-es'
-import { EverpayInfo, EverpayTransaction, EverpayTx, TxsResult } from '../types'
+import { EverpayInfo, EverpayTransaction, EverpayTx, TxsResult, ExpressInfo } from '../types'
 import {
   GetEverpayTransactionsParams,
   GetEverpayBalanceParams,
@@ -120,5 +120,15 @@ export const postTx = async (apiHost: string, params: EverpayTx): Promise<PostEv
     method: 'POST',
     data: params
   })
+  return result.data
+}
+
+export const getExpressInfo = async (apiHost: string): Promise<ExpressInfo> => {
+  const url = `${apiHost}/withdraw/info`
+  const result = await sendRequest({
+    url,
+    method: 'GET'
+  })
+
   return result.data
 }

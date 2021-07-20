@@ -1,7 +1,7 @@
 import { getEverpayTxDataField, getEverpayTxMessage, signMessageAsync, transferAsync } from './lib/sign'
-import { getEverpayBalance, getEverpayBalances, getEverpayInfo, getEverpayTransaction, getEverpayTransactions, getMintdEverpayTransactionByChainTxHash, postTx } from './api'
-import { everpayTxVersion, getEverpayHost } from './config'
-import { getTimestamp, getTokenBySymbol, toBN, getAccountChainType, fromDecimalToUnit, fromUnitToDecimal, fromDecimalToUnitBN } from './utils/util'
+import { getEverpayBalance, getEverpayBalances, getEverpayInfo, getEverpayTransaction, getEverpayTransactions, getExpressInfo, getMintdEverpayTransactionByChainTxHash, postTx } from './api'
+import { everpayTxVersion, getEverpayExpressHost, getEverpayHost } from './config'
+import { getTimestamp, getTokenBySymbol, toBN, getAccountChainType, fromDecimalToUnit, fromUnitToDecimal, fromDecimalToUnitBN, genTokenTag, matchTokenTag, genExpressData } from './utils/util'
 import { GetEverpayBalanceParams, GetEverpayBalancesParams } from './types/api'
 import { checkParams } from './utils/check'
 import { ERRORS } from './utils/errors'
@@ -188,19 +188,50 @@ class Everpay extends EverpayBase {
 
   async withdraw (params: WithdrawParams): Promise<TransferOrWithdrawResult> {
     await this.info()
-    const token = getTokenBySymbol(params.symbol, this._cachedInfo?.tokenList)
+    const { symbol, quickMode, chainType } = params
+    const token = getTokenBySymbol(symbol, this._cachedInfo?.tokenList)
     checkParams({ token })
-    const amountBN = toBN(params.amount).minus(fromDecimalToUnitBN(token?.burnFee ?? '', token?.decimals ?? 0))
-    if (amountBN.lte(0)) {
-      throw new Error(ERRORS.WITHDRAW_AMOUNT_LESS_THAN_FEE)
-    }
-    const amount = amountBN.toString()
     const to = params.to ?? this._config.account as string
-    return await this.sendEverpayTx('withdraw', {
-      ...params,
-      amount,
-      to
-    })
+
+    // 快速提现
+    if (quickMode === true) {
+      const expressInfo = await getExpressInfo(getEverpayExpressHost())
+      const tokenTag = genTokenTag(token as Token)
+      const foundExpressTokenData = expressInfo.tokens.find(t => matchTokenTag(tokenTag, t.token_tag))
+      console.log('foundExpressTokenData', foundExpressTokenData)
+      if (foundExpressTokenData == null) {
+        throw new Error(ERRORS.WITHDRAW_TOKEN_NOT_SUPPORT_QUICK_MODE)
+      }
+      if (!(+params.amount > +foundExpressTokenData.withdraw_fee)) {
+        throw new Error(ERRORS.WITHDRAW_AMOUNT_LESS_THAN_FEE)
+      }
+      const expressData = genExpressData({
+        chainType, to, fee: foundExpressTokenData.withdraw_fee
+      })
+      console.log('params', {
+        symbol,
+        amount: params.amount,
+        to: expressInfo.address,
+        data: expressData as any
+      })
+      return await this.sendEverpayTx('transfer', {
+        symbol,
+        amount: params.amount,
+        to: expressInfo.address,
+        data: expressData as any
+      })
+    } else {
+      const amountBN = toBN(params.amount).minus(fromDecimalToUnitBN(token?.burnFee ?? '', token?.decimals ?? 0))
+      if (amountBN.lte(0)) {
+        throw new Error(ERRORS.WITHDRAW_AMOUNT_LESS_THAN_FEE)
+      }
+      const amount = amountBN.toString()
+      return await this.sendEverpayTx('withdraw', {
+        ...params,
+        amount,
+        to
+      })
+    }
   }
 }
 
