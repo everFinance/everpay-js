@@ -140,10 +140,6 @@ class Everpay extends EverpayBase {
     } else if (type === 'withdraw') {
       const chainType = (params as WithdrawParams).chainType
       const tokenChainType = token?.chainType as string
-      let targetChainType = '' as ChainType
-      if (tokenChainType !== chainType && tokenChainType.includes(chainType)) {
-        targetChainType = chainType
-      }
 
       // 快速提现
       if (quickMode === true) {
@@ -161,7 +157,7 @@ class Everpay extends EverpayBase {
           : toBN(foundExpressTokenData.withdrawFee)
 
         const expressData = genExpressData({
-          chainType: targetChainType, to, fee: quickWithdrawFeeBN.toString()
+          chainType, to, fee: quickWithdrawFeeBN.toString()
         })
         data = data !== undefined ? { ...data, ...expressData } : { ...expressData }
         // 快速提现的 amount 为全部数量
@@ -175,7 +171,11 @@ class Everpay extends EverpayBase {
       } else {
         action = EverpayAction.withdraw
         decimalFeeBN = fee !== undefined ? fromUnitToDecimalBN(fee, token?.decimals ?? 0) : toBN(token?.burnFee ?? '0')
-        data = data !== undefined ? { ...data, targetChainType } : { targetChainType }
+        // 普通提现只有在可跨链提现的资产时，才需要 targetChainType
+        if (tokenChainType !== chainType && tokenChainType.includes(chainType)) {
+          const targetChainType = chainType
+          data = data !== undefined ? { ...data, targetChainType } : { targetChainType }
+        }
         decimalOperateAmountBN = fromUnitToDecimalBN(amount, token?.decimals ?? 0).minus(decimalFeeBN)
         // 普通提现的 amount 为实际到账数量
         if (decimalOperateAmountBN.lte(0)) {
