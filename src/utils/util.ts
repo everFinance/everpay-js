@@ -92,20 +92,20 @@ interface GenExpressDataParams {
   fee: string
 }
 interface ExpressData {
-  app_id: 'express'
-  withdraw_action: 'pay'
-  withdraw_to: string
-  withdraw_chain_type: ChainType
-  withdraw_fee: string
+  appId: 'express'
+  withdrawAction: 'pay'
+  withdrawTo: string
+  withdrawChainType: ChainType
+  withdrawFee: string
 }
 
 export const genExpressData = (params: GenExpressDataParams): ExpressData => {
   const { chainType, to, fee } = params
   return {
-    app_id: 'express',
-    withdraw_action: 'pay',
-    withdraw_to: to,
-    withdraw_chain_type: chainType,
-    withdraw_fee: fee
+    appId: 'express',
+    withdrawAction: 'pay',
+    withdrawTo: to,
+    withdrawChainType: chainType,
+    withdrawFee: fee
   }
 }

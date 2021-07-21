@@ -141,6 +141,7 @@ export interface WithdrawParams {
   chainType: ChainType
   symbol: string
   amount: string
+  fee?: string
   quickMode?: boolean
   data?: Record<string, unknown>
   to?: string
