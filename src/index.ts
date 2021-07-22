@@ -1,6 +1,6 @@
 import { getEverpayTxDataField, getEverpayTxMessage, signMessageAsync, transferAsync } from './lib/sign'
 import { getEverpayBalance, getEverpayBalances, getEverpayInfo, getEverpayTransaction, getEverpayTransactions, getExpressInfo, getMintdEverpayTransactionByChainTxHash, postTx } from './api'
-import { everpayTxVersion, getEverpayExpressHost, getEverpayHost } from './config'
+import { everpayTxVersion, getExpressHost, getEverpayHost } from './config'
 import { getTimestamp, getTokenBySymbol, toBN, getAccountChainType, fromDecimalToUnit, genTokenTag, matchTokenTag, genExpressData, fromUnitToDecimalBN } from './utils/util'
 import { GetEverpayBalanceParams, GetEverpayBalancesParams } from './types/api'
 import { checkParams } from './utils/check'
@@ -21,10 +21,12 @@ class Everpay extends EverpayBase {
       account: config?.account ?? ''
     }
     this._apiHost = getEverpayHost(config?.debug)
+    this._expressHost = getExpressHost(config?.debug)
     this._cachedTimestamp = 0
   }
 
   private readonly _apiHost: string
+  private readonly _expressHost: string
   private readonly _config: Config
   private _cachedInfo?: EverpayInfo
   private _cachedTimestamp: number
@@ -144,7 +146,7 @@ class Everpay extends EverpayBase {
       // 快速提现
       if (quickMode === true) {
         action = EverpayAction.transfer
-        const expressInfo = await getExpressInfo(getEverpayExpressHost())
+        const expressInfo = await getExpressInfo(this._expressHost)
         const tokenTag = genTokenTag(token as Token)
         const foundExpressTokenData = expressInfo.tokens.find(t => matchTokenTag(tokenTag, t.tokenTag))
         if (foundExpressTokenData == null) {
