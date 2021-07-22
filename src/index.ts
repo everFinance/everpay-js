@@ -122,6 +122,7 @@ class Everpay extends EverpayBase {
   }
 
   async getEverpayTxWithoutSig (type: 'transfer' | 'withdraw', params: TransferParams | WithdrawParams): Promise<EverpayTxWithoutSig> {
+    await this.info()
     const { symbol, amount, fee, quickMode } = params as WithdrawParams
     const token = getTokenBySymbol(symbol, this._cachedInfo?.tokenList)
     checkParams({ token })
@@ -234,7 +235,6 @@ class Everpay extends EverpayBase {
   }
 
   async transfer (params: TransferParams): Promise<TransferOrWithdrawResult> {
-    await this.info()
     return await this.sendEverpayTx('transfer', params)
   }
 
