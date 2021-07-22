@@ -24,7 +24,7 @@
   "scripts": {
     "lint": "eslint src test",
     "test": "jest",
-    "build": "rm -rf ./lib && tsc -p tsconfig.json && tsc -p tsconfig.cjs.json",
+    "build": "rm -rf ./esm && rm -rf ./cjs && tsc -p tsconfig.json && tsc -p tsconfig.cjs.json",
     "prepublish": "npm run build"
   },
   "sideEffects": false,
