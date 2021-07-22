@@ -171,6 +171,7 @@ export interface TransferOrWithdrawResult extends PostEverpayTxResult {
 export abstract class EverpayBase {
   abstract getAccountChainType (address: string): ChainType
   abstract info (): Promise<EverpayInfo>
+  abstract expressInfo (): Promise<ExpressInfo>
   abstract balance (params?: BalanceParams): Promise<string>
   abstract txs (params: TxsParams): Promise<TxsResult>
   abstract txsByAccount (params: TxsByAccountParams): Promise<TxsResult>

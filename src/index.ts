@@ -9,7 +9,7 @@ import { utils } from 'ethers'
 import {
   ChainType, Config, EverpayInfo, EverpayBase, BalanceParams, BalancesParams, DepositParams,
   TransferOrWithdrawResult, TransferParams, WithdrawParams, EverpayTxWithoutSig, EverpayAction,
-  BalanceItem, TxsParams, TxsByAccountParams, TxsResult, EverpayTransaction, Token, EthereumTransaction, ArweaveTransaction
+  BalanceItem, TxsParams, TxsByAccountParams, TxsResult, EverpayTransaction, Token, EthereumTransaction, ArweaveTransaction, ExpressInfo
 } from './types'
 
 export * from './types'
@@ -40,6 +40,10 @@ class Everpay extends EverpayBase {
       this._cachedTimestamp = getTimestamp()
     }
     return this._cachedInfo
+  }
+
+  async expressInfo (): Promise<ExpressInfo> {
+    return await getExpressInfo(this._expressHost)
   }
 
   async balance (params: BalanceParams): Promise<string> {
@@ -147,7 +151,7 @@ class Everpay extends EverpayBase {
       // 快速提现
       if (quickMode === true) {
         action = EverpayAction.transfer
-        const expressInfo = await getExpressInfo(this._expressHost)
+        const expressInfo = await this.expressInfo()
         const tokenTag = genTokenTag(token as Token)
         const foundExpressTokenData = expressInfo.tokens.find(t => matchTokenTag(tokenTag, t.tokenTag))
         if (foundExpressTokenData == null) {
