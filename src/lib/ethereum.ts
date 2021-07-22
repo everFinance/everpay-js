@@ -20,7 +20,8 @@ const signMessageAsync = async (ethConnectedSigner: Signer, address: string, mes
       ])
       return signature
     } catch (e) {
-      if (e.message.includes('personal_sign')) {
+      const noPersonalSign: boolean = e.message.includes('personal_sign')
+      if (noPersonalSign) {
         return await ethConnectedSigner.signMessage(messageBytes)
       }
       throw e
