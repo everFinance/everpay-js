@@ -1,9 +1,12 @@
 {
   "name": "everpay",
-  "version": "0.1.0",
-  "main": "lib/cjs/index.js",
-  "module": "lib/esm/index.js",
-  "types": "lib",
+  "version": "0.0.2",
+  "main": "./cjs/index.js",
+  "module": "./esm/index.js",
+  "files": [
+    "cjs",
+    "esm"
+  ],
   "repository": "git@github.com:everFinance/everpay-js.git",
   "keywords": [
     "everPay",
@@ -21,7 +24,8 @@
   "scripts": {
     "lint": "eslint src test",
     "test": "jest",
-    "build": "rm -rf ./lib && tsc -p tsconfig.json && tsc -p tsconfig.cjs.json"
+    "build": "rm -rf ./lib && tsc -p tsconfig.json && tsc -p tsconfig.cjs.json",
+    "prepublish": "npm run build"
   },
   "sideEffects": false,
   "devDependencies": {
@@ -51,7 +55,7 @@
     "arweave": "^1.10.14",
     "axios": "^0.21.1",
     "bignumber.js": "^9.0.1",
-    "ethers": "^5.1.2",
+    "ethers": "^5.1.3",
     "keccak": "^3.0.1",
     "lodash-es": "^4.17.21"
   },

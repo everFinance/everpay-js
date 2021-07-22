@@ -2,10 +2,12 @@ src
 test
 node_modules
 .eslintrc.js
+.gitignore
+babel.config.js
 jest.config.js
 package-lock.json
-tsconfig.eslint.json
 tsconfig.cjs.json
+tsconfig.eslint.json
 tsconfig.json
 yarn-error.log
 yarn.lock
