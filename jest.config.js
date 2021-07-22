@@ -5,6 +5,6 @@ module.exports = {
   testEnvironment: 'node',
   testTimeout: 300000,
   testRegex: '/test/.*\\.test\\.ts$',
-  // testRegex: '/test/withdraw.arweave\\.test\\.ts$',
+  // testRegex: '/test/deposit.ethereum\\.test\\.ts$',
   transformIgnorePatterns: ['./node_modules/(?!lodash-es)']
 }
