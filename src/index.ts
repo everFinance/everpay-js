@@ -121,13 +121,13 @@ class Everpay extends EverpayBase {
 
   async getEverpayTxWithoutSig (type: 'transfer' | 'withdraw', params: TransferParams | WithdrawParams): Promise<EverpayTxWithoutSig> {
     const { symbol, amount, fee, quickMode } = params as WithdrawParams
-    const to = params?.to as string
     const token = getTokenBySymbol(symbol, this._cachedInfo?.tokenList)
     checkParams({ token })
 
     const from = this._config.account as string
     const accountChainType = getAccountChainType(from)
     let data = params.data
+    let to = params?.to as string
     let decimalFeeBN = toBN(0)
     let decimalOperateAmountBN = toBN(0)
     let action = EverpayAction.transfer
@@ -162,6 +162,8 @@ class Everpay extends EverpayBase {
         data = data !== undefined ? { ...data, ...expressData } : { ...expressData }
         // 快速提现的 amount 为全部数量
         decimalOperateAmountBN = fromUnitToDecimalBN(amount, token?.decimals ?? 0)
+        // to 需要更改为快速提现收款账户
+        to = expressInfo.address
 
         if (decimalOperateAmountBN.lte(quickWithdrawFeeBN)) {
           throw new Error(ERRORS.WITHDRAW_AMOUNT_LESS_THAN_FEE)
