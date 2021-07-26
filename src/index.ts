@@ -158,23 +158,31 @@ class Everpay extends EverpayBase {
           throw new Error(ERRORS.WITHDRAW_TOKEN_NOT_SUPPORT_QUICK_MODE)
         }
 
+        const quickWithdrawLimitBN = fromUnitToDecimalBN(foundExpressTokenData.walletBalance, token?.decimals ?? 0)
+
         // 快速提现的手续费，只放入 data 字段中
         const quickWithdrawFeeBN = fee !== undefined
           ? fromUnitToDecimalBN(fee, token?.decimals ?? 0)
           : toBN(foundExpressTokenData.withdrawFee)
 
-        const expressData = genExpressData({
-          chainType, to, fee: quickWithdrawFeeBN.toString()
-        })
-        data = data !== undefined ? { ...data, ...expressData } : { ...expressData }
         // 快速提现的 amount 为全部数量
         decimalOperateAmountBN = fromUnitToDecimalBN(amount, token?.decimals ?? 0)
-        // to 需要更改为快速提现收款账户
-        to = expressInfo.address
 
         if (decimalOperateAmountBN.lte(quickWithdrawFeeBN)) {
           throw new Error(ERRORS.WITHDRAW_AMOUNT_LESS_THAN_FEE)
         }
+
+        if (decimalOperateAmountBN.gt(quickWithdrawLimitBN)) {
+          throw new Error(ERRORS.INSUFFICIENT_QUICK_WITHDRAWAL_AMOUNT)
+        }
+
+        const expressData = genExpressData({
+          chainType, to, fee: quickWithdrawFeeBN.toString()
+        })
+        data = data !== undefined ? { ...data, ...expressData } : { ...expressData }
+
+        // to 需要更改为快速提现收款账户
+        to = expressInfo.address
 
         // 普通提现
       } else {

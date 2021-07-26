@@ -45,7 +45,7 @@ export interface EverpayInfo {
 interface ExpressTokenItem {
   tokenTag: string
   withdrawFee: string
-  balance: string
+  walletBalance: string
 }
 export interface ExpressInfo {
   address: string
