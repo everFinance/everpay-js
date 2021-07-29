@@ -49,6 +49,7 @@ interface ExpressTokenItem {
 }
 export interface ExpressInfo {
   address: string
+  withdrawTimeCost: number
   tokens: ExpressTokenItem[]
 }
 
