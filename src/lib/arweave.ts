@@ -64,8 +64,9 @@ const getEverpayTxDataFieldAsync = async (arJWK: ArJWK, data?: Record<string, un
   return JSON.stringify(data !== undefined ? { ...data, arOwner } : { arOwner })
 }
 
-const signMessageAsync = async (arJWK: ArJWK, address: string, personalMsgHash: Buffer): Promise<string> => {
+const signMessageAsync = async (arJWK: ArJWK, address: string, everHash: string): Promise<string> => {
   const arweave = Arweave.init(options)
+  const everHashBuffer: Buffer = Buffer.from(everHash.slice(2), 'hex')
   // web
   if (arJWK === 'use_wallet') {
     try {
@@ -82,7 +83,7 @@ const signMessageAsync = async (arJWK: ArJWK, address: string, personalMsgHash: 
     try {
       // TODO: wait arweave-js update arconnect.d.ts
       const signature = await (window.arweaveWallet as any).signature(
-        personalMsgHash,
+        everHashBuffer,
         algorithm
       )
       const buf = new Uint8Array(Object.values(signature))
@@ -93,7 +94,7 @@ const signMessageAsync = async (arJWK: ArJWK, address: string, personalMsgHash: 
 
   // node
   } else {
-    const buf = await arweave.crypto.sign(arJWK, personalMsgHash)
+    const buf = await arweave.crypto.sign(arJWK, everHashBuffer)
     return Arweave.utils.bufferTob64Url(buf)
   }
 }
