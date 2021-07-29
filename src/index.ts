@@ -247,6 +247,7 @@ class Everpay extends EverpayBase {
   }
 
   async transfer (params: TransferParams): Promise<TransferOrWithdrawResult> {
+    await this.info()
     return await this.sendEverpayTx('transfer', params)
   }
 
