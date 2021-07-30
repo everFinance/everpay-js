@@ -108,6 +108,12 @@ export interface EverpayTransaction {
   status: EverpayTransactionStatus
   timestamp: number
   targetChainTxHash?: string
+  express: {
+    chainTxHash: string
+    withdrawFee: string
+    refundEverHash: string
+    err: string
+  }
 }
 
 export interface TxsResult {
