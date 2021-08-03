@@ -42,6 +42,17 @@ export interface EverpayInfo {
   tokenList: Token[]
 }
 
+interface ExpressTokenItem {
+  tokenTag: string
+  withdrawFee: string
+  walletBalance: string
+}
+export interface ExpressInfo {
+  address: string
+  withdrawTimeCost: number
+  tokens: ExpressTokenItem[]
+}
+
 export enum EverpayAction {
   transfer = 'transfer',
   withdraw = 'burn',
@@ -97,6 +108,12 @@ export interface EverpayTransaction {
   status: EverpayTransactionStatus
   timestamp: number
   targetChainTxHash?: string
+  express: {
+    chainTxHash: string
+    withdrawFee: string
+    refundEverHash: string
+    err: string
+  }
 }
 
 export interface TxsResult {
@@ -131,6 +148,8 @@ export interface WithdrawParams {
   chainType: ChainType
   symbol: string
   amount: string
+  fee?: string
+  quickMode?: boolean
   data?: Record<string, unknown>
   to?: string
 }
@@ -159,6 +178,7 @@ export interface TransferOrWithdrawResult extends PostEverpayTxResult {
 export abstract class EverpayBase {
   abstract getAccountChainType (address: string): ChainType
   abstract info (): Promise<EverpayInfo>
+  abstract expressInfo (): Promise<ExpressInfo>
   abstract balance (params?: BalanceParams): Promise<string>
   abstract txs (params: TxsParams): Promise<TxsResult>
   abstract txsByAccount (params: TxsByAccountParams): Promise<TxsResult>

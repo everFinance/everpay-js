@@ -69,3 +69,43 @@ export const getTokenAddrByChainType = (token: Token, chainType: ChainType): str
   }
   return tokenAddrs[index]
 }
+
+export const genTokenTag = (token: Token): string => {
+  const { chainType, symbol, id } = token
+  const chainTypes = chainType.split(',')
+  const tokenAddrs = id.split(',').map((addr: string, index: number) => {
+    if (chainTypes[index] === ChainType.ethereum) {
+      return addr.toLowerCase()
+    }
+    return addr
+  })
+  return `${chainType}-${symbol.toUpperCase()}-${tokenAddrs.join(',')}`
+}
+
+export const matchTokenTag = (tag1: string, tag2: string): boolean => {
+  return tag1.toLowerCase() === tag2.toLowerCase()
+}
+
+interface GenExpressDataParams {
+  chainType: ChainType
+  to: string
+  fee: string
+}
+interface ExpressData {
+  appId: 'express'
+  withdrawAction: 'pay'
+  withdrawTo: string
+  withdrawChainType: ChainType
+  withdrawFee: string
+}
+
+export const genExpressData = (params: GenExpressDataParams): ExpressData => {
+  const { chainType, to, fee } = params
+  return {
+    appId: 'express',
+    withdrawAction: 'pay',
+    withdrawTo: to,
+    withdrawChainType: chainType,
+    withdrawFee: fee
+  }
+}

@@ -1,7 +1,7 @@
 import { getEverpayTxDataField, getEverpayTxMessage, signMessageAsync, transferAsync } from './lib/sign'
-import { getEverpayBalance, getEverpayBalances, getEverpayInfo, getEverpayTransaction, getEverpayTransactions, getMintdEverpayTransactionByChainTxHash, postTx } from './api'
-import { everpayTxVersion, getEverpayHost } from './config'
-import { getTimestamp, getTokenBySymbol, toBN, getAccountChainType, fromDecimalToUnit, fromUnitToDecimal, fromDecimalToUnitBN } from './utils/util'
+import { getEverpayBalance, getEverpayBalances, getEverpayInfo, getEverpayTransaction, getEverpayTransactions, getExpressInfo, getMintdEverpayTransactionByChainTxHash, postTx } from './api'
+import { everpayTxVersion, getExpressHost, getEverpayHost } from './config'
+import { getTimestamp, getTokenBySymbol, toBN, getAccountChainType, fromDecimalToUnit, genTokenTag, matchTokenTag, genExpressData, fromUnitToDecimalBN } from './utils/util'
 import { GetEverpayBalanceParams, GetEverpayBalancesParams } from './types/api'
 import { checkParams } from './utils/check'
 import { ERRORS } from './utils/errors'
@@ -9,7 +9,7 @@ import { utils } from 'ethers'
 import {
   ChainType, Config, EverpayInfo, EverpayBase, BalanceParams, BalancesParams, DepositParams,
   TransferOrWithdrawResult, TransferParams, WithdrawParams, EverpayTxWithoutSig, EverpayAction,
-  BalanceItem, TxsParams, TxsByAccountParams, TxsResult, EverpayTransaction, Token, EthereumTransaction, ArweaveTransaction
+  BalanceItem, TxsParams, TxsByAccountParams, TxsResult, EverpayTransaction, Token, EthereumTransaction, ArweaveTransaction, ExpressInfo
 } from './types'
 
 export * from './types'
@@ -21,10 +21,12 @@ class Everpay extends EverpayBase {
       account: config?.account ?? ''
     }
     this._apiHost = getEverpayHost(config?.debug)
+    this._expressHost = getExpressHost(config?.debug)
     this._cachedTimestamp = 0
   }
 
   private readonly _apiHost: string
+  private readonly _expressHost: string
   private readonly _config: Config
   private _cachedInfo?: EverpayInfo
   private _cachedTimestamp: number
@@ -38,6 +40,10 @@ class Everpay extends EverpayBase {
       this._cachedTimestamp = getTimestamp()
     }
     return this._cachedInfo
+  }
+
+  async expressInfo (): Promise<ExpressInfo> {
+    return await getExpressInfo(this._expressHost)
   }
 
   async balance (params: BalanceParams): Promise<string> {
@@ -120,29 +126,88 @@ class Everpay extends EverpayBase {
   }
 
   async getEverpayTxWithoutSig (type: 'transfer' | 'withdraw', params: TransferParams | WithdrawParams): Promise<EverpayTxWithoutSig> {
-    const { symbol, amount } = params
-    const to = params?.to as string
+    await this.info()
+    const { symbol, amount, fee, quickMode } = params as WithdrawParams
     const token = getTokenBySymbol(symbol, this._cachedInfo?.tokenList)
+    checkParams({ token })
+
     const from = this._config.account as string
     const accountChainType = getAccountChainType(from)
     let data = params.data
+    let to = params?.to as string
+    let decimalFeeBN = toBN(0)
+    let decimalOperateAmountBN = toBN(0)
+    let action = EverpayAction.transfer
 
-    // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
-    if (type === 'withdraw') {
+    if (type === 'transfer') {
+      action = EverpayAction.transfer
+      decimalOperateAmountBN = fromUnitToDecimalBN(amount, token?.decimals ?? 0)
+
+      // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
+    } else if (type === 'withdraw') {
       const chainType = (params as WithdrawParams).chainType
       const tokenChainType = token?.chainType as string
-      if (tokenChainType !== chainType && tokenChainType.includes(chainType)) {
-        data = data !== undefined ? { ...data, targetChainType: chainType } : { targetChainType: chainType }
+
+      // 快速提现
+      if (quickMode === true) {
+        action = EverpayAction.transfer
+        const expressInfo = await this.expressInfo()
+        const tokenTag = genTokenTag(token as Token)
+        const foundExpressTokenData = expressInfo.tokens.find(t => matchTokenTag(tokenTag, t.tokenTag))
+        if (foundExpressTokenData == null) {
+          throw new Error(ERRORS.WITHDRAW_TOKEN_NOT_SUPPORT_QUICK_MODE)
+        }
+
+        const quickWithdrawLimitBN = fromUnitToDecimalBN(foundExpressTokenData.walletBalance, token?.decimals ?? 0)
+
+        // 快速提现的手续费，只放入 data 字段中
+        const quickWithdrawFeeBN = fee !== undefined
+          ? fromUnitToDecimalBN(fee, token?.decimals ?? 0)
+          : toBN(foundExpressTokenData.withdrawFee)
+
+        // 快速提现的 amount 为全部数量
+        decimalOperateAmountBN = fromUnitToDecimalBN(amount, token?.decimals ?? 0)
+
+        if (decimalOperateAmountBN.lte(quickWithdrawFeeBN)) {
+          throw new Error(ERRORS.WITHDRAW_AMOUNT_LESS_THAN_FEE)
+        }
+
+        if (decimalOperateAmountBN.gt(quickWithdrawLimitBN)) {
+          throw new Error(ERRORS.INSUFFICIENT_QUICK_WITHDRAWAL_AMOUNT)
+        }
+
+        const expressData = genExpressData({
+          chainType, to, fee: quickWithdrawFeeBN.toString()
+        })
+        data = data !== undefined ? { ...data, ...expressData } : { ...expressData }
+
+        // to 需要更改为快速提现收款账户
+        to = expressInfo.address
+
+        // 普通提现
+      } else {
+        action = EverpayAction.withdraw
+        decimalFeeBN = fee !== undefined ? fromUnitToDecimalBN(fee, token?.decimals ?? 0) : toBN(token?.burnFee ?? '0')
+        // 普通提现只有在可跨链提现的资产时，才需要 targetChainType
+        if (tokenChainType !== chainType && tokenChainType.includes(chainType)) {
+          const targetChainType = chainType
+          data = data !== undefined ? { ...data, targetChainType } : { targetChainType }
+        }
+        decimalOperateAmountBN = fromUnitToDecimalBN(amount, token?.decimals ?? 0).minus(decimalFeeBN)
+        // 普通提现的 amount 为实际到账数量
+        if (decimalOperateAmountBN.lte(0)) {
+          throw new Error(ERRORS.WITHDRAW_AMOUNT_LESS_THAN_FEE)
+        }
       }
     }
 
     const everpayTxWithoutSig: EverpayTxWithoutSig = {
       tokenSymbol: symbol,
-      action: type === 'transfer' ? EverpayAction.transfer : EverpayAction.withdraw,
+      action,
       from,
       to,
-      amount: fromUnitToDecimal(amount, token?.decimals ?? 0),
-      fee: type === 'withdraw' ? (token?.burnFee ?? '0') : '0',
+      amount: decimalOperateAmountBN.toString(),
+      fee: decimalFeeBN.toString(),
       feeRecipient: this._cachedInfo?.feeRecipient ?? '',
       nonce: Date.now().toString(),
       tokenID: token?.id as string,
@@ -154,12 +219,12 @@ class Everpay extends EverpayBase {
     return everpayTxWithoutSig
   }
 
-  async getEverpayTxMessage (type: 'transfer' | 'withdraw', params: TransferParams): Promise<string> {
+  async getEverpayTxMessage (type: 'transfer' | 'withdraw', params: TransferParams | WithdrawParams): Promise<string> {
     const everpayTxWithoutSig = await this.getEverpayTxWithoutSig(type, params)
     return getEverpayTxMessage(everpayTxWithoutSig)
   }
 
-  async sendEverpayTx (type: 'transfer' | 'withdraw', params: TransferParams): Promise<TransferOrWithdrawResult> {
+  async sendEverpayTx (type: 'transfer' | 'withdraw', params: TransferParams | WithdrawParams): Promise<TransferOrWithdrawResult> {
     const { symbol, amount } = params
     const to = params?.to
     const token = getTokenBySymbol(symbol, this._cachedInfo?.tokenList)
@@ -188,17 +253,9 @@ class Everpay extends EverpayBase {
 
   async withdraw (params: WithdrawParams): Promise<TransferOrWithdrawResult> {
     await this.info()
-    const token = getTokenBySymbol(params.symbol, this._cachedInfo?.tokenList)
-    checkParams({ token })
-    const amountBN = toBN(params.amount).minus(fromDecimalToUnitBN(token?.burnFee ?? '', token?.decimals ?? 0))
-    if (amountBN.lte(0)) {
-      throw new Error(ERRORS.WITHDRAW_AMOUNT_LESS_THAN_FEE)
-    }
-    const amount = amountBN.toString()
     const to = params.to ?? this._config.account as string
     return await this.sendEverpayTx('withdraw', {
       ...params,
-      amount,
       to
     })
   }
