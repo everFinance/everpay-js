@@ -16,6 +16,7 @@
     "blockchain",
     "crypto"
   ],
+  "description": "everPay client JS-SDK, supports web and nodeJS to make everPay payments",
   "author": "everFinance Team <dev@ever.finance>",
   "contributors": [
     "Xaber <xaber@ever.finance>"
