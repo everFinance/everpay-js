@@ -2,12 +2,12 @@ import { getEverpayTxDataField, getEverpayTxMessage, signMessageAsync, transferA
 import { getEverpayBalance, getEverpayBalances, getEverpayInfo, getEverpayTransaction, getEverpayTransactions, getExpressInfo, getMintdEverpayTransactionByChainTxHash, postTx } from './api'
 import { everpayTxVersion, getExpressHost, getEverpayHost } from './config'
 import { getTimestamp, getTokenBySymbol, toBN, getAccountChainType, fromDecimalToUnit, genTokenTag, matchTokenTag, genExpressData, fromUnitToDecimalBN } from './utils/util'
-import { GetEverpayBalanceParams, GetEverpayBalancesParams } from './types/api'
+import { GetEverpayBalanceParams, GetEverpayBalancesParams, GetEverpayTransactionsParams } from './types/api'
 import { checkParams } from './utils/check'
 import { ERRORS } from './utils/errors'
 import { utils } from 'ethers'
 import {
-  ChainType, Config, EverpayInfo, EverpayBase, BalanceParams, BalancesParams, DepositParams,
+  Config, EverpayInfo, EverpayBase, BalanceParams, BalancesParams, DepositParams,
   TransferOrWithdrawResult, TransferParams, WithdrawParams, EverpayTxWithoutSig, EverpayAction,
   BalanceItem, TxsParams, TxsByAccountParams, TxsResult, EverpayTransaction, Token, EthereumTransaction, ArweaveTransaction, ExpressInfo
 } from './types'
@@ -83,18 +83,32 @@ class Everpay extends EverpayBase {
     return balances
   }
 
+  private async getMergedTxsParams (params: TxsParams): Promise<GetEverpayTransactionsParams> {
+    const { page, symbol, action } = params
+    const mergedParams: GetEverpayTransactionsParams = { page }
+    if (symbol !== undefined) {
+      await this.info()
+      const token = getTokenBySymbol(symbol, this._cachedInfo?.tokenList) as Token
+      checkParams({ token })
+      mergedParams.tokenId = token.id
+    }
+    if (action !== undefined) {
+      checkParams({ action })
+      mergedParams.action = action
+    }
+    return mergedParams
+  }
+
   async txs (params: TxsParams): Promise<TxsResult> {
-    const { page } = params
-    return await getEverpayTransactions(this._apiHost, { page })
+    const mergedParams: GetEverpayTransactionsParams = await this.getMergedTxsParams(params)
+    return await getEverpayTransactions(this._apiHost, mergedParams)
   }
 
   async txsByAccount (params: TxsByAccountParams): Promise<TxsResult> {
-    const { page, account } = params
-    checkParams({ account: account ?? this._config.account })
-    return await getEverpayTransactions(this._apiHost, {
-      page,
-      account: account ?? this._config.account
-    })
+    checkParams({ account: params.account ?? this._config.account })
+    const mergedParams: GetEverpayTransactionsParams = await this.getMergedTxsParams(params)
+    mergedParams.account = params.account ?? this._config.account
+    return await getEverpayTransactions(this._apiHost, mergedParams)
   }
 
   async txByHash (everHash: string): Promise<EverpayTransaction> {

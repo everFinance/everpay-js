@@ -1,4 +1,4 @@
-import { ChainType, Config } from '../types'
+import { ChainType, Config, EverpayActionWithDeposit } from '../types'
 import { ERRORS } from './errors'
 
 interface CaseObject {
@@ -11,6 +11,7 @@ const cases: CaseObject = {
   account: ERRORS.ACCOUNT_NOT_FOUND,
   everHash: ERRORS.EVERHASH_NOT_FOUND,
   chainTxHash: ERRORS.CHAIN_TX_HASH_NOT_FOUND,
+  action: ERRORS.INVALID_ACTION,
   to: ERRORS.TO_NOT_FOUND,
   ethConnectedSigner: ERRORS.ETH_SIGENER_NOT_FOUND
 }
@@ -21,6 +22,14 @@ export const checkItem = (itemName: string, param?: unknown): void => {
   }
   if (itemName === 'amount' && !((param as number) > 0)) {
     throw new Error(ERRORS.AMOUNT_INVALID)
+  }
+  const actions = [
+    EverpayActionWithDeposit.deposit,
+    EverpayActionWithDeposit.withdraw,
+    EverpayActionWithDeposit.transfer
+  ]
+  if (itemName === 'action' && !actions.includes(param as any)) {
+    throw new Error(cases.action)
   }
 }
 

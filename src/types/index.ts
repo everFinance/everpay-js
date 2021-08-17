@@ -78,7 +78,7 @@ export interface EverpayTx extends EverpayTxWithoutSig {
   sig: string
 }
 
-enum EverpayActionWithDeposit {
+export enum EverpayActionWithDeposit {
   transfer = 'transfer',
   withdraw = 'burn',
   deposit = 'mint'
@@ -163,11 +163,15 @@ export interface TransferParams {
 
 export interface TxsParams {
   page: number
+  symbol?: string
+  action?: EverpayActionWithDeposit
 }
 
 export interface TxsByAccountParams {
   page: number
   account?: string
+  symbol?: string
+  action?: EverpayActionWithDeposit
 }
 
 export interface TransferOrWithdrawResult extends PostEverpayTxResult {
