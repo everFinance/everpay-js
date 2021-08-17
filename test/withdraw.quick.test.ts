@@ -34,7 +34,7 @@ test(`${arWallet1.address} quick withdraw USDT to ${ethWalletHasUSDT.address}`, 
   return await everpay.withdraw({
     chainType: ChainType.ethereum,
     symbol: 'USDT',
-    amount: '5.26',
+    amount: '52.6',
     quickMode: true,
     to: ethWalletHasUSDT.address
   }).then(withdrawResult => {
