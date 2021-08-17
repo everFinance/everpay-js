@@ -162,13 +162,13 @@ export interface TransferParams {
 }
 
 export interface TxsParams {
-  page: number
+  page?: number
   symbol?: string
   action?: EverpayActionWithDeposit
 }
 
 export interface TxsByAccountParams {
-  page: number
+  page?: number
   account?: string
   symbol?: string
   action?: EverpayActionWithDeposit

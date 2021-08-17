@@ -85,7 +85,10 @@ class Everpay extends EverpayBase {
 
   private async getMergedTxsParams (params: TxsParams): Promise<GetEverpayTransactionsParams> {
     const { page, symbol, action } = params
-    const mergedParams: GetEverpayTransactionsParams = { page }
+    const mergedParams: GetEverpayTransactionsParams = {}
+    if (page !== undefined) {
+      mergedParams.page = page
+    }
     if (symbol !== undefined) {
       await this.info()
       const token = getTokenBySymbol(symbol, this._cachedInfo?.tokenList) as Token

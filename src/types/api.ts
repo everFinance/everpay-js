@@ -2,7 +2,7 @@ export interface GetEverpayTransactionsParams {
   account?: string
   tokenId?: string
   action?: string
-  page: number
+  page?: number
 }
 
 export interface BalanceItemFromServer {

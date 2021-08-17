@@ -93,7 +93,7 @@ export const getEverpayTransactions = async (apiHost: string, params: GetEverpay
 
   const result = await sendRequest({
     ...rConfig,
-    url: `${baseUrl}?${queryString}`,
+    url: `${baseUrl}${queryString !== '' ? `?${queryString}` : ''}`,
     method: 'GET'
   })
   return result.data
