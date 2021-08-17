@@ -58,12 +58,10 @@ export const getEverpayInfo = async (apiHost: string): Promise<EverpayInfo> => {
 }
 
 export const getEverpayBalance = async (apiHost: string, {
-  chainType,
-  symbol,
-  id,
-  account
+  account,
+  tokenTag
 }: GetEverpayBalanceParams): Promise<GetEverpayBalanceResult> => {
-  const url = `${apiHost}/balance/${chainType}-${symbol}-${id}/${account}`
+  const url = `${apiHost}/balance/${tokenTag}/${account}`
   const result = await sendRequest({
     url,
     method: 'GET'

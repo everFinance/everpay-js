@@ -1,5 +1,3 @@
-import { ChainType } from '.'
-
 export interface GetEverpayTransactionsParams {
   account?: string
   page: number
@@ -11,10 +9,8 @@ export interface BalanceItemFromServer {
   decimals: number
 }
 export interface GetEverpayBalanceParams {
-  chainType: ChainType
-  id: string
-  symbol: string
   account: string
+  tokenTag: string
 }
 
 export interface GetEverpayBalanceResult {

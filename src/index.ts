@@ -53,9 +53,7 @@ class Everpay extends EverpayBase {
     const token = getTokenBySymbol(symbol, this._cachedInfo?.tokenList)
     checkParams({ account: acc, symbol, token })
     const mergedParams: GetEverpayBalanceParams = {
-      id: token?.id as string,
-      chainType: token?.chainType as ChainType,
-      symbol: params.symbol,
+      tokenTag: genTokenTag(token as Token),
       account: acc
     }
     const everpayBalance = await getEverpayBalance(this._apiHost, mergedParams)
