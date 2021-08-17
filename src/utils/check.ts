@@ -21,7 +21,7 @@ export const checkItem = (itemName: string, param?: unknown): void => {
     throw new Error(cases[itemName])
   }
   if (itemName === 'amount' && !((param as number) > 0)) {
-    throw new Error(ERRORS.AMOUNT_INVALID)
+    throw new Error(ERRORS.INVALID_AMOUNT)
   }
   const actions = [
     EverpayActionWithDeposit.deposit,
