@@ -22,24 +22,24 @@ class Everpay extends EverpayBase {
     }
     this._apiHost = getEverpayHost(config?.debug)
     this._expressHost = getExpressHost(config?.debug)
-    this._dexHost = getDexHost(config?.debug)
+    this._swapHost = getSwapHost(config?.debug)
     this._cachedInfo = {}
   }
 
   private readonly _apiHost: string
   private readonly _expressHost: string
-  private readonly _dexHost: string
+  private readonly _swapHost: string
   private readonly _config: Config
   private _cachedInfo: CachedInfo
 
   getAccountChainType = getAccountChainType
 
-  private readonly cacheInfoHelper = async (key: 'everpay' | 'express' | 'dex'): Promise<EverpayInfo | ExpressInfo | DexInfo> => {
+  private readonly cacheHelper = async (key: 'everpay' | 'express' | 'swap'): Promise<EverpayInfo | ExpressInfo | SwapInfo> => {
     const timestamp = getTimestamp()
     // cache info 3 mins
     if (this._cachedInfo[key]?.value != null &&
       (this._cachedInfo[key] as any).timestamp < timestamp - 3 * 60) {
-      return this._cachedInfo[key]?.value as EverpayInfo | ExpressInfo | DexInfo
+      return this._cachedInfo[key]?.value as EverpayInfo | ExpressInfo | SwapInfo
     }
 
     if (key === 'everpay') {
@@ -48,26 +48,28 @@ class Everpay extends EverpayBase {
     } else if (key === 'express') {
       const value = await await getExpressInfo(this._apiHost)
       this._cachedInfo[key] = { value, timestamp }
-    } else if (key === 'dex') {
-      const value = await await getDexInfo(this._apiHost)
+    } else if (key === 'swap') {
+      const value = await await getSwapInfo(this._apiHost)
       this._cachedInfo[key] = { value, timestamp }
     }
-    return this._cachedInfo[key]?.value as EverpayInfo | ExpressInfo | DexInfo
+    return this._cachedInfo[key]?.value as EverpayInfo | ExpressInfo | SwapInfo
   }
 
   async info (): Promise<EverpayInfo> {
-    const result = await this.cacheInfoHelper('everpay')
+    const result = await this.cacheHelper('everpay')
     return result as EverpayInfo
   }
 
   async expressInfo (): Promise<ExpressInfo> {
-    const result = await this.cacheInfoHelper('express')
+    const result = await this.cacheHelper('express')
     return result as ExpressInfo
   }
 
-  async dexInfo (): Promise<DexInfo> {
-    const result = await this.cacheInfoHelper('dex')
-    return result as DexInfo
+  async swapInfo (): Promise<SwapInfo> {
+    const result = await this.cacheHelper('swap')
+    return result as SwapInfo
+  }
+
   }
 
   async balance (params: BalanceParams): Promise<string> {
