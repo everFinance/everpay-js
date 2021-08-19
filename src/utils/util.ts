@@ -42,6 +42,10 @@ export const getTokenBySymbol = (symbol: string, tokenList?: Token[]): Token | u
   return tokenList?.find(t => t.symbol.toUpperCase() === symbol.toUpperCase())
 }
 
+export const getTokenByTag = (tag: string, tokenList?: Token[]): Token | undefined => {
+  return tokenList?.find(t => matchTokenTag(genTokenTag(t), tag))
+}
+
 const isEthereumAddress = isAddress
 
 const isArweaveAddress = (address: string): boolean => {
