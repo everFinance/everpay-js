@@ -7,3 +7,7 @@ export const getEverpayHost = (debug?: boolean): string => {
 export const getExpressHost = (debug?: boolean): string => {
   return debug === true ? 'https://express-dev.everpay.io' : 'https://express.everpay.io'
 }
+
+export const getDexHost = (debug?: boolean): string => {
+  return debug === true ? 'https://warriors-dev.everpay.io' : 'https://warriors.everpay.io'
+}
