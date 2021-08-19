@@ -32,38 +32,41 @@ export interface PostEverpayTxResult {
   status: string
 }
 
-export interface DexInfo {
+export interface SwapInfo {
   status: string
   address: string
   tokenList: string[]
 }
-
-export interface DexPriceParams {
+export interface SwapPriceParams {
   tokenIn: string
   tokenOut: string
   tokenInAmount?: string
   tokenOutAmount?: string
 }
 
-export interface DexPriceResult {
+export interface SwapOrder {
   tokenIn: string
   tokenOut: string
   tokenInAmount: string
   tokenOutAmount: string
 }
 
-export interface PlaceOrderItem {
+export interface AswapItem {
   amount: string
   chainID: string
   from: string
   to: string
   tag: string
 }
-export interface PlaceOrderParams {
-  items: PlaceOrderItem[]
+
+export interface AswapData {
+  items: AswapItem[]
   expiration: number
   salt: string
   version: string
+}
+export interface PlaceOrderParams {
+  swap: AswapData
   sigs: {
     [account: string]: string
   }

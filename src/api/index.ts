@@ -9,9 +9,9 @@ import {
   GetEverpayBalancesParams,
   GetEverpayBalancesResult,
   PostEverpayTxResult,
-  DexInfo,
-  DexPriceResult,
-  DexPriceParams,
+  SwapInfo,
+  SwapOrder,
+  SwapPriceParams,
   PlaceOrderParams
 } from '../types/api'
 
@@ -137,7 +137,7 @@ export const getExpressInfo = async (apiHost: string): Promise<ExpressInfo> => {
   return result.data
 }
 
-export const getDexInfo = async (apiHost: string): Promise<DexInfo> => {
+export const getSwapInfo = async (apiHost: string): Promise<SwapInfo> => {
   const url = `${apiHost}/dex/info`
   const result = await sendRequest({
     url,
@@ -147,7 +147,7 @@ export const getDexInfo = async (apiHost: string): Promise<DexInfo> => {
   return result.data
 }
 
-export const getDexPrice = async (apiHost: string, params: DexPriceParams): Promise<DexPriceResult> => {
+export const getSwapPrice = async (apiHost: string, params: SwapPriceParams): Promise<SwapOrder> => {
   const queryString = qsStringify(params, { skipNull: true })
   const url = `${apiHost}/dex/price?${queryString}`
   const result = await sendRequest({
@@ -158,7 +158,7 @@ export const getDexPrice = async (apiHost: string, params: DexPriceParams): Prom
   return result.data
 }
 
-export const placeDexOrder = async (apiHost: string, order: PlaceOrderParams): Promise<string> => {
+export const placeSwapOrder = async (apiHost: string, order: PlaceOrderParams): Promise<string> => {
   const url = `${apiHost}/dex/place_order`
   const result = await sendRequest({
     url,

@@ -1,6 +1,6 @@
 import { Signer } from 'ethers'
 import { JWKInterface } from 'arweave/node/lib/wallet'
-import { DexInfo, PostEverpayTxResult } from './api'
+import { SwapInfo, PostEverpayTxResult } from './api'
 import { TransactionResponse as EthereumTransaction } from '@ethersproject/abstract-provider'
 import { TransactionInterface as ArweaveTransaction } from 'arweave/node/lib/transaction'
 
@@ -188,10 +188,17 @@ export interface CachedInfo {
     value: ExpressInfo
     timestamp: number
   }
-  dex?: {
-    value: DexInfo
+  swap?: {
+    value: SwapInfo
     timestamp: number
   }
+}
+
+export interface PriceParams {
+  base: string
+  quote: string
+  amount: string
+  side: 'BUY' | 'SELL'
 }
 
 export abstract class EverpayBase {
