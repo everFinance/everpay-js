@@ -271,7 +271,8 @@ class Everpay extends EverpayBase {
 
     checkParams({ account: from, symbol, token, amount, to })
 
-    const { everHash, sig } = await signMessageAsync(this._config, everpayTxWithoutSig)
+    const messageData = getEverpayTxMessage(everpayTxWithoutSig)
+    const { everHash, sig } = await signMessageAsync(this._config, messageData)
     const everpayTx = {
       ...everpayTxWithoutSig,
       sig
