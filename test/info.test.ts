@@ -5,11 +5,6 @@ const everpay = new Everpay({
   debug: true
 })
 
-export default async (): Promise<void> => {
-  const info = await everpay.info()
-  console.log('info', info)
-}
-
 test('everpey info got correct', async () => {
   return await everpay.info().then(info => {
     const { ethLocker, owner, ethChainID, feeRecipient, tokenList } = info
