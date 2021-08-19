@@ -1,5 +1,6 @@
 import axios, { AxiosRequestConfig, AxiosResponse } from 'axios'
 import { isObject, isString } from 'lodash-es'
+import { stringify as qsStringify } from 'query-string'
 import { EverpayInfo, EverpayTransaction, EverpayTx, TxsResult, ExpressInfo } from '../types'
 import {
   GetEverpayTransactionsParams,
@@ -7,7 +8,11 @@ import {
   GetEverpayBalanceResult,
   GetEverpayBalancesParams,
   GetEverpayBalancesResult,
-  PostEverpayTxResult
+  PostEverpayTxResult,
+  DexInfo,
+  DexPriceResult,
+  DexPriceParams,
+  PlaceOrderParams
 } from '../types/api'
 
 // `validateStatus` defines whether to resolve or reject the promise for a given
@@ -81,16 +86,9 @@ export const getEverpayBalances = async (apiHost: string, {
 }
 
 export const getEverpayTransactions = async (apiHost: string, params: GetEverpayTransactionsParams): Promise<TxsResult> => {
-  const { account } = params
-  const queryKeys = ['page', 'tokenId', 'action'] as const
+  const { account, page, tokenId, action } = params
   const baseUrl = account !== undefined ? `${apiHost}/txs/${account}` : `${apiHost}/txs`
-  const queryString = queryKeys.map(key => {
-    if (params[key] !== undefined) {
-      return `${key}=${params[key] as string}`
-    }
-    return ''
-  }).join('&')
-
+  const queryString = qsStringify({ page, tokenId, action }, { skipNull: true })
   const result = await sendRequest({
     ...rConfig,
     url: `${baseUrl}${queryString !== '' ? `?${queryString}` : ''}`,
@@ -137,4 +135,35 @@ export const getExpressInfo = async (apiHost: string): Promise<ExpressInfo> => {
   })
 
   return result.data
+}
+
+export const getDexInfo = async (apiHost: string): Promise<DexInfo> => {
+  const url = `${apiHost}/dex/info`
+  const result = await sendRequest({
+    url,
+    method: 'GET'
+  })
+
+  return result.data
+}
+
+export const getDexPrice = async (apiHost: string, params: DexPriceParams): Promise<DexPriceResult> => {
+  const queryString = qsStringify(params, { skipNull: true })
+  const url = `${apiHost}/dex/price?${queryString}`
+  const result = await sendRequest({
+    url,
+    method: 'GET'
+  })
+
+  return result.data
+}
+
+export const placeDexOrder = async (apiHost: string, order: PlaceOrderParams): Promise<string> => {
+  const url = `${apiHost}/dex/place_order`
+  const result = await sendRequest({
+    url,
+    method: 'POST',
+    data: { order }
+  })
+  return result.data.everHash
 }
