@@ -1,8 +1,8 @@
 import { getEverpayTxMessage, signMessageAsync, transferAsync } from './lib/sign'
-import { getDexInfo, getEverpayBalance, getEverpayBalances, getEverpayInfo, getEverpayTransaction, getEverpayTransactions, getExpressInfo, getMintdEverpayTransactionByChainTxHash, postTx } from './api'
-import { everpayTxVersion, getExpressHost, getEverpayHost, getDexHost } from './config'
+import { getSwapInfo, getEverpayBalance, getEverpayBalances, getEverpayInfo, getEverpayTransaction, getEverpayTransactions, getExpressInfo, getMintdEverpayTransactionByChainTxHash, postTx, getSwapPrice, placeSwapOrder } from './api'
+import { everpayTxVersion, getExpressHost, getEverpayHost, getSwapHost } from './config'
 import { getTimestamp, getTokenBySymbol, toBN, getAccountChainType, fromDecimalToUnit, genTokenTag, matchTokenTag, genExpressData, fromUnitToDecimalBN } from './utils/util'
-import { DexInfo, GetEverpayBalanceParams, GetEverpayBalancesParams, GetEverpayTransactionsParams } from './types/api'
+import { SwapInfo, GetEverpayBalanceParams, GetEverpayBalancesParams, GetEverpayTransactionsParams, SwapOrder, SwapPriceParams } from './types/api'
 import { checkParams } from './utils/check'
 import { ERRORS } from './utils/errors'
 import { utils } from 'ethers'
@@ -11,6 +11,7 @@ import {
   TransferOrWithdrawResult, TransferParams, WithdrawParams, EverpayTxWithoutSig, EverpayAction,
   BalanceItem, TxsParams, TxsByAccountParams, TxsResult, EverpayTransaction, Token, EthereumTransaction, ArweaveTransaction, ExpressInfo, CachedInfo
 } from './types'
+import { getAswapData, swapParamsClientToServer, swapParamsServerToClient } from './utils/swap'
 
 export * from './types'
 class Everpay extends EverpayBase {
@@ -70,6 +71,31 @@ class Everpay extends EverpayBase {
     return result as SwapInfo
   }
 
+  async swapPrice (params: SwapPriceParams): Promise<SwapOrder> {
+    await Promise.all([this.info(), this.swapInfo()])
+    const everpayInfo = this._cachedInfo.everpay?.value as EverpayInfo
+    const swapInfo = this._cachedInfo.swap?.value as SwapInfo
+    const paramsToServer = swapParamsClientToServer(
+      params,
+      everpayInfo,
+      swapInfo
+    )
+    const result = await getSwapPrice(this._swapHost, paramsToServer)
+    return swapParamsServerToClient(result, everpayInfo, swapInfo) as SwapOrder
+  }
+
+  async swapOrder (params: SwapOrder): Promise<string> {
+    await Promise.all([this.info(), this.swapInfo()])
+    const everpayInfo = this._cachedInfo.everpay?.value as EverpayInfo
+    const swapInfo = this._cachedInfo.swap?.value as SwapInfo
+    const aswapData = getAswapData(params, everpayInfo, swapInfo, this._config.account as string)
+    const { sig } = await signMessageAsync(this._config, JSON.stringify(aswapData))
+    return await placeSwapOrder(this._swapHost, {
+      swap: aswapData,
+      sigs: {
+        [this._config.account as string]: sig
+      }
+    })
   }
 
   async balance (params: BalanceParams): Promise<string> {
