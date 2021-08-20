@@ -104,8 +104,8 @@ export const genSwapItems = (order: SwapOrder, everpayInfo: EverpayInfo, swapInf
 
 export const getAswapData = (order: SwapOrder, everpayInfo: EverpayInfo, swapInfo: SwapInfo, account: string): AswapData => {
   const items = genSwapItems(order, everpayInfo, swapInfo, account)
-  // 设置 10s 过期
-  const expiration = Math.round(Date.now() / 1000) + 10
+  // 设置 60s 过期
+  const expiration = Math.round(Date.now() / 1000) + 60
   const salt = uuidv4()
   const version = aswapTxVersion
 
