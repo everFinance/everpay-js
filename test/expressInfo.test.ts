@@ -10,7 +10,7 @@ test('express info got correct', async () => {
     const { address, withdrawTimeCost, tokens } = expressInfo
     expect(isString(address)).toBe(true)
     expect(isNumber(withdrawTimeCost)).toBe(true)
-    expect(tokens).toBeGreaterThan(0)
+    expect(tokens.length).toBeGreaterThan(0)
     expect(tokens.find(t => t.tokenTag.toLowerCase().includes('usdt'))).toBeTruthy()
   })
 })
