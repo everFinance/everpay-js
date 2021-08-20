@@ -39,7 +39,7 @@ class Everpay extends EverpayBase {
     const timestamp = getTimestamp()
     // cache info 3 mins
     if (this._cachedInfo[key]?.value != null &&
-      (this._cachedInfo[key] as any).timestamp < timestamp - 3 * 60) {
+      (this._cachedInfo[key] as any).timestamp > timestamp - 3 * 60) {
       return this._cachedInfo[key]?.value as EverpayInfo | ExpressInfo | SwapInfo
     }
 
