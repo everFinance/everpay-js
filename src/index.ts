@@ -84,7 +84,7 @@ class Everpay extends EverpayBase {
     const formated = swapParamsServerToClient(result, everpayInfo, swapInfo) as SwapOrder
     return {
       ...formated,
-      currentPrice: result.currentPrice,
+      indicativePrice: result.indicativePrice,
       spreadPercent: result.spreadPercent
     }
   }

@@ -155,20 +155,15 @@ export const getSwapPrice = async (apiHost: string, params: SwapPriceParams): Pr
     method: 'GET'
   })
 
-  // TODO: temp fix server typo
-  if (result.data.tokeIn != null) {
-    result.data.tokenIn = result.data.tokeIn
-  }
-
   return result.data
 }
 
-export const placeSwapOrder = async (apiHost: string, order: PlaceOrderParams): Promise<string> => {
+export const placeSwapOrder = async (apiHost: string, params: PlaceOrderParams): Promise<string> => {
   const url = `${apiHost}/dex/place_order`
   const result = await sendRequest({
     url,
     method: 'POST',
-    data: { order }
+    data: params
   })
   return result.data.everHash
 }

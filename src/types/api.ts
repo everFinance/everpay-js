@@ -53,7 +53,7 @@ export interface SwapOrder {
 
 export interface SwapPriceResult extends SwapOrder {
   spreadPercent: string
-  currentPrice: string
+  indicativePrice: string
 }
 
 export interface AswapItem {

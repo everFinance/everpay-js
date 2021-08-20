@@ -106,6 +106,7 @@ export interface EverpayTransaction {
   sig: string
   everHash: string
   status: EverpayTransactionStatus
+  internalStatus: string
   timestamp: number
   targetChainTxHash?: string
   express: {
