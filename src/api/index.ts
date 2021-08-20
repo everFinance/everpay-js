@@ -47,6 +47,8 @@ export const sendRequest = async (config: AxiosRequestConfig): Promise<AxiosResp
       } else if (isObject(error.response) && isObject(error.response.data)) {
         // like { error: 'err_invalid_signature' }
         reject(new Error(error.response.data.error))
+      } else {
+        reject(new Error(error))
       }
     })
   })
