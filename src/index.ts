@@ -47,10 +47,10 @@ class Everpay extends EverpayBase {
       const value = await await getEverpayInfo(this._apiHost)
       this._cachedInfo[key] = { value, timestamp }
     } else if (key === 'express') {
-      const value = await await getExpressInfo(this._apiHost)
+      const value = await await getExpressInfo(this._expressHost)
       this._cachedInfo[key] = { value, timestamp }
     } else if (key === 'swap') {
-      const value = await await getSwapInfo(this._apiHost)
+      const value = await await getSwapInfo(this._swapHost)
       this._cachedInfo[key] = { value, timestamp }
     }
     return this._cachedInfo[key]?.value as EverpayInfo | ExpressInfo | SwapInfo
