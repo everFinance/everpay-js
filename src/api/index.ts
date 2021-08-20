@@ -10,9 +10,9 @@ import {
   GetEverpayBalancesResult,
   PostEverpayTxResult,
   SwapInfo,
-  SwapOrder,
   SwapPriceParams,
-  PlaceOrderParams
+  PlaceOrderParams,
+  SwapPriceResult
 } from '../types/api'
 
 // `validateStatus` defines whether to resolve or reject the promise for a given
@@ -147,13 +147,18 @@ export const getSwapInfo = async (apiHost: string): Promise<SwapInfo> => {
   return result.data
 }
 
-export const getSwapPrice = async (apiHost: string, params: SwapPriceParams): Promise<SwapOrder> => {
+export const getSwapPrice = async (apiHost: string, params: SwapPriceParams): Promise<SwapPriceResult> => {
   const queryString = qsStringify(params, { skipNull: true })
   const url = `${apiHost}/dex/price?${queryString}`
   const result = await sendRequest({
     url,
     method: 'GET'
   })
+
+  // TODO: temp fix server typo
+  if (result.data.tokeIn != null) {
+    result.data.tokenIn = result.data.tokeIn
+  }
 
   return result.data
 }

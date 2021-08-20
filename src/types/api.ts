@@ -51,6 +51,11 @@ export interface SwapOrder {
   tokenOutAmount: string
 }
 
+export interface SwapPriceResult extends SwapOrder {
+  spreadPercent: string
+  currentPrice: string
+}
+
 export interface AswapItem {
   amount: string
   chainID: string

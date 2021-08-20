@@ -2,7 +2,7 @@ import { getEverpayTxMessage, signMessageAsync, transferAsync } from './lib/sign
 import { getSwapInfo, getEverpayBalance, getEverpayBalances, getEverpayInfo, getEverpayTransaction, getEverpayTransactions, getExpressInfo, getMintdEverpayTransactionByChainTxHash, postTx, getSwapPrice, placeSwapOrder } from './api'
 import { everpayTxVersion, getExpressHost, getEverpayHost, getSwapHost } from './config'
 import { getTimestamp, getTokenBySymbol, toBN, getAccountChainType, fromDecimalToUnit, genTokenTag, matchTokenTag, genExpressData, fromUnitToDecimalBN } from './utils/util'
-import { SwapInfo, GetEverpayBalanceParams, GetEverpayBalancesParams, GetEverpayTransactionsParams, SwapOrder, SwapPriceParams } from './types/api'
+import { SwapInfo, GetEverpayBalanceParams, GetEverpayBalancesParams, GetEverpayTransactionsParams, SwapOrder, SwapPriceParams, SwapPriceResult } from './types/api'
 import { checkParams } from './utils/check'
 import { ERRORS } from './utils/errors'
 import { utils } from 'ethers'
@@ -71,7 +71,7 @@ class Everpay extends EverpayBase {
     return result as SwapInfo
   }
 
-  async swapPrice (params: SwapPriceParams): Promise<SwapOrder> {
+  async swapPrice (params: SwapPriceParams): Promise<SwapPriceResult> {
     await Promise.all([this.info(), this.swapInfo()])
     const everpayInfo = this._cachedInfo.everpay?.value as EverpayInfo
     const swapInfo = this._cachedInfo.swap?.value as SwapInfo
@@ -81,7 +81,12 @@ class Everpay extends EverpayBase {
       swapInfo
     )
     const result = await getSwapPrice(this._swapHost, paramsToServer)
-    return swapParamsServerToClient(result, everpayInfo, swapInfo) as SwapOrder
+    const formated = swapParamsServerToClient(result, everpayInfo, swapInfo) as SwapOrder
+    return {
+      ...formated,
+      currentPrice: result.currentPrice,
+      spreadPercent: result.spreadPercent
+    }
   }
 
   async swapOrder (params: SwapOrder): Promise<string> {
