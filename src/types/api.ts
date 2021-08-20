@@ -33,7 +33,6 @@ export interface PostEverpayTxResult {
 }
 
 export interface SwapInfo {
-  status: string
   address: string
   tokenList: string[]
 }
