@@ -2,7 +2,7 @@ import { getEverpayTxMessage, signMessageAsync, transferAsync } from './lib/sign
 import { getSwapInfo, getEverpayBalance, getEverpayBalances, getEverpayInfo, getEverpayTransaction, getEverpayTransactions, getExpressInfo, getMintdEverpayTransactionByChainTxHash, postTx, getSwapPrice, placeSwapOrder } from './api'
 import { everpayTxVersion, getExpressHost, getEverpayHost, getSwapHost } from './config'
 import { getTimestamp, getTokenBySymbol, toBN, getAccountChainType, fromDecimalToUnit, genTokenTag, matchTokenTag, genExpressData, fromUnitToDecimalBN } from './utils/util'
-import { SwapInfo, GetEverpayBalanceParams, GetEverpayBalancesParams, GetEverpayTransactionsParams, SwapOrder, SwapPriceParams, SwapPriceResult } from './types/api'
+import { SwapInfo, GetEverpayBalanceParams, GetEverpayBalancesParams, GetEverpayTransactionsParams, SwapOrder, SwapPriceParams, SwapPriceResult, AswapData } from './types/api'
 import { checkParams } from './utils/check'
 import { ERRORS } from './utils/errors'
 import { utils } from 'ethers'
@@ -37,6 +37,7 @@ class Everpay extends EverpayBase {
 
   private readonly cacheHelper = async (key: 'everpay' | 'express' | 'swap'): Promise<EverpayInfo | ExpressInfo | SwapInfo> => {
     const timestamp = getTimestamp()
+    console.log('this._cachedInfo', this._cachedInfo)
     // cache info 3 mins
     if (this._cachedInfo[key]?.value != null &&
       (this._cachedInfo[key] as any).timestamp > timestamp - 3 * 60) {
@@ -89,11 +90,15 @@ class Everpay extends EverpayBase {
     }
   }
 
-  async swapOrder (params: SwapOrder): Promise<string> {
+  async getAswapData (params: SwapOrder): Promise<AswapData> {
     await Promise.all([this.info(), this.swapInfo()])
     const everpayInfo = this._cachedInfo.everpay?.value as EverpayInfo
     const swapInfo = this._cachedInfo.swap?.value as SwapInfo
     const aswapData = getAswapData(params, everpayInfo, swapInfo, this._config.account as string)
+    return aswapData
+  } 
+
+  async swapOrder (aswapData: AswapData): Promise<string> {
     const { sig } = await signMessageAsync(this._config, JSON.stringify(aswapData))
     return await placeSwapOrder(this._swapHost, {
       swap: aswapData,
@@ -201,14 +206,14 @@ class Everpay extends EverpayBase {
     await this.info()
     const { symbol, amount, fee, quickMode } = params as WithdrawParams
     const token = getTokenBySymbol(symbol, this._cachedInfo?.everpay?.value.tokenList)
-    checkParams({ token })
-
     const from = this._config.account as string
     let data = params.data
     let to = params?.to as string
     let decimalFeeBN = toBN(0)
     let decimalOperateAmountBN = toBN(0)
     let action = EverpayAction.transfer
+
+    checkParams({ account: from, symbol, token, amount, to })
 
     if (type === 'transfer') {
       action = EverpayAction.transfer
@@ -290,20 +295,11 @@ class Everpay extends EverpayBase {
     return everpayTxWithoutSig
   }
 
-  async getEverpayTxMessage (type: 'transfer' | 'withdraw', params: TransferParams | WithdrawParams): Promise<string> {
-    const everpayTxWithoutSig = await this.getEverpayTxWithoutSig(type, params)
+  getEverpayTxMessage (everpayTxWithoutSig: EverpayTxWithoutSig): string {
     return getEverpayTxMessage(everpayTxWithoutSig)
   }
 
-  async sendEverpayTx (type: 'transfer' | 'withdraw', params: TransferParams | WithdrawParams): Promise<TransferOrWithdrawResult> {
-    const { symbol, amount } = params
-    const to = params?.to
-    const token = getTokenBySymbol(symbol, this._cachedInfo?.everpay?.value.tokenList)
-    const from = this._config.account as string
-    const everpayTxWithoutSig = await this.getEverpayTxWithoutSig(type, params)
-
-    checkParams({ account: from, symbol, token, amount, to })
-
+  async sendEverpayTx (everpayTxWithoutSig: EverpayTxWithoutSig): Promise<TransferOrWithdrawResult> {
     const messageData = getEverpayTxMessage(everpayTxWithoutSig)
     const { everHash, sig } = await signMessageAsync(this._config, messageData)
     const everpayTx = {
@@ -319,17 +315,18 @@ class Everpay extends EverpayBase {
   }
 
   async transfer (params: TransferParams): Promise<TransferOrWithdrawResult> {
-    await this.info()
-    return await this.sendEverpayTx('transfer', params)
+    const everpayTxWithoutSig = await this.getEverpayTxWithoutSig('transfer', params)
+    return await this.sendEverpayTx(everpayTxWithoutSig)
   }
 
   async withdraw (params: WithdrawParams): Promise<TransferOrWithdrawResult> {
     await this.info()
     const to = params.to ?? this._config.account as string
-    return await this.sendEverpayTx('withdraw', {
+    const everpayTxWithoutSig = await this.getEverpayTxWithoutSig('withdraw', {
       ...params,
       to
     })
+    return await this.sendEverpayTx(everpayTxWithoutSig)
   }
 }
 
