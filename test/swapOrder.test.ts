@@ -20,13 +20,14 @@ const everpayArAccount = new Everpay({
 
 describe('test swap order error', () => {
   test('price invalid', async () => {
+    const aswapData = await everpayArAccount.getAswapData({
+      tokenIn: 'ETH',
+      tokenOut: 'usdt',
+      tokenInAmount: '0.606',
+      tokenOutAmount: '526526'
+    })
     await expect(
-      everpayArAccount.swapOrder({
-        tokenIn: 'ETH',
-        tokenOut: 'usdt',
-        tokenInAmount: '0.606',
-        tokenOutAmount: '526526'
-      })
+      everpayArAccount.swapOrder(aswapData)
     )
       .rejects
       .toThrow()
@@ -35,12 +36,13 @@ describe('test swap order error', () => {
 
 test('ethereum account swap order success', async () => {
   let everHash = ''
-  everHash = await everpayEthAccount.swapOrder({
+  const aswapData = await everpayEthAccount.getAswapData({
     tokenIn: 'ETH',
     tokenOut: 'usdt',
     tokenInAmount: '0.01',
     tokenOutAmount: '20.666'
   })
+  everHash = await everpayEthAccount.swapOrder(aswapData)
 
   expect(isString(everHash)).toBe(true)
 
@@ -48,16 +50,16 @@ test('ethereum account swap order success', async () => {
   expect(transaction.action).toBe('aswap')
 })
 
-// test('arweave account swap order success', async () => {
-//   const everHash = await everpayArAccount.swapOrder({
-//     tokenIn: 'ETH',
-//     tokenOut: 'usdt',
-//     tokenInAmount: '0.01',
-//     tokenOutAmount: '20.666'
-//   })
+test('arweave account swap order success', async () => {
+  const aswapData = await everpayArAccount.getAswapData({
+    tokenIn: 'ETH',
+    tokenOut: 'usdt',
+    tokenInAmount: '0.001',
+    tokenOutAmount: '2.0666'
+  })
+  const everHash = await everpayArAccount.swapOrder(aswapData)
+  expect(isString(everHash)).toBe(true)
 
-//   expect(isString(everHash)).toBe(true)
-
-//   const transaction = await everpayArAccount.txByHash(everHash)
-//   expect(transaction.action).toBe('aswap')
-// })
+  const transaction = await everpayArAccount.txByHash(everHash)
+  expect(transaction.action).toBe('aswap')
+})

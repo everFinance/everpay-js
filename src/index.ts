@@ -37,7 +37,6 @@ class Everpay extends EverpayBase {
 
   private readonly cacheHelper = async (key: 'everpay' | 'express' | 'swap'): Promise<EverpayInfo | ExpressInfo | SwapInfo> => {
     const timestamp = getTimestamp()
-    console.log('this._cachedInfo', this._cachedInfo)
     // cache info 3 mins
     if (this._cachedInfo[key]?.value != null &&
       (this._cachedInfo[key] as any).timestamp > timestamp - 3 * 60) {
@@ -96,7 +95,7 @@ class Everpay extends EverpayBase {
     const swapInfo = this._cachedInfo.swap?.value as SwapInfo
     const aswapData = getAswapData(params, everpayInfo, swapInfo, this._config.account as string)
     return aswapData
-  } 
+  }
 
   async swapOrder (aswapData: AswapData): Promise<string> {
     const { sig } = await signMessageAsync(this._config, JSON.stringify(aswapData))
