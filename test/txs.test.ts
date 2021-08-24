@@ -6,7 +6,7 @@ const everpay = new Everpay({
   debug: true
 })
 
-test('everpey info got correct', async () => {
+test('everpey txs got correct', async () => {
   return await everpay.txs({ page: 1 }).then(txResult => {
     expect(txResult.txs.length).toBeGreaterThan(0)
     expect(txResult.currentPage).toBe(1)

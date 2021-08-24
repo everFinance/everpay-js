@@ -79,7 +79,7 @@ export const genTokenTag = (token: Token): string => {
     }
     return addr
   })
-  return `${chainType}-${symbol.toUpperCase()}-${tokenAddrs.join(',')}`
+  return `${chainType.toLowerCase()}-${symbol.toLowerCase()}-${tokenAddrs.join(',')}`
 }
 
 export const matchTokenTag = (tag1: string, tag2: string): boolean => {

@@ -58,12 +58,10 @@ export const getEverpayInfo = async (apiHost: string): Promise<EverpayInfo> => {
 }
 
 export const getEverpayBalance = async (apiHost: string, {
-  chainType,
-  symbol,
-  id,
-  account
+  account,
+  tokenTag
 }: GetEverpayBalanceParams): Promise<GetEverpayBalanceResult> => {
-  const url = `${apiHost}/balance/${chainType}-${symbol}-${id}/${account}`
+  const url = `${apiHost}/balance/${tokenTag}/${account}`
   const result = await sendRequest({
     url,
     method: 'GET'
@@ -83,11 +81,19 @@ export const getEverpayBalances = async (apiHost: string, {
 }
 
 export const getEverpayTransactions = async (apiHost: string, params: GetEverpayTransactionsParams): Promise<TxsResult> => {
-  const { account, page } = params
-  const url = account !== undefined ? `${apiHost}/txs/${account}?page=${page}` : `${apiHost}/txs?page=${page}`
+  const { account } = params
+  const queryKeys = ['page', 'tokenId', 'action'] as const
+  const baseUrl = account !== undefined ? `${apiHost}/txs/${account}` : `${apiHost}/txs`
+  const queryString = queryKeys.map(key => {
+    if (params[key] !== undefined) {
+      return `${key}=${params[key] as string}`
+    }
+    return ''
+  }).join('&')
+
   const result = await sendRequest({
     ...rConfig,
-    url,
+    url: `${baseUrl}${queryString !== '' ? `?${queryString}` : ''}`,
     method: 'GET'
   })
   return result.data
