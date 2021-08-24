@@ -88,7 +88,9 @@ const signMessageAsync = async (arJWK: ArJWK, address: string, everHash: string)
 
   // node
   } else {
-    const buf = await arweave.crypto.sign(arJWK, everHashBuffer)
+    const buf = await arweave.crypto.sign(arJWK, everHashBuffer, {
+      saltLength: 32
+    })
     arOwner = arJWK.n
     signatureB64url = Arweave.utils.bufferTob64Url(buf)
   }
