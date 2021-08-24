@@ -1,4 +1,4 @@
-import { getEverpayTxDataField, getEverpayTxMessage, signMessageAsync, transferAsync } from './lib/sign'
+import { getEverpayTxMessage, signMessageAsync, transferAsync } from './lib/sign'
 import { getEverpayBalance, getEverpayBalances, getEverpayInfo, getEverpayTransaction, getEverpayTransactions, getExpressInfo, getMintdEverpayTransactionByChainTxHash, postTx } from './api'
 import { everpayTxVersion, getExpressHost, getEverpayHost } from './config'
 import { getTimestamp, getTokenBySymbol, toBN, getAccountChainType, fromDecimalToUnit, genTokenTag, matchTokenTag, genExpressData, fromUnitToDecimalBN } from './utils/util'
@@ -147,7 +147,6 @@ class Everpay extends EverpayBase {
     checkParams({ token })
 
     const from = this._config.account as string
-    const accountChainType = getAccountChainType(from)
     let data = params.data
     let to = params?.to as string
     let decimalFeeBN = toBN(0)
@@ -228,7 +227,7 @@ class Everpay extends EverpayBase {
       tokenID: token?.id as string,
       chainType: token?.chainType as string,
       chainID: token?.chainID as string,
-      data: await getEverpayTxDataField(this._config, accountChainType, data),
+      data: data !== undefined ? JSON.stringify(data) : '',
       version: everpayTxVersion
     }
     return everpayTxWithoutSig

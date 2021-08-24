@@ -4,10 +4,6 @@ import erc20Abi from '../constants/abi/erc20'
 import { getTokenAddrByChainType } from '../utils/util'
 import { ChainType, EthereumTransaction } from '../types'
 
-const getEverpayTxDataFieldAsync = async (data?: Record<string, unknown>): Promise<string> => {
-  return data !== undefined ? JSON.stringify(data) : ''
-}
-
 // 参考自 zkSync
 // https://github.com/WalletConnect/walletconnect-monorepo/issues/347#issuecomment-880553018
 const signMessageAsync = async (ethConnectedSigner: Signer, address: string, message: string): Promise<string> => {
@@ -57,7 +53,6 @@ const transferAsync = async (ethConnectedSigner: Signer, {
 }
 
 export default {
-  getEverpayTxDataFieldAsync,
   signMessageAsync,
   transferAsync
 }

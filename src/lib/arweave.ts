@@ -44,8 +44,12 @@ export const checkArPermissions = async (permissions: string[] | string): Promis
   }
 }
 
-const getEverpayTxDataFieldAsync = async (arJWK: ArJWK, data?: Record<string, unknown>): Promise<string> => {
+const signMessageAsync = async (arJWK: ArJWK, address: string, everHash: string): Promise<string> => {
+  const arweave = Arweave.init(options)
+  const everHashBuffer: Buffer = Buffer.from(everHash.slice(2), 'hex')
   let arOwner = ''
+  let signatureB64url = ''
+  // web
   if (arJWK === 'use_wallet') {
     try {
       await checkArPermissions('ACCESS_PUBLIC_KEY')
@@ -58,17 +62,7 @@ const getEverpayTxDataFieldAsync = async (arJWK: ArJWK, data?: Record<string, un
     } catch {
       throw new Error(ERRORS.ACCESS_PUBLIC_KEY_FAILED)
     }
-  } else if (arJWK !== undefined) {
-    arOwner = arJWK.n
-  }
-  return JSON.stringify(data !== undefined ? { ...data, arOwner } : { arOwner })
-}
 
-const signMessageAsync = async (arJWK: ArJWK, address: string, everHash: string): Promise<string> => {
-  const arweave = Arweave.init(options)
-  const everHashBuffer: Buffer = Buffer.from(everHash.slice(2), 'hex')
-  // web
-  if (arJWK === 'use_wallet') {
     try {
       await checkArPermissions('SIGNATURE')
     } catch {
@@ -87,7 +81,7 @@ const signMessageAsync = async (arJWK: ArJWK, address: string, everHash: string)
         algorithm
       )
       const buf = new Uint8Array(Object.values(signature))
-      return Arweave.utils.bufferTob64Url(buf)
+      signatureB64url = Arweave.utils.bufferTob64Url(buf)
     } catch {
       throw new Error(ERRORS.SIGNATURE_FAILED)
     }
@@ -95,8 +89,11 @@ const signMessageAsync = async (arJWK: ArJWK, address: string, everHash: string)
   // node
   } else {
     const buf = await arweave.crypto.sign(arJWK, everHashBuffer)
-    return Arweave.utils.bufferTob64Url(buf)
+    arOwner = arJWK.n
+    signatureB64url = Arweave.utils.bufferTob64Url(buf)
   }
+
+  return `${signatureB64url},${arOwner}`
 }
 
 const transferAsync = async (arJWK: ArJWK, {
@@ -122,7 +119,6 @@ const transferAsync = async (arJWK: ArJWK, {
 }
 
 export default {
-  getEverpayTxDataFieldAsync,
   signMessageAsync,
   transferAsync
 }
