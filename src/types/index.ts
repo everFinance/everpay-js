@@ -56,6 +56,7 @@ export interface ExpressInfo {
 export enum EverpayAction {
   transfer = 'transfer',
   withdraw = 'burn',
+  aswap = 'aswap'
 }
 
 export interface EverpayTxWithoutSig {
@@ -81,7 +82,8 @@ export interface EverpayTx extends EverpayTxWithoutSig {
 export enum EverpayActionWithDeposit {
   transfer = 'transfer',
   withdraw = 'burn',
-  deposit = 'mint'
+  deposit = 'mint',
+  aswap = 'aswap'
 }
 
 enum EverpayTransactionStatus {
@@ -95,6 +97,7 @@ enum EverpayTransactionStatus {
 export interface EverpayTransaction {
   // a transaction that everpay json saved to ar
   id: string
+  tokenSymbol: string
   nonce: number
   action: EverpayActionWithDeposit
   from: string
@@ -211,7 +214,8 @@ export abstract class EverpayBase {
   abstract txsByAccount (params: TxsByAccountParams): Promise<TxsResult>
   abstract txByHash (everHash: string): Promise<EverpayTransaction>
   abstract mintedTxByChainTxHash (chainTxHash: string): Promise<EverpayTransaction>
-  abstract getEverpayTxMessage (type: 'transfer' | 'withdraw', params: TransferParams): Promise<string>
+  abstract getEverpayTxMessage (everpayTxWithoutSig: EverpayTxWithoutSig): string
+  abstract sendEverpayTx (everpayTxWithoutSig: EverpayTxWithoutSig): Promise<TransferOrWithdrawResult>
   abstract deposit (params: DepositParams): Promise<EthereumTransaction | ArweaveTransaction>
   abstract withdraw (params: WithdrawParams): Promise<TransferOrWithdrawResult>
   abstract transfer (params: TransferParams): Promise<TransferOrWithdrawResult>
