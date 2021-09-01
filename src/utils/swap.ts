@@ -1,7 +1,7 @@
 import { v4 as uuidv4 } from 'uuid'
-import { aswapTxVersion } from '../config'
-import { EverpayInfo, Token } from '../types'
-import { AswapData, AswapItem, SwapInfo, SwapOrder, SwapPriceParams } from '../types/api'
+import { bundleInternalTxVersion } from '../config'
+import { EverpayInfo, Token, BundleItem, BundleData } from '../types'
+import { SwapInfo, SwapOrder, SwapPriceParams } from '../types/api'
 import { ERRORS } from './errors'
 import { fromDecimalToUnit, fromUnitToDecimal, genTokenTag, getTokenBySymbol, getTokenByTag, matchTokenTag } from './util'
 
@@ -80,7 +80,7 @@ export const swapParamsServerToClient = (params: SwapPriceParams, everpayInfo: E
   return result
 }
 
-export const genSwapItems = (order: SwapOrder, everpayInfo: EverpayInfo, swapInfo: SwapInfo, account: string): AswapItem[] => {
+export const genSwapItems = (order: SwapOrder, everpayInfo: EverpayInfo, swapInfo: SwapInfo, account: string): BundleItem[] => {
   const swapTokenInfo = getSwapTokenInfo(order, everpayInfo, swapInfo)
   const serverOrder = swapParamsClientToServer(order, everpayInfo, swapInfo) as SwapOrder
   return [
@@ -102,12 +102,12 @@ export const genSwapItems = (order: SwapOrder, everpayInfo: EverpayInfo, swapInf
   ]
 }
 
-export const getAswapData = (order: SwapOrder, everpayInfo: EverpayInfo, swapInfo: SwapInfo, account: string): AswapData => {
+export const getSwapData = (order: SwapOrder, everpayInfo: EverpayInfo, swapInfo: SwapInfo, account: string): BundleData => {
   const items = genSwapItems(order, everpayInfo, swapInfo, account)
   // 设置 60s 过期
   const expiration = Math.round(Date.now() / 1000) + 60
   const salt = uuidv4()
-  const version = aswapTxVersion
+  const version = bundleInternalTxVersion
 
   return {
     // 注意：顺序必须与后端保持一致，来让 JSON.stringify() 生成的字符串顺序与后端也一致

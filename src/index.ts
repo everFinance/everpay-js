@@ -1,17 +1,17 @@
 import { getEverpayTxMessage, signMessageAsync, transferAsync } from './lib/sign'
 import { getSwapInfo, getEverpayBalance, getEverpayBalances, getEverpayInfo, getEverpayTransaction, getEverpayTransactions, getExpressInfo, getMintdEverpayTransactionByChainTxHash, postTx, getSwapPrice, placeSwapOrder } from './api'
 import { everpayTxVersion, getExpressHost, getEverpayHost, getSwapHost } from './config'
-import { getTimestamp, getTokenBySymbol, toBN, getAccountChainType, fromDecimalToUnit, genTokenTag, matchTokenTag, genExpressData, fromUnitToDecimalBN } from './utils/util'
-import { SwapInfo, GetEverpayBalanceParams, GetEverpayBalancesParams, GetEverpayTransactionsParams, SwapOrder, SwapPriceParams, SwapPriceResult, AswapData } from './types/api'
+import { getTimestamp, getTokenBySymbol, toBN, getAccountChainType, fromDecimalToUnit, genTokenTag, matchTokenTag, genExpressData, fromUnitToDecimalBN, genBundleData } from './utils/util'
+import { SwapInfo, GetEverpayBalanceParams, GetEverpayBalancesParams, GetEverpayTransactionsParams, SwapOrder, SwapPriceParams, SwapPriceResult } from './types/api'
 import { checkParams } from './utils/check'
 import { ERRORS } from './utils/errors'
 import { utils } from 'ethers'
 import {
   Config, EverpayInfo, EverpayBase, BalanceParams, BalancesParams, DepositParams,
-  TransferOrWithdrawResult, TransferParams, WithdrawParams, EverpayTxWithoutSig, EverpayAction,
-  BalanceItem, TxsParams, TxsByAccountParams, TxsResult, EverpayTransaction, Token, EthereumTransaction, ArweaveTransaction, ExpressInfo, CachedInfo
+  TransferOrWithdrawResult, TransferParams, WithdrawParams, EverpayTxWithoutSig, EverpayAction, BundleData,
+  BalanceItem, TxsParams, TxsByAccountParams, TxsResult, EverpayTransaction, Token, EthereumTransaction, ArweaveTransaction, ExpressInfo, CachedInfo, InternalTransferItem, BundleDataWithSigs, BundleParams
 } from './types'
-import { getAswapData, swapParamsClientToServer, swapParamsServerToClient } from './utils/swap'
+import { getSwapData, swapParamsClientToServer, swapParamsServerToClient } from './utils/swap'
 
 export * from './types'
 class Everpay extends EverpayBase {
@@ -89,18 +89,18 @@ class Everpay extends EverpayBase {
     }
   }
 
-  async getAswapData (params: SwapOrder): Promise<AswapData> {
+  async getSwapData (params: SwapOrder): Promise<BundleData> {
     await Promise.all([this.info(), this.swapInfo()])
     const everpayInfo = this._cachedInfo.everpay?.value as EverpayInfo
     const swapInfo = this._cachedInfo.swap?.value as SwapInfo
-    const aswapData = getAswapData(params, everpayInfo, swapInfo, this._config.account as string)
-    return aswapData
+    const BundleData = getSwapData(params, everpayInfo, swapInfo, this._config.account as string)
+    return BundleData
   }
 
-  async swapOrder (aswapData: AswapData): Promise<string> {
-    const { sig } = await signMessageAsync(this._config, JSON.stringify(aswapData))
+  async swapOrder (BundleData: BundleData): Promise<string> {
+    const { sig } = await signMessageAsync(this._config, JSON.stringify(BundleData))
     return await placeSwapOrder(this._swapHost, {
-      swap: aswapData,
+      swap: BundleData,
       sigs: {
         [this._config.account as string]: sig
       }
@@ -201,7 +201,10 @@ class Everpay extends EverpayBase {
     })
   }
 
-  async getEverpayTxWithoutSig (type: 'transfer' | 'withdraw', params: TransferParams | WithdrawParams): Promise<EverpayTxWithoutSig> {
+  async getEverpayTxWithoutSig (
+    type: 'transfer' | 'withdraw' | 'bundle',
+    params: TransferParams | WithdrawParams | BundleParams
+  ): Promise<EverpayTxWithoutSig> {
     await this.info()
     const { symbol, amount, fee, quickMode } = params as WithdrawParams
     const token = getTokenBySymbol(symbol, this._cachedInfo?.everpay?.value.tokenList)
@@ -212,14 +215,19 @@ class Everpay extends EverpayBase {
     let decimalOperateAmountBN = toBN(0)
     let action = EverpayAction.transfer
 
-    checkParams({ account: from, symbol, token, amount, to })
+    checkParams({ account: from, symbol, token, to })
 
     if (type === 'transfer') {
+      checkParams({ amount })
       action = EverpayAction.transfer
+      decimalOperateAmountBN = fromUnitToDecimalBN(amount, token?.decimals ?? 0)
+    } else if (type === 'bundle') {
+      action = EverpayAction.bundle
       decimalOperateAmountBN = fromUnitToDecimalBN(amount, token?.decimals ?? 0)
 
       // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
     } else if (type === 'withdraw') {
+      checkParams({ amount })
       const chainType = (params as WithdrawParams).chainType
       const tokenChainType = token?.chainType as string
 
@@ -325,6 +333,34 @@ class Everpay extends EverpayBase {
       ...params,
       to
     })
+    return await this.sendEverpayTx(everpayTxWithoutSig)
+  }
+
+  async getBundleData (items: InternalTransferItem[], expiration?: number): Promise<BundleData> {
+    await this.info()
+    return genBundleData({
+      items,
+      tokenList: this._cachedInfo.everpay?.value?.tokenList as Token[],
+      // 设置 60s 过期
+      expiration: expiration ?? Math.round(Date.now() / 1000) + 60
+    })
+  }
+
+  async signBundleData (bundleData: BundleData | BundleDataWithSigs): Promise<BundleDataWithSigs> {
+    const { items, expiration, salt, version } = bundleData
+    const { sig } = await signMessageAsync(this._config, JSON.stringify({
+      // 只签名这几个字段，并且顺序需要保持一致
+      items, expiration, salt, version
+    }))
+    const sigs = (bundleData as BundleDataWithSigs).sigs != null ? (bundleData as BundleDataWithSigs).sigs : {}
+    sigs[this._config.account as string] = sig
+    return {
+      items, expiration, salt, version, sigs
+    }
+  }
+
+  async bundle (params: BundleParams): Promise<TransferOrWithdrawResult> {
+    const everpayTxWithoutSig = await this.getEverpayTxWithoutSig('bundle', params)
     return await this.sendEverpayTx(everpayTxWithoutSig)
   }
 }

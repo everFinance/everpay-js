@@ -56,7 +56,35 @@ export interface ExpressInfo {
 export enum EverpayAction {
   transfer = 'transfer',
   withdraw = 'burn',
-  aswap = 'aswap'
+  bundle = 'bundle'
+}
+
+export interface InternalTransferItem {
+  symbol: string
+  from: string
+  to: string
+  amount: string
+}
+
+export interface BundleItem {
+  amount: string
+  chainID: string
+  from: string
+  to: string
+  tag: string
+}
+
+export interface BundleData {
+  items: BundleItem[]
+  expiration: number
+  salt: string
+  version: string
+}
+
+export interface BundleDataWithSigs extends BundleData {
+  sigs: {
+    [account: string]: string
+  }
 }
 
 export interface EverpayTxWithoutSig {
@@ -83,7 +111,7 @@ export enum EverpayActionWithDeposit {
   transfer = 'transfer',
   withdraw = 'burn',
   deposit = 'mint',
-  aswap = 'aswap'
+  bundle = 'bundle'
 }
 
 enum EverpayTransactionStatus {
@@ -162,6 +190,15 @@ export interface TransferParams {
   symbol: string
   amount: string
   data?: Record<string, unknown>
+  to: string
+}
+
+export interface BundleParams {
+  symbol: string
+  amount: string
+  data: {
+    bundle: BundleDataWithSigs
+  }
   to: string
 }
 

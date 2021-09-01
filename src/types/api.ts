@@ -1,3 +1,5 @@
+import { BundleData } from '.'
+
 export interface GetEverpayTransactionsParams {
   account?: string
   tokenId?: string
@@ -56,22 +58,8 @@ export interface SwapPriceResult extends SwapOrder {
   indicativePrice: string
 }
 
-export interface AswapItem {
-  amount: string
-  chainID: string
-  from: string
-  to: string
-  tag: string
-}
-
-export interface AswapData {
-  items: AswapItem[]
-  expiration: number
-  salt: string
-  version: string
-}
 export interface PlaceOrderParams {
-  swap: AswapData
+  swap: BundleData
   sigs: {
     [account: string]: string
   }
