@@ -71,58 +71,6 @@ class Everpay extends EverpayBase {
     return result as SwapInfo
   }
 
-  async swapPrice (params: SwapPriceParams): Promise<SwapPriceResult> {
-    await Promise.all([this.info(), this.swapInfo()])
-    const everpayInfo = this._cachedInfo.everpay?.value as EverpayInfo
-    const swapInfo = this._cachedInfo.swap?.value as SwapInfo
-    const paramsToServer = swapParamsClientToServer(
-      params,
-      everpayInfo,
-      swapInfo
-    )
-    const result = await getSwapPrice(this._swapHost, paramsToServer)
-    const formated = swapParamsServerToClient(result, everpayInfo, swapInfo) as SwapOrder
-    return {
-      ...formated,
-      indicativePrice: result.indicativePrice,
-      spreadPercent: result.spreadPercent
-    }
-  }
-
-  async getSwapData (params: SwapOrder): Promise<BundleData> {
-    await Promise.all([this.info(), this.swapInfo()])
-    const swapInfo = this._cachedInfo.swap?.value as SwapInfo
-    const { tokenIn, tokenOut, tokenInAmount, tokenOutAmount } = params
-    return await this.getBundleData([
-      {
-        from: this._config.account as string,
-        to: swapInfo.address,
-        symbol: tokenIn,
-        amount: tokenInAmount
-      },
-      {
-        from: swapInfo.address,
-        to: this._config.account as string,
-        symbol: tokenOut,
-        amount: tokenOutAmount
-      }
-    ])
-  }
-
-  async swapOrder (bundleData: BundleData): Promise<string> {
-    const { items, expiration, salt, version } = bundleData
-    const { sig } = await signMessageAsync(this._config, JSON.stringify(bundleData))
-    return await placeSwapOrder(this._swapHost, {
-      items,
-      expiration,
-      salt,
-      version,
-      sigs: {
-        [this._config.account as string]: sig
-      }
-    })
-  }
-
   async balance (params: BalanceParams): Promise<string> {
     await this.info()
     const { symbol, account } = params
@@ -378,6 +326,58 @@ class Everpay extends EverpayBase {
   async bundle (params: BundleParams): Promise<TransferOrWithdrawResult> {
     const everpayTxWithoutSig = await this.getEverpayTxWithoutSig('bundle', params)
     return await this.sendEverpayTx(everpayTxWithoutSig)
+  }
+
+  async swapPrice (params: SwapPriceParams): Promise<SwapPriceResult> {
+    await Promise.all([this.info(), this.swapInfo()])
+    const everpayInfo = this._cachedInfo.everpay?.value as EverpayInfo
+    const swapInfo = this._cachedInfo.swap?.value as SwapInfo
+    const paramsToServer = swapParamsClientToServer(
+      params,
+      everpayInfo,
+      swapInfo
+    )
+    const result = await getSwapPrice(this._swapHost, paramsToServer)
+    const formated = swapParamsServerToClient(result, everpayInfo, swapInfo) as SwapOrder
+    return {
+      ...formated,
+      indicativePrice: result.indicativePrice,
+      spreadPercent: result.spreadPercent
+    }
+  }
+
+  async getSwapData (params: SwapOrder): Promise<BundleData> {
+    await Promise.all([this.info(), this.swapInfo()])
+    const swapInfo = this._cachedInfo.swap?.value as SwapInfo
+    const { tokenIn, tokenOut, tokenInAmount, tokenOutAmount } = params
+    return await this.getBundleData([
+      {
+        from: this._config.account as string,
+        to: swapInfo.address,
+        symbol: tokenIn,
+        amount: tokenInAmount
+      },
+      {
+        from: swapInfo.address,
+        to: this._config.account as string,
+        symbol: tokenOut,
+        amount: tokenOutAmount
+      }
+    ])
+  }
+
+  async swapOrder (bundleData: BundleData): Promise<string> {
+    const { items, expiration, salt, version } = bundleData
+    const { sig } = await signMessageAsync(this._config, JSON.stringify(bundleData))
+    return await placeSwapOrder(this._swapHost, {
+      items,
+      expiration,
+      salt,
+      version,
+      sigs: {
+        [this._config.account as string]: sig
+      }
+    })
   }
 }
 
