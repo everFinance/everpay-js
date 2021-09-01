@@ -1,7 +1,7 @@
 import axios, { AxiosRequestConfig, AxiosResponse } from 'axios'
 import { isObject, isString } from 'lodash-es'
 import { stringify as qsStringify } from 'query-string'
-import { EverpayInfo, EverpayTransaction, EverpayTx, TxsResult, ExpressInfo } from '../types'
+import { EverpayInfo, EverpayTransaction, EverpayTx, TxsResult, ExpressInfo, BundleDataWithSigs } from '../types'
 import {
   GetEverpayTransactionsParams,
   GetEverpayBalanceParams,
@@ -11,7 +11,6 @@ import {
   PostEverpayTxResult,
   SwapInfo,
   SwapPriceParams,
-  PlaceOrderParams,
   SwapPriceResult
 } from '../types/api'
 
@@ -160,12 +159,12 @@ export const getSwapPrice = async (apiHost: string, params: SwapPriceParams): Pr
   return result.data
 }
 
-export const placeSwapOrder = async (apiHost: string, params: PlaceOrderParams): Promise<string> => {
+export const placeSwapOrder = async (apiHost: string, params: BundleDataWithSigs): Promise<string> => {
   const url = `${apiHost}/dex/place_order`
   const result = await sendRequest({
     url,
     method: 'POST',
-    data: params
+    data: { bundle: params }
   })
   return result.data.everHash
 }

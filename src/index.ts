@@ -11,7 +11,7 @@ import {
   TransferOrWithdrawResult, TransferParams, WithdrawParams, EverpayTxWithoutSig, EverpayAction, BundleData,
   BalanceItem, TxsParams, TxsByAccountParams, TxsResult, EverpayTransaction, Token, EthereumTransaction, ArweaveTransaction, ExpressInfo, CachedInfo, InternalTransferItem, BundleDataWithSigs, BundleParams
 } from './types'
-import { getSwapData, swapParamsClientToServer, swapParamsServerToClient } from './utils/swap'
+import { swapParamsClientToServer, swapParamsServerToClient } from './utils/swap'
 
 export * from './types'
 class Everpay extends EverpayBase {
@@ -91,16 +91,32 @@ class Everpay extends EverpayBase {
 
   async getSwapData (params: SwapOrder): Promise<BundleData> {
     await Promise.all([this.info(), this.swapInfo()])
-    const everpayInfo = this._cachedInfo.everpay?.value as EverpayInfo
     const swapInfo = this._cachedInfo.swap?.value as SwapInfo
-    const BundleData = getSwapData(params, everpayInfo, swapInfo, this._config.account as string)
-    return BundleData
+    const { tokenIn, tokenOut, tokenInAmount, tokenOutAmount } = params
+    return await this.getBundleData([
+      {
+        from: this._config.account as string,
+        to: swapInfo.address,
+        symbol: tokenIn,
+        amount: tokenInAmount
+      },
+      {
+        from: swapInfo.address,
+        to: this._config.account as string,
+        symbol: tokenOut,
+        amount: tokenOutAmount
+      }
+    ])
   }
 
-  async swapOrder (BundleData: BundleData): Promise<string> {
-    const { sig } = await signMessageAsync(this._config, JSON.stringify(BundleData))
+  async swapOrder (bundleData: BundleData): Promise<string> {
+    const { items, expiration, salt, version } = bundleData
+    const { sig } = await signMessageAsync(this._config, JSON.stringify(bundleData))
     return await placeSwapOrder(this._swapHost, {
-      swap: BundleData,
+      items,
+      expiration,
+      salt,
+      version,
       sigs: {
         [this._config.account as string]: sig
       }
