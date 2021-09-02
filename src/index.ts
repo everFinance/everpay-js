@@ -291,7 +291,7 @@ class Everpay extends EverpayBase {
     return await this.sendEverpayTx(everpayTxWithoutSig)
   }
 
-  async withdraw (params: WithdrawParams): Promise<TransferOrWithdrawResult> {
+  async withdraw (params: WithdrawParams): Promise<SendEverpayTxResult> {
     await this.info()
     const to = params.to ?? this._config.account as string
     const everpayTxWithoutSig = await this.getEverpayTxWithoutSig('withdraw', {
