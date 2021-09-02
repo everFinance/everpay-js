@@ -2,12 +2,13 @@ import { getEverpayTxMessage, signMessageAsync, transferAsync } from './lib/sign
 import { getSwapInfo, getEverpayBalance, getEverpayBalances, getEverpayInfo, getEverpayTransaction, getEverpayTransactions, getExpressInfo, getMintdEverpayTransactionByChainTxHash, postTx, getSwapPrice, placeSwapOrder } from './api'
 import { everpayTxVersion, getExpressHost, getEverpayHost, getSwapHost } from './config'
 import { getTimestamp, getTokenBySymbol, toBN, getAccountChainType, fromDecimalToUnit, genTokenTag, matchTokenTag, genExpressData, fromUnitToDecimalBN, genBundleData } from './utils/util'
+import { GetEverpayBalanceParams, GetEverpayBalancesParams, GetEverpayTransactionsParams } from './types/api'
 import { checkParams } from './utils/check'
 import { ERRORS } from './utils/errors'
 import { utils } from 'ethers'
 import {
   Config, EverpayInfo, EverpayBase, BalanceParams, BalancesParams, DepositParams, SwapInfo,
-  TransferOrWithdrawResult, TransferParams, WithdrawParams, EverpayTxWithoutSig, EverpayAction, BundleData,
+  SendEverpayTxResult, TransferParams, WithdrawParams, EverpayTxWithoutSig, EverpayAction, BundleData,
   SwapOrder, SwapPriceParams, SwapPriceResult,
   BalanceItem, TxsParams, TxsByAccountParams, TxsResult, EverpayTransaction, Token, EthereumTransaction, ArweaveTransaction, ExpressInfo, CachedInfo, InternalTransferItem, BundleDataWithSigs, BundleParams
 } from './types'
@@ -270,7 +271,7 @@ class Everpay extends EverpayBase {
     return getEverpayTxMessage(everpayTxWithoutSig)
   }
 
-  async sendEverpayTx (everpayTxWithoutSig: EverpayTxWithoutSig): Promise<TransferOrWithdrawResult> {
+  async sendEverpayTx (everpayTxWithoutSig: EverpayTxWithoutSig): Promise<SendEverpayTxResult> {
     const messageData = getEverpayTxMessage(everpayTxWithoutSig)
     const { everHash, sig } = await signMessageAsync(this._config, messageData)
     const everpayTx = {
@@ -285,7 +286,7 @@ class Everpay extends EverpayBase {
     }
   }
 
-  async transfer (params: TransferParams): Promise<TransferOrWithdrawResult> {
+  async transfer (params: TransferParams): Promise<SendEverpayTxResult> {
     const everpayTxWithoutSig = await this.getEverpayTxWithoutSig('transfer', params)
     return await this.sendEverpayTx(everpayTxWithoutSig)
   }
@@ -323,7 +324,7 @@ class Everpay extends EverpayBase {
     }
   }
 
-  async bundle (params: BundleParams): Promise<TransferOrWithdrawResult> {
+  async bundle (params: BundleParams): Promise<SendEverpayTxResult> {
     const everpayTxWithoutSig = await this.getEverpayTxWithoutSig('bundle', params)
     return await this.sendEverpayTx(everpayTxWithoutSig)
   }

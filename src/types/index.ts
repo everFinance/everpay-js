@@ -220,7 +220,7 @@ export interface TxsByAccountParams {
   action?: EverpayActionWithDeposit
 }
 
-export interface TransferOrWithdrawResult extends PostEverpayTxResult {
+export interface SendEverpayTxResult extends PostEverpayTxResult {
   everpayTx: EverpayTx
   everHash: string
 }
@@ -269,8 +269,8 @@ export abstract class EverpayBase {
   abstract txByHash (everHash: string): Promise<EverpayTransaction>
   abstract mintedTxByChainTxHash (chainTxHash: string): Promise<EverpayTransaction>
   abstract getEverpayTxMessage (everpayTxWithoutSig: EverpayTxWithoutSig): string
-  abstract sendEverpayTx (everpayTxWithoutSig: EverpayTxWithoutSig): Promise<TransferOrWithdrawResult>
+  abstract sendEverpayTx (everpayTxWithoutSig: EverpayTxWithoutSig): Promise<SendEverpayTxResult>
   abstract deposit (params: DepositParams): Promise<EthereumTransaction | ArweaveTransaction>
-  abstract withdraw (params: WithdrawParams): Promise<TransferOrWithdrawResult>
-  abstract transfer (params: TransferParams): Promise<TransferOrWithdrawResult>
+  abstract withdraw (params: WithdrawParams): Promise<SendEverpayTxResult>
+  abstract transfer (params: TransferParams): Promise<SendEverpayTxResult>
 }
