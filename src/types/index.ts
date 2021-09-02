@@ -1,6 +1,6 @@
 import { Signer } from 'ethers'
 import { JWKInterface } from 'arweave/node/lib/wallet'
-import { SwapInfo, PostEverpayTxResult } from './api'
+import { PostEverpayTxResult } from './api'
 import { TransactionResponse as EthereumTransaction } from '@ethersproject/abstract-provider'
 import { TransactionInterface as ArweaveTransaction } from 'arweave/node/lib/transaction'
 
@@ -57,6 +57,11 @@ export enum EverpayAction {
   transfer = 'transfer',
   withdraw = 'burn',
   bundle = 'bundle'
+}
+export interface SwapInfo {
+  fee: string
+  address: string
+  tokenList: string[]
 }
 
 export interface InternalTransferItem {

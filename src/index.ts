@@ -2,12 +2,12 @@ import { getEverpayTxMessage, signMessageAsync, transferAsync } from './lib/sign
 import { getSwapInfo, getEverpayBalance, getEverpayBalances, getEverpayInfo, getEverpayTransaction, getEverpayTransactions, getExpressInfo, getMintdEverpayTransactionByChainTxHash, postTx, getSwapPrice, placeSwapOrder } from './api'
 import { everpayTxVersion, getExpressHost, getEverpayHost, getSwapHost } from './config'
 import { getTimestamp, getTokenBySymbol, toBN, getAccountChainType, fromDecimalToUnit, genTokenTag, matchTokenTag, genExpressData, fromUnitToDecimalBN, genBundleData } from './utils/util'
-import { SwapInfo, GetEverpayBalanceParams, GetEverpayBalancesParams, GetEverpayTransactionsParams, SwapOrder, SwapPriceParams, SwapPriceResult } from './types/api'
+import { GetEverpayBalanceParams, GetEverpayBalancesParams, GetEverpayTransactionsParams, SwapOrder, SwapPriceParams, SwapPriceResult } from './types/api'
 import { checkParams } from './utils/check'
 import { ERRORS } from './utils/errors'
 import { utils } from 'ethers'
 import {
-  Config, EverpayInfo, EverpayBase, BalanceParams, BalancesParams, DepositParams,
+  Config, EverpayInfo, EverpayBase, BalanceParams, BalancesParams, DepositParams, SwapInfo,
   TransferOrWithdrawResult, TransferParams, WithdrawParams, EverpayTxWithoutSig, EverpayAction, BundleData,
   BalanceItem, TxsParams, TxsByAccountParams, TxsResult, EverpayTransaction, Token, EthereumTransaction, ArweaveTransaction, ExpressInfo, CachedInfo, InternalTransferItem, BundleDataWithSigs, BundleParams
 } from './types'

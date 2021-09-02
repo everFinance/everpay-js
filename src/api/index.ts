@@ -1,7 +1,7 @@
 import axios, { AxiosRequestConfig, AxiosResponse } from 'axios'
 import { isObject, isString } from 'lodash-es'
 import { stringify as qsStringify } from 'query-string'
-import { EverpayInfo, EverpayTransaction, EverpayTx, TxsResult, ExpressInfo, BundleDataWithSigs } from '../types'
+import { EverpayInfo, EverpayTransaction, EverpayTx, TxsResult, ExpressInfo, BundleDataWithSigs, SwapInfo } from '../types'
 import {
   GetEverpayTransactionsParams,
   GetEverpayBalanceParams,
@@ -9,7 +9,6 @@ import {
   GetEverpayBalancesParams,
   GetEverpayBalancesResult,
   PostEverpayTxResult,
-  SwapInfo,
   SwapPriceParams,
   SwapPriceResult
 } from '../types/api'

@@ -31,12 +31,6 @@ export interface PostEverpayTxResult {
   // TODO: ok or other status
   status: string
 }
-
-export interface SwapInfo {
-  fee: string
-  address: string
-  tokenList: string[]
-}
 export interface SwapPriceParams {
   tokenIn: string
   tokenOut: string
