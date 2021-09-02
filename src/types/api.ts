@@ -31,21 +31,3 @@ export interface PostEverpayTxResult {
   // TODO: ok or other status
   status: string
 }
-export interface SwapPriceParams {
-  tokenIn: string
-  tokenOut: string
-  tokenInAmount?: string
-  tokenOutAmount?: string
-}
-
-export interface SwapOrder {
-  tokenIn: string
-  tokenOut: string
-  tokenInAmount: string
-  tokenOutAmount: string
-}
-
-export interface SwapPriceResult extends SwapOrder {
-  spreadPercent: string
-  indicativePrice: string
-}

@@ -1,16 +1,14 @@
 import axios, { AxiosRequestConfig, AxiosResponse } from 'axios'
 import { isObject, isString } from 'lodash-es'
 import { stringify as qsStringify } from 'query-string'
-import { EverpayInfo, EverpayTransaction, EverpayTx, TxsResult, ExpressInfo, BundleDataWithSigs, SwapInfo } from '../types'
+import { EverpayInfo, EverpayTransaction, EverpayTx, TxsResult, ExpressInfo, BundleDataWithSigs, SwapInfo, SwapPriceParams, SwapPriceResult } from '../types'
 import {
   GetEverpayTransactionsParams,
   GetEverpayBalanceParams,
   GetEverpayBalanceResult,
   GetEverpayBalancesParams,
   GetEverpayBalancesResult,
-  PostEverpayTxResult,
-  SwapPriceParams,
-  SwapPriceResult
+  PostEverpayTxResult
 } from '../types/api'
 
 // `validateStatus` defines whether to resolve or reject the promise for a given

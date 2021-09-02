@@ -1,5 +1,4 @@
-import { EverpayInfo, Token } from '../types'
-import { SwapInfo, SwapPriceParams } from '../types/api'
+import { EverpayInfo, Token, SwapInfo, SwapPriceParams } from '../types'
 import { ERRORS } from './errors'
 import { fromDecimalToUnit, fromUnitToDecimal, genTokenTag, getTokenBySymbol, getTokenByTag, matchTokenTag } from './util'
 

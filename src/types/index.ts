@@ -240,11 +240,23 @@ export interface CachedInfo {
   }
 }
 
-export interface PriceParams {
-  base: string
-  quote: string
-  amount: string
-  side: 'BUY' | 'SELL'
+export interface SwapPriceParams {
+  tokenIn: string
+  tokenOut: string
+  tokenInAmount?: string
+  tokenOutAmount?: string
+}
+
+export interface SwapOrder {
+  tokenIn: string
+  tokenOut: string
+  tokenInAmount: string
+  tokenOutAmount: string
+}
+
+export interface SwapPriceResult extends SwapOrder {
+  spreadPercent: string
+  indicativePrice: string
 }
 
 export abstract class EverpayBase {
