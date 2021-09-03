@@ -347,7 +347,7 @@ class Everpay extends EverpayBase {
     }
   }
 
-  async getSwapData (params: SwapOrder): Promise<BundleData> {
+  async getSwapBundleData (params: SwapOrder): Promise<BundleData> {
     await Promise.all([this.info(), this.swapInfo()])
     const swapInfo = this._cachedInfo.swap?.value as SwapInfo
     const { tokenIn, tokenOut, tokenInAmount, tokenOutAmount } = params
