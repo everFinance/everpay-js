@@ -1,7 +1,7 @@
 import { getEverpayTxMessage, signMessageAsync, transferAsync } from './lib/sign'
 import { getEverpayBalance, getEverpayBalances, getEverpayInfo, getEverpayTransaction, getEverpayTransactions, getExpressInfo, getMintdEverpayTransactionByChainTxHash, postTx } from './api'
 import { everpayTxVersion, getExpressHost, getEverpayHost } from './config'
-import { getTimestamp, getTokenBySymbol, toBN, getAccountChainType, fromDecimalToUnit, genTokenTag, matchTokenTag, genExpressData, fromUnitToDecimalBN } from './utils/util'
+import { getTimestamp, getTokenBySymbol, toBN, getAccountChainType, fromDecimalToUnit, genTokenTag, matchTokenTag, genExpressData, fromUnitToDecimalBN, getTokenBurnFeeByChainType } from './utils/util'
 import { GetEverpayBalanceParams, GetEverpayBalancesParams, GetEverpayTransactionsParams } from './types/api'
 import { checkParams } from './utils/check'
 import { ERRORS } from './utils/errors'
@@ -202,6 +202,9 @@ class Everpay extends EverpayBase {
       } else {
         action = EverpayAction.withdraw
         decimalFeeBN = fee !== undefined ? fromUnitToDecimalBN(fee, token?.decimals ?? 0) : toBN(token?.burnFee ?? '0')
+        decimalFeeBN = fee !== undefined
+          ? fromUnitToDecimalBN(fee, token?.decimals ?? 0)
+          : toBN(getTokenBurnFeeByChainType(token as Token, chainType) ?? '0')
         // 普通提现只有在可跨链提现的资产时，才需要 targetChainType
         if (tokenChainType !== chainType && tokenChainType.includes(chainType)) {
           const targetChainType = chainType

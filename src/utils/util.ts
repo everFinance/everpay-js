@@ -70,6 +70,16 @@ export const getTokenAddrByChainType = (token: Token, chainType: ChainType): str
   return tokenAddrs[index]
 }
 
+export const getTokenBurnFeeByChainType = (token: Token, chainType: ChainType): string => {
+  const chainTypes = token.chainType.split(',') as ChainType[]
+  const tokenBurnFees = token.burnFee.split(',')
+  const index = chainTypes.findIndex(c => c === chainType)
+  if (index === -1) {
+    throw new Error(ERRORS.TOKEN_NOT_FOUND)
+  }
+  return tokenBurnFees[index] !== undefined ? tokenBurnFees[index] : token.burnFee
+}
+
 export const genTokenTag = (token: Token): string => {
   const { chainType, symbol, id } = token
   const chainTypes = chainType.split(',')
