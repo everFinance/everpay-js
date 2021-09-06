@@ -201,7 +201,6 @@ class Everpay extends EverpayBase {
         // 普通提现
       } else {
         action = EverpayAction.withdraw
-        decimalFeeBN = fee !== undefined ? fromUnitToDecimalBN(fee, token?.decimals ?? 0) : toBN(token?.burnFee ?? '0')
         decimalFeeBN = fee !== undefined
           ? fromUnitToDecimalBN(fee, token?.decimals ?? 0)
           : toBN(getTokenBurnFeeByChainType(token as Token, chainType) ?? '0')
