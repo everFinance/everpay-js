@@ -105,8 +105,28 @@ const transferAsync = async (arJWK: ArJWK, {
     target: to,
     quantity: value.toString()
   }, arJWK)
-  // 直接给原来 transaction 赋值了 signature 值
-  await arweave.transactions.sign(transactionTransfer, arJWK)
+  if (arJWK === 'use_wallet') {
+    try {
+      const existingPermissions = await window.arweaveWallet.getPermissions() as string[]
+      if (!existingPermissions.includes('SIGN_TRANSACTION')) {
+        await window.arweaveWallet.connect(['SIGN_TRANSACTION'])
+      }
+    } catch (_a) {
+      // Permission is already granted
+    }
+    const signedTransaction = await window.arweaveWallet.sign(transactionTransfer)
+    // TODO: Temp fix arConnect modify reward
+    transactionTransfer.reward = signedTransaction.reward
+    transactionTransfer.setSignature({
+      id: signedTransaction.id,
+      owner: signedTransaction.owner,
+      tags: signedTransaction.tags,
+      signature: signedTransaction.signature
+    })
+  } else {
+    // 直接给原来 transaction 赋值了 signature 值
+    await arweave.transactions.sign(transactionTransfer, arJWK)
+  }
   const responseTransfer = await arweave.transactions.post(transactionTransfer)
   if (responseTransfer.status === 200) {
     // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
