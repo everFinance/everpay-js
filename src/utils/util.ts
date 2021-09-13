@@ -1,8 +1,10 @@
 import { isAddress } from '@ethersproject/address'
 import { isString } from 'lodash-es'
+import { v4 as uuidv4 } from 'uuid'
 import BN from 'bignumber.js'
 import { ERRORS } from './errors'
-import { ChainType, Token } from '../types'
+import { BundleData, ChainType, InternalTransferItem, Token } from '../types'
+import { bundleInternalTxVersion } from '../config'
 
 BN.config({
   EXPONENTIAL_AT: 1000
@@ -40,6 +42,10 @@ export const getTimestamp = (): number => Math.round(Date.now() / 1000)
 
 export const getTokenBySymbol = (symbol: string, tokenList?: Token[]): Token | undefined => {
   return tokenList?.find(t => t.symbol.toUpperCase() === symbol.toUpperCase())
+}
+
+export const getTokenByTag = (tag: string, tokenList?: Token[]): Token | undefined => {
+  return tokenList?.find(t => matchTokenTag(genTokenTag(t), tag))
 }
 
 const isEthereumAddress = isAddress
@@ -117,5 +123,35 @@ export const genExpressData = (params: GenExpressDataParams): ExpressData => {
     withdrawTo: to,
     withdrawChainType: chainType,
     withdrawFee: fee
+  }
+}
+
+interface GenBundleDataParams {
+  tokenList: Token[]
+  items: InternalTransferItem[]
+  expiration: number
+}
+
+export const genBundleData = (params: GenBundleDataParams): BundleData => {
+  const items = params.items.map((item: InternalTransferItem) => {
+    const { symbol, amount, from, to } = item
+    const token = getTokenBySymbol(symbol, params.tokenList) as Token
+    // 注意：顺序必须与后端保持一致，来让 JSON.stringify() 生成的字符串顺序与后端也一致
+    return {
+      tag: genTokenTag(token),
+      chainID: token.chainID,
+      from,
+      to,
+      amount: fromUnitToDecimal(amount, token.decimals)
+    }
+  })
+  const salt = uuidv4()
+  const version = bundleInternalTxVersion
+  return {
+    // 注意：顺序必须与后端保持一致，来让 JSON.stringify() 生成的字符串顺序与后端也一致
+    items,
+    expiration: params.expiration,
+    salt,
+    version
   }
 }

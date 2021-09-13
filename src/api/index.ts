@@ -1,6 +1,7 @@
 import axios, { AxiosRequestConfig, AxiosResponse } from 'axios'
 import { isObject, isString } from 'lodash-es'
-import { EverpayInfo, EverpayTransaction, EverpayTx, TxsResult, ExpressInfo } from '../types'
+import { stringify as qsStringify } from 'query-string'
+import { EverpayInfo, EverpayTransaction, EverpayTx, TxsResult, ExpressInfo, BundleDataWithSigs, SwapInfo, SwapPriceParams, SwapPriceResult } from '../types'
 import {
   GetEverpayTransactionsParams,
   GetEverpayBalanceParams,
@@ -42,6 +43,8 @@ export const sendRequest = async (config: AxiosRequestConfig): Promise<AxiosResp
       } else if (isObject(error.response) && isObject(error.response.data)) {
         // like { error: 'err_invalid_signature' }
         reject(new Error(error.response.data.error))
+      } else {
+        reject(new Error(error))
       }
     })
   })
@@ -81,16 +84,9 @@ export const getEverpayBalances = async (apiHost: string, {
 }
 
 export const getEverpayTransactions = async (apiHost: string, params: GetEverpayTransactionsParams): Promise<TxsResult> => {
-  const { account } = params
-  const queryKeys = ['page', 'tokenId', 'action'] as const
+  const { account, page, tokenId, action } = params
   const baseUrl = account !== undefined ? `${apiHost}/txs/${account}` : `${apiHost}/txs`
-  const queryString = queryKeys.map(key => {
-    if (params[key] !== undefined) {
-      return `${key}=${params[key] as string}`
-    }
-    return ''
-  }).join('&')
-
+  const queryString = qsStringify({ page, tokenId, action }, { skipNull: true })
   const result = await sendRequest({
     ...rConfig,
     url: `${baseUrl}${queryString !== '' ? `?${queryString}` : ''}`,
@@ -137,4 +133,35 @@ export const getExpressInfo = async (apiHost: string): Promise<ExpressInfo> => {
   })
 
   return result.data
+}
+
+export const getSwapInfo = async (apiHost: string): Promise<SwapInfo> => {
+  const url = `${apiHost}/dex/info`
+  const result = await sendRequest({
+    url,
+    method: 'GET'
+  })
+
+  return result.data
+}
+
+export const getSwapPrice = async (apiHost: string, params: SwapPriceParams): Promise<SwapPriceResult> => {
+  const queryString = qsStringify(params, { skipNull: true })
+  const url = `${apiHost}/dex/price?${queryString}`
+  const result = await sendRequest({
+    url,
+    method: 'GET'
+  })
+
+  return result.data
+}
+
+export const placeSwapOrder = async (apiHost: string, params: BundleDataWithSigs): Promise<string> => {
+  const url = `${apiHost}/dex/place_order`
+  const result = await sendRequest({
+    url,
+    method: 'POST',
+    data: { bundle: params }
+  })
+  return result.data.everHash
 }

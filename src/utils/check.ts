@@ -26,7 +26,8 @@ export const checkItem = (itemName: string, param?: unknown): void => {
   const actions = [
     EverpayActionWithDeposit.deposit,
     EverpayActionWithDeposit.withdraw,
-    EverpayActionWithDeposit.transfer
+    EverpayActionWithDeposit.transfer,
+    EverpayActionWithDeposit.bundle
   ]
   if (itemName === 'action' && !actions.includes(param as any)) {
     throw new Error(cases.action)

@@ -37,22 +37,22 @@ export const getEverpayTxMessage = (everpayTxWithoutSig: EverpayTxWithoutSig): s
   return keys.map(key => `${key}:${everpayTxWithoutSig[key]}`).join('\n')
 }
 
-export const signMessageAsync = async (config: Config, everpayTxWithoutSig: EverpayTxWithoutSig): Promise<SignMessageAsyncResult> => {
-  const accountChainType = getAccountChainType(everpayTxWithoutSig.from)
-  const messageData = getEverpayTxMessage(everpayTxWithoutSig)
-  const personalMsgHash = hashPersonalMessage(Buffer.from(messageData))
-  const everHash = `0x${personalMsgHash.toString('hex')}`
+export const signMessageAsync = async (config: Config, messageData: string): Promise<SignMessageAsyncResult> => {
+  const from = config.account as string
+  const accountChainType = getAccountChainType(from)
+  const personalMsgHashBuffer = hashPersonalMessage(Buffer.from(messageData))
+  const personalMsgHex = `0x${personalMsgHashBuffer.toString('hex')}`
   let sig = ''
   checkSignConfig(accountChainType, config)
 
   if (accountChainType === ChainType.ethereum) {
-    sig = await ethereumLib.signMessageAsync(config.ethConnectedSigner as Signer, everpayTxWithoutSig.from, messageData)
+    sig = await ethereumLib.signMessageAsync(config.ethConnectedSigner as Signer, from, messageData)
   } else if (accountChainType === ChainType.arweave) {
-    sig = await arweaveLib.signMessageAsync(config.arJWK as ArJWK, everpayTxWithoutSig.from, everHash)
+    sig = await arweaveLib.signMessageAsync(config.arJWK as ArJWK, from, personalMsgHex)
   } else {
     throw new Error(ERRORS.INVALID_ACCOUNT_TYPE)
   }
-  return { everHash, sig }
+  return { everHash: personalMsgHex, sig }
 }
 
 export const transferAsync = async (

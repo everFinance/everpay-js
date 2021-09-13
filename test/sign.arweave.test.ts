@@ -1,7 +1,7 @@
 import Arweave from 'arweave'
 import arweaveLib from '../src/lib/arweave'
 import hashPersonalMessage from '../src/lib/hashPersonalMessage'
-import { getEverpayTxMessage } from '../src/lib/sign'
+import { getEverpayTxMessage, signMessageAsync } from '../src/lib/sign'
 import { b64UrlToBuffer } from 'arweave/web/lib/utils'
 import { arWallet1 } from './constants/wallet'
 
@@ -12,6 +12,20 @@ const options = {
   timeout: 20000, // Network request timeouts in milliseconds
   logging: false // Enable network request logging
 }
+
+test('check arweaveLib.signMessageAsync', async () => {
+  const bundleData = { items: [{ tag: 'ethereum-eth-0x0000000000000000000000000000000000000000', chainID: '42', from: '5NPqYBdIsIpJzPeYixuz7BEH_W7BEk_mb8HxBD3OHXo', to: '0x9430dBaAD43b5e0Bebe142f84582111Dd1D7cd00', amount: '606000000000000000' }, { tag: 'ethereum-usdt-0xd85476c906b5301e8e9eb58d174a6f96b9dfc5ee', chainID: '42', from: '0x9430dBaAD43b5e0Bebe142f84582111Dd1D7cd00', to: '5NPqYBdIsIpJzPeYixuz7BEH_W7BEk_mb8HxBD3OHXo', amount: '526526000000' }], expiration: 1629791059, salt: '83ea4d31-5819-4b02-8c1a-1e5d361d03be', version: 'v1' }
+  const { sig } = await signMessageAsync({
+    account: arWallet1.address,
+    arJWK: arWallet1.jwk
+  }, JSON.stringify(bundleData))
+  const msgBase64WithArOwner = sig
+
+  const personalMsgHashBuffer = hashPersonalMessage(Buffer.from(JSON.stringify(bundleData)))
+  const arweave = Arweave.init(options)
+  const verified = await arweave.crypto.verify(arWallet1.jwk.n, personalMsgHashBuffer, b64UrlToBuffer(msgBase64WithArOwner.split(',')[0]))
+  expect(verified).toBe(true)
+})
 
 test('check arweaveLib.signMessageAsync', async () => {
   const everHash = '0xdfc9ef6613b52c043d68496ec1bd2db0cd2d5891d878208938c4ce31a4826274'
