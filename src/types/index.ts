@@ -217,6 +217,7 @@ export interface TxsParams {
   page?: number
   symbol?: string
   action?: EverpayActionWithDeposit
+  withoutAction?: EverpayActionWithDeposit
 }
 
 export interface TxsByAccountParams {

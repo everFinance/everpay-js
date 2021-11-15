@@ -110,7 +110,7 @@ class Everpay extends EverpayBase {
   }
 
   private async getMergedTxsParams (params: TxsParams): Promise<GetEverpayTransactionsParams> {
-    const { page, symbol, action } = params
+    const { page, symbol, action, withoutAction } = params
     const mergedParams: GetEverpayTransactionsParams = {}
     if (page !== undefined) {
       mergedParams.page = page
@@ -124,6 +124,9 @@ class Everpay extends EverpayBase {
     if (action !== undefined) {
       checkParams({ action })
       mergedParams.action = action
+    }
+    if (withoutAction !== undefined) {
+      mergedParams.withoutAction = withoutAction
     }
     return mergedParams
   }
