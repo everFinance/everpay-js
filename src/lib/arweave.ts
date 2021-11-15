@@ -1,6 +1,7 @@
 import Arweave from 'arweave'
 import { isString } from 'lodash-es'
-import { ArJWK, ArweaveTransaction } from '../types'
+import { ArJWK, ArweaveTransaction, ChainType } from '../types'
+import { getTokenAddrByChainType } from '../utils/util'
 import { TransferAsyncParams } from './interface'
 
 const options = {
@@ -99,14 +100,37 @@ const signMessageAsync = async (arJWK: ArJWK, address: string, everHash: string)
 }
 
 const transferAsync = async (arJWK: ArJWK, {
+  symbol,
+  token,
+  from,
   to,
   value
 }: TransferAsyncParams): Promise<ArweaveTransaction> => {
   const arweave = Arweave.init(options)
-  const transactionTransfer = await arweave.createTransaction({
-    target: to,
-    quantity: value.toString()
-  }, arJWK)
+  let transactionTransfer: any
+
+  if (symbol.toUpperCase() === 'AR') {
+    transactionTransfer = await arweave.createTransaction({
+      target: to,
+      quantity: value.toString()
+    }, arJWK)
+
+  // PST Token
+  } else {
+    const tokenID = getTokenAddrByChainType(token, ChainType.arweave)
+    transactionTransfer = await arweave.createTransaction({
+      data: (Math.random() * 10000).toFixed()
+    }, arJWK)
+    transactionTransfer.addTag('App-Name', 'SmartWeaveAction')
+    transactionTransfer.addTag('App-Version', '0.3.0')
+    transactionTransfer.addTag('Contract', tokenID)
+    transactionTransfer.addTag('Input', JSON.stringify({
+      function: 'transfer',
+      qty: value.toNumber(),
+      target: to
+    }))
+  }
+
   if (arJWK === 'use_wallet') {
     try {
       const existingPermissions = await window.arweaveWallet.getPermissions() as string[]
