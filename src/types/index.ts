@@ -24,6 +24,7 @@ export interface Token {
   id: string
   symbol: string
   decimals: number
+  chainDecimals: string
   totalSupply: string
   chainID: string
   chainType: ChainType | string
@@ -217,6 +218,7 @@ export interface TxsParams {
   page?: number
   symbol?: string
   action?: EverpayActionWithDeposit
+  withoutAction?: EverpayActionWithDeposit
 }
 
 export interface TxsByAccountParams {
