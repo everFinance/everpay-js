@@ -3,7 +3,7 @@ import { isString } from 'lodash-es'
 import { v4 as uuidv4 } from 'uuid'
 import BN from 'bignumber.js'
 import { ERRORS } from './errors'
-import { BundleData, ChainType, InternalTransferItem, Token } from '../types'
+import { BundleData, ChainType, InternalTransferItem, Token, FeeItem } from '../types'
 import { bundleInternalTxVersion } from '../config'
 
 BN.config({
@@ -76,14 +76,14 @@ export const getTokenAddrByChainType = (token: Token, chainType: ChainType): str
   return tokenAddrs[index]
 }
 
-export const getTokenBurnFeeByChainType = (token: Token, chainType: ChainType): string => {
+export const getTokenBurnFeeByChainType = (token: Token, feeItem: FeeItem, chainType: ChainType): string => {
   const chainTypes = token.chainType.split(',') as ChainType[]
-  const tokenBurnFees = token.burnFee.split(',')
+  const tokenBurnFees = feeItem.burnFee.split(',')
   const index = chainTypes.findIndex(c => c === chainType)
   if (index === -1) {
     throw new Error(ERRORS.TOKEN_NOT_FOUND)
   }
-  return tokenBurnFees[index] !== undefined ? tokenBurnFees[index] : token.burnFee
+  return tokenBurnFees[index] !== undefined ? tokenBurnFees[index] : feeItem.burnFee
 }
 
 export const genTokenTag = (token: Token): string => {

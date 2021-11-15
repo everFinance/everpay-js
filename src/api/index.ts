@@ -1,7 +1,18 @@
 import axios, { AxiosRequestConfig, AxiosResponse } from 'axios'
 import { isObject, isString } from 'lodash-es'
 import { stringify as qsStringify } from 'query-string'
-import { EverpayInfo, EverpayTransaction, EverpayTx, TxsResult, ExpressInfo, BundleDataWithSigs, SwapInfo, SwapPriceParams, SwapPriceResult } from '../types'
+import {
+  EverpayInfo,
+  EverpayTransaction,
+  EverpayTx,
+  TxsResult,
+  FeeItem,
+  ExpressInfo,
+  BundleDataWithSigs,
+  SwapInfo,
+  SwapPriceParams,
+  SwapPriceResult
+} from '../types'
 import {
   GetEverpayTransactionsParams,
   GetEverpayBalanceParams,
@@ -113,6 +124,26 @@ export const getMintdEverpayTransactionByChainTxHash = async (apiHost: string, c
     method: 'GET'
   })
   return result.data.tx
+}
+
+export const getFees = async (apiHost: string): Promise<FeeItem[]> => {
+  const url = `${apiHost}/fees`
+  const result = await sendRequest({
+    ...rConfig,
+    url,
+    method: 'GET'
+  })
+  return result.data.fees
+}
+
+export const getFee = async (apiHost: string, tokenTag: string): Promise<FeeItem> => {
+  const url = `${apiHost}/fee/${tokenTag}`
+  const result = await sendRequest({
+    ...rConfig,
+    url,
+    method: 'GET'
+  })
+  return result.data.fee
 }
 
 export const postTx = async (apiHost: string, params: EverpayTx): Promise<PostEverpayTxResult> => {

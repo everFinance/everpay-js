@@ -25,10 +25,16 @@ export interface Token {
   symbol: string
   decimals: number
   totalSupply: string
-  burnFee: string
-  transferFee: string
   chainID: string
   chainType: ChainType | string
+}
+
+export interface FeeItem {
+  tokenTag: string
+  burnFee: string
+  transferFee: string
+  atomicBundleFee: string
+  updatedAt: string
 }
 
 export interface EverpayInfo {

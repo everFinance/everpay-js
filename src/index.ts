@@ -1,5 +1,5 @@
 import { getEverpayTxMessage, signMessageAsync, transferAsync } from './lib/sign'
-import { getSwapInfo, getEverpayBalance, getEverpayBalances, getEverpayInfo, getEverpayTransaction, getEverpayTransactions, getExpressInfo, getMintdEverpayTransactionByChainTxHash, postTx, getSwapPrice, placeSwapOrder } from './api'
+import { getSwapInfo, getEverpayBalance, getEverpayBalances, getEverpayInfo, getEverpayTransaction, getEverpayTransactions, getExpressInfo, getMintdEverpayTransactionByChainTxHash, postTx, getSwapPrice, placeSwapOrder, getFees, getFee } from './api'
 import { everpayTxVersion, getExpressHost, getEverpayHost, getSwapHost } from './config'
 import { getTimestamp, getTokenBySymbol, toBN, getAccountChainType, fromDecimalToUnit, genTokenTag, matchTokenTag, genExpressData, fromUnitToDecimalBN, genBundleData, getTokenBurnFeeByChainType } from './utils/util'
 import { GetEverpayBalanceParams, GetEverpayBalancesParams, GetEverpayTransactionsParams } from './types/api'
@@ -9,7 +9,7 @@ import { utils } from 'ethers'
 import {
   Config, EverpayInfo, EverpayBase, BalanceParams, BalancesParams, DepositParams, SwapInfo,
   SendEverpayTxResult, TransferParams, WithdrawParams, EverpayTxWithoutSig, EverpayAction, BundleData,
-  SwapOrder, SwapPriceParams, SwapPriceResult,
+  SwapOrder, SwapPriceParams, SwapPriceResult, FeeItem,
   BalanceItem, TxsParams, TxsByAccountParams, TxsResult, EverpayTransaction, Token, EthereumTransaction, ArweaveTransaction, ExpressInfo, CachedInfo, InternalTransferItem, BundleDataWithSigs, BundleParams
 } from './types'
 import { swapParamsClientToServer, swapParamsServerToClient } from './utils/swap'
@@ -150,6 +150,17 @@ class Everpay extends EverpayBase {
     return await getMintdEverpayTransactionByChainTxHash(this._apiHost, chainTxHash)
   }
 
+  async fees (): Promise<FeeItem[]> {
+    return await getFees(this._apiHost)
+  }
+
+  async fee (symbol: string): Promise<FeeItem> {
+    await this.info()
+    const token = getTokenBySymbol(symbol, this._cachedInfo?.everpay?.value.tokenList) as Token
+    checkParams({ symbol, token })
+    return await getFee(this._apiHost, genTokenTag(token))
+  }
+
   async deposit (params: DepositParams): Promise<EthereumTransaction | ArweaveTransaction> {
     await this.info()
     const { amount, symbol } = params
@@ -235,9 +246,14 @@ class Everpay extends EverpayBase {
         // 普通提现
       } else {
         action = EverpayAction.withdraw
-        decimalFeeBN = fee !== undefined
-          ? fromUnitToDecimalBN(fee, token?.decimals ?? 0)
-          : toBN(getTokenBurnFeeByChainType(token as Token, chainType) ?? '0')
+
+        if (fee !== undefined) {
+          decimalFeeBN = fromUnitToDecimalBN(fee, token?.decimals ?? 0)
+        } else {
+          const feeItem = await getFee(this._apiHost, genTokenTag(token as Token))
+          decimalFeeBN = toBN(getTokenBurnFeeByChainType(token as Token, feeItem, chainType) ?? '0')
+        }
+
         // 普通提现只有在可跨链提现的资产时，才需要 targetChainType
         if (tokenChainType !== chainType && tokenChainType.includes(chainType)) {
           const targetChainType = chainType
