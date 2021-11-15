@@ -1,7 +1,7 @@
 import { getEverpayTxMessage, signMessageAsync, transferAsync } from './lib/sign'
 import { getSwapInfo, getEverpayBalance, getEverpayBalances, getEverpayInfo, getEverpayTransaction, getEverpayTransactions, getExpressInfo, getMintdEverpayTransactionByChainTxHash, postTx, getSwapPrice, placeSwapOrder, getFees, getFee } from './api'
 import { everpayTxVersion, getExpressHost, getEverpayHost, getSwapHost } from './config'
-import { getTimestamp, getTokenBySymbol, toBN, getAccountChainType, fromDecimalToUnit, genTokenTag, matchTokenTag, genExpressData, fromUnitToDecimalBN, genBundleData, getTokenBurnFeeByChainType } from './utils/util'
+import { getTimestamp, getTokenBySymbol, toBN, getAccountChainType, fromDecimalToUnit, genTokenTag, matchTokenTag, genExpressData, fromUnitToDecimalBN, genBundleData, getTokenBurnFeeByChainType, getChainDecimalByChainType } from './utils/util'
 import { GetEverpayBalanceParams, GetEverpayBalancesParams, GetEverpayTransactionsParams } from './types/api'
 import { checkParams } from './utils/check'
 import { ERRORS } from './utils/errors'
@@ -168,7 +168,9 @@ class Everpay extends EverpayBase {
     await this.info()
     const { amount, symbol } = params
     const token = getTokenBySymbol(symbol, this._cachedInfo?.everpay?.value.tokenList) as Token
-    const value = utils.parseUnits(toBN(amount).toString(), token?.decimals)
+    const accountChainType = getAccountChainType(this._config.account as string)
+    const chainDecimal = getChainDecimalByChainType(token, accountChainType)
+    const value = utils.parseUnits(toBN(amount).toString(), chainDecimal)
     const from = this._config.account
     checkParams({ account: from, symbol, token, amount })
 
