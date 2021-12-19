@@ -1,7 +1,7 @@
 import { getEverpayTxMessage, signMessageAsync, transferAsync } from './lib/sign'
 import { getSwapInfo, getEverpayBalance, getEverpayBalances, getEverpayInfo, getEverpayTransaction, getEverpayTransactions, getExpressInfo, getMintdEverpayTransactionByChainTxHash, postTx, getSwapPrice, placeSwapOrder, getFees, getFee } from './api'
 import { everpayTxVersion, getExpressHost, getEverpayHost, getSwapHost } from './config'
-import { getTimestamp, getTokenBySymbol, toBN, getAccountChainType, fromDecimalToUnit, genTokenTag, matchTokenTag, genExpressData, fromUnitToDecimalBN, genBundleData, getTokenBurnFeeByChainType, getChainDecimalByChainType } from './utils/util'
+import { getTimestamp, getTokenBySymbol, toBN, getAccountChainType, fromDecimalToUnit, genTokenTag, matchTokenTag, genExpressData, fromUnitToDecimalBN, genBundleData, getTokenBurnFeeByChainType, getChainDecimalByChainType, isArweaveChainPSTMode } from './utils/util'
 import { GetEverpayBalanceParams, GetEverpayBalancesParams, GetEverpayTransactionsParams } from './types/api'
 import { checkParams } from './utils/check'
 import { ERRORS } from './utils/errors'
@@ -174,6 +174,10 @@ class Everpay extends EverpayBase {
     const from = this._config.account
     checkParams({ account: from, symbol, token, amount })
 
+    if (isArweaveChainPSTMode(token) && parseInt(amount) !== +amount) {
+      throw new Error(ERRORS.DEPOSIT_ARWEAVE_PST_MUST_BE_INTEGER)
+    }
+
     return await transferAsync(this._config, this._cachedInfo.everpay?.value as EverpayInfo, {
       symbol,
       token,
@@ -182,6 +186,7 @@ class Everpay extends EverpayBase {
     })
   }
 
+  // amount 为实际收款数量
   async getEverpayTxWithoutSig (
     type: 'transfer' | 'withdraw' | 'bundle',
     params: TransferParams | WithdrawParams | BundleParams
@@ -211,6 +216,8 @@ class Everpay extends EverpayBase {
       checkParams({ amount })
       const chainType = (params as WithdrawParams).chainType
       const tokenChainType = token?.chainType as string
+      const balance = await this.balance({ symbol })
+      const decimalBalanceBN = fromUnitToDecimalBN(balance, token?.decimals ?? 0)
 
       // 快速提现
       if (quickMode === true) {
@@ -232,7 +239,7 @@ class Everpay extends EverpayBase {
         // 快速提现的 amount 为全部数量
         decimalOperateAmountBN = fromUnitToDecimalBN(amount, token?.decimals ?? 0)
 
-        if (decimalOperateAmountBN.lte(quickWithdrawFeeBN)) {
+        if (decimalOperateAmountBN.plus(quickWithdrawFeeBN).gt(decimalBalanceBN)) {
           throw new Error(ERRORS.WITHDRAW_AMOUNT_LESS_THAN_FEE)
         }
 
@@ -264,9 +271,9 @@ class Everpay extends EverpayBase {
           const targetChainType = chainType
           data = data !== undefined ? { ...data, targetChainType } : { targetChainType }
         }
-        decimalOperateAmountBN = fromUnitToDecimalBN(amount, token?.decimals ?? 0).minus(decimalFeeBN)
-        // 普通提现的 amount 为实际到账数量
-        if (decimalOperateAmountBN.lte(0)) {
+        decimalOperateAmountBN = fromUnitToDecimalBN(amount, token?.decimals ?? 0)
+
+        if (decimalOperateAmountBN.plus(decimalFeeBN).gt(decimalBalanceBN)) {
           throw new Error(ERRORS.WITHDRAW_AMOUNT_LESS_THAN_FEE)
         }
       }
