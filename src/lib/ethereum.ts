@@ -47,7 +47,9 @@ const transferAsync = async (ethConnectedSigner: Signer, {
   } else {
     const tokenID = getTokenAddrByChainType(token, ChainType.ethereum)
     const erc20RW = new Contract(tokenID.toLowerCase(), erc20Abi, ethConnectedSigner)
-    transactionResponse = await erc20RW.transfer(to, value)
+    transactionResponse = await erc20RW.transfer(to, value, {
+      gasLimit: '100000'
+    })
   }
   return transactionResponse
 }
