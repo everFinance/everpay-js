@@ -167,16 +167,16 @@ class Everpay extends EverpayBase {
   async deposit (params: DepositParams): Promise<EthereumTransaction | ArweaveTransaction> {
     await this.info()
     const { amount, symbol } = params
-    const token = getTokenBySymbol(symbol, this._cachedInfo?.everpay?.value.tokenList) as Token
-    const accountChainType = getAccountChainType(this._config.account as string)
-    const chainDecimal = getChainDecimalByChainType(token, accountChainType)
-    const value = utils.parseUnits(toBN(amount).toString(), chainDecimal)
     const from = this._config.account
+    const token = getTokenBySymbol(symbol, this._cachedInfo?.everpay?.value.tokenList) as Token
     checkParams({ account: from, symbol, token, amount })
-
     if (isArweaveChainPSTMode(token) && parseInt(amount) !== +amount) {
       throw new Error(ERRORS.DEPOSIT_ARWEAVE_PST_MUST_BE_INTEGER)
     }
+
+    const accountChainType = getAccountChainType(this._config.account as string)
+    const chainDecimal = getChainDecimalByChainType(token, accountChainType)
+    const value = utils.parseUnits(toBN(amount).toString(), chainDecimal)
 
     return await transferAsync(this._config, this._cachedInfo.everpay?.value as EverpayInfo, {
       symbol,
