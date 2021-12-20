@@ -1,15 +1,35 @@
 import Everpay from '../src/index'
-import { arWallet2 } from './constants/wallet'
+import { ethWalletHasUSDT, arWallet2 } from './constants/wallet'
 import { ArweaveTransaction } from '../src/types'
+import { ethers } from 'ethers'
 
-const everpay = new Everpay({
+const provider = new ethers.providers.InfuraProvider('kovan')
+const signer = new ethers.Wallet(ethWalletHasUSDT.privateKey, provider)
+
+const everpayEthereumMode = new Everpay({
+  account: ethWalletHasUSDT.address,
+  ethConnectedSigner: signer,
+  debug: true
+})
+
+test(`check ${ethWalletHasUSDT.address} deposit vrt`, async () => {
+  return await everpayEthereumMode.deposit({
+    symbol: 'vrt',
+    amount: '0.000000001'
+  }).then(ethTx => {
+    console.log('ethTx', ethTx)
+    expect(ethTx).toBeTruthy()
+  })
+})
+
+const everpayARMode = new Everpay({
   account: arWallet2.address,
   arJWK: arWallet2.jwk,
   debug: true
 })
 
 test(`check ${arWallet2.address} deposit VRT`, async () => {
-  return await everpay.deposit({
+  return await everpayARMode.deposit({
     symbol: 'vrt',
     amount: '1'
   }).then((arTx) => {
@@ -20,7 +40,7 @@ test(`check ${arWallet2.address} deposit VRT`, async () => {
 
 test(`check ${arWallet2.address} deposit VRT failed`, async () => {
   await expect(
-    everpay.deposit({
+    everpayARMode.deposit({
       symbol: 'vrt',
       amount: '0.1'
     })
