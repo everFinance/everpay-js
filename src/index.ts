@@ -9,7 +9,7 @@ import { utils } from 'ethers'
 import {
   Config, EverpayInfo, EverpayBase, BalanceParams, BalancesParams, DepositParams, SwapInfo,
   SendEverpayTxResult, TransferParams, WithdrawParams, EverpayTxWithoutSig, EverpayAction, BundleData,
-  SwapOrder, SwapPriceParams, SwapPriceResult, FeeItem,
+  SwapOrder, SwapPriceParams, SwapPriceResult, FeeItem, ChainType,
   BalanceItem, TxsParams, TxsByAccountParams, TxsResult, EverpayTransaction, Token, EthereumTransaction, ArweaveTransaction, ExpressInfo, CachedInfo, InternalTransferItem, BundleDataWithSigs, BundleParams
 } from './types'
 import { swapParamsClientToServer, swapParamsServerToClient } from './utils/swap'
@@ -170,11 +170,13 @@ class Everpay extends EverpayBase {
     const from = this._config.account
     const token = getTokenBySymbol(symbol, this._cachedInfo?.everpay?.value.tokenList) as Token
     checkParams({ account: from, symbol, token, amount })
-    if (isArweaveChainPSTMode(token) && parseInt(amount) !== +amount) {
+    const accountChainType = getAccountChainType(this._config.account as string)
+
+    // arweave 上的 PST 充值必须是整数
+    if (isArweaveChainPSTMode(token) && accountChainType === ChainType.arweave && parseInt(amount) !== +amount) {
       throw new Error(ERRORS.DEPOSIT_ARWEAVE_PST_MUST_BE_INTEGER)
     }
 
-    const accountChainType = getAccountChainType(this._config.account as string)
     const chainDecimal = getChainDecimalByChainType(token, accountChainType)
     const value = utils.parseUnits(toBN(amount).toString(), chainDecimal)
 
@@ -215,6 +217,12 @@ class Everpay extends EverpayBase {
     } else if (type === 'withdraw') {
       checkParams({ amount })
       const chainType = (params as WithdrawParams).chainType
+
+      // PST 提现到 arweave 网络必须是整数
+      if (isArweaveChainPSTMode(token) && chainType === ChainType.arweave && parseInt(amount) !== +amount) {
+        throw new Error(ERRORS.PST_WITHDARW_TO_ARWEAVE_MUST_BE_INTEGER)
+      }
+
       const tokenChainType = token?.chainType as string
       const balance = await this.balance({ symbol })
       const decimalBalanceBN = fromUnitToDecimalBN(balance, token?.decimals ?? 0)
