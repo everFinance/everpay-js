@@ -54,6 +54,11 @@ const isArweaveAddress = (address: string): boolean => {
   return isString(address) && address.length === 43 && address.search(/[a-z0-9A-Z_-]{43}/g) === 0
 }
 
+export const isArweaveChainPSTMode = (token?: Token): boolean => {
+  if (token == null) return false
+  return token.chainType.includes(ChainType.arweave) && token.symbol.toUpperCase() !== 'AR'
+}
+
 export const getAccountChainType = (from: string): ChainType => {
   if (isEthereumAddress(from)) {
     return ChainType.ethereum

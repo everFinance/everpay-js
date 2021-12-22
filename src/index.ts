@@ -1,7 +1,7 @@
 import { getEverpayTxMessage, signMessageAsync, transferAsync } from './lib/sign'
 import { getSwapInfo, getEverpayBalance, getEverpayBalances, getEverpayInfo, getEverpayTransaction, getEverpayTransactions, getExpressInfo, getMintdEverpayTransactionByChainTxHash, postTx, getSwapPrice, placeSwapOrder, getFees, getFee } from './api'
 import { everpayTxVersion, getExpressHost, getEverpayHost, getSwapHost } from './config'
-import { getTimestamp, getTokenBySymbol, toBN, getAccountChainType, fromDecimalToUnit, genTokenTag, matchTokenTag, genExpressData, fromUnitToDecimalBN, genBundleData, getTokenBurnFeeByChainType, getChainDecimalByChainType } from './utils/util'
+import { getTimestamp, getTokenBySymbol, toBN, getAccountChainType, fromDecimalToUnit, genTokenTag, matchTokenTag, genExpressData, fromUnitToDecimalBN, genBundleData, getTokenBurnFeeByChainType, getChainDecimalByChainType, isArweaveChainPSTMode } from './utils/util'
 import { GetEverpayBalanceParams, GetEverpayBalancesParams, GetEverpayTransactionsParams } from './types/api'
 import { checkParams } from './utils/check'
 import { ERRORS } from './utils/errors'
@@ -9,7 +9,7 @@ import { utils } from 'ethers'
 import {
   Config, EverpayInfo, EverpayBase, BalanceParams, BalancesParams, DepositParams, SwapInfo,
   SendEverpayTxResult, TransferParams, WithdrawParams, EverpayTxWithoutSig, EverpayAction, BundleData,
-  SwapOrder, SwapPriceParams, SwapPriceResult, FeeItem,
+  SwapOrder, SwapPriceParams, SwapPriceResult, FeeItem, ChainType,
   BalanceItem, TxsParams, TxsByAccountParams, TxsResult, EverpayTransaction, Token, EthereumTransaction, ArweaveTransaction, ExpressInfo, CachedInfo, InternalTransferItem, BundleDataWithSigs, BundleParams
 } from './types'
 import { swapParamsClientToServer, swapParamsServerToClient } from './utils/swap'
@@ -167,12 +167,18 @@ class Everpay extends EverpayBase {
   async deposit (params: DepositParams): Promise<EthereumTransaction | ArweaveTransaction> {
     await this.info()
     const { amount, symbol } = params
+    const from = this._config.account
     const token = getTokenBySymbol(symbol, this._cachedInfo?.everpay?.value.tokenList) as Token
+    checkParams({ account: from, symbol, token, amount })
     const accountChainType = getAccountChainType(this._config.account as string)
+
+    // arweave 上的 PST 充值必须是整数
+    if (isArweaveChainPSTMode(token) && accountChainType === ChainType.arweave && parseInt(amount) !== +amount) {
+      throw new Error(ERRORS.DEPOSIT_ARWEAVE_PST_MUST_BE_INTEGER)
+    }
+
     const chainDecimal = getChainDecimalByChainType(token, accountChainType)
     const value = utils.parseUnits(toBN(amount).toString(), chainDecimal)
-    const from = this._config.account
-    checkParams({ account: from, symbol, token, amount })
 
     return await transferAsync(this._config, this._cachedInfo.everpay?.value as EverpayInfo, {
       symbol,
@@ -182,6 +188,7 @@ class Everpay extends EverpayBase {
     })
   }
 
+  // amount 为实际收款数量
   async getEverpayTxWithoutSig (
     type: 'transfer' | 'withdraw' | 'bundle',
     params: TransferParams | WithdrawParams | BundleParams
@@ -210,7 +217,15 @@ class Everpay extends EverpayBase {
     } else if (type === 'withdraw') {
       checkParams({ amount })
       const chainType = (params as WithdrawParams).chainType
+
+      // PST 提现到 arweave 网络必须是整数
+      if (isArweaveChainPSTMode(token) && chainType === ChainType.arweave && parseInt(amount) !== +amount) {
+        throw new Error(ERRORS.PST_WITHDARW_TO_ARWEAVE_MUST_BE_INTEGER)
+      }
+
       const tokenChainType = token?.chainType as string
+      const balance = await this.balance({ symbol })
+      const decimalBalanceBN = fromUnitToDecimalBN(balance, token?.decimals ?? 0)
 
       // 快速提现
       if (quickMode === true) {
@@ -232,7 +247,7 @@ class Everpay extends EverpayBase {
         // 快速提现的 amount 为全部数量
         decimalOperateAmountBN = fromUnitToDecimalBN(amount, token?.decimals ?? 0)
 
-        if (decimalOperateAmountBN.lte(quickWithdrawFeeBN)) {
+        if (decimalOperateAmountBN.plus(quickWithdrawFeeBN).gt(decimalBalanceBN)) {
           throw new Error(ERRORS.WITHDRAW_AMOUNT_LESS_THAN_FEE)
         }
 
@@ -264,9 +279,9 @@ class Everpay extends EverpayBase {
           const targetChainType = chainType
           data = data !== undefined ? { ...data, targetChainType } : { targetChainType }
         }
-        decimalOperateAmountBN = fromUnitToDecimalBN(amount, token?.decimals ?? 0).minus(decimalFeeBN)
-        // 普通提现的 amount 为实际到账数量
-        if (decimalOperateAmountBN.lte(0)) {
+        decimalOperateAmountBN = fromUnitToDecimalBN(amount, token?.decimals ?? 0)
+
+        if (decimalOperateAmountBN.plus(decimalFeeBN).gt(decimalBalanceBN)) {
           throw new Error(ERRORS.WITHDRAW_AMOUNT_LESS_THAN_FEE)
         }
       }
