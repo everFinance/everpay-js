@@ -83,15 +83,15 @@ export const getTokenAddrByChainType = (token: Token, chainType: ChainType): str
 
 export const getChainDecimalByChainType = (token: Token, chainType: ChainType): number => {
   const chainTypes = token.chainType.split(',') as ChainType[]
-  const tokenDecimals = token.chainDecimals.split(',')
-  if (tokenDecimals.length === 1) {
-    return +token.decimals
+  const tokenChainDecimals = token.chainDecimals.split(',')
+  if (tokenChainDecimals.length === 1) {
+    return +tokenChainDecimals[0]
   }
   const index = chainTypes.findIndex(c => c === chainType)
   if (index === -1) {
     throw new Error(ERRORS.TOKEN_NOT_FOUND)
   }
-  return +tokenDecimals[index]
+  return +tokenChainDecimals[index]
 }
 
 export const getTokenBurnFeeByChainType = (token: Token, feeItem: FeeItem, chainType: ChainType): string => {
