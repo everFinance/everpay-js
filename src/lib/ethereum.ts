@@ -41,6 +41,7 @@ const transferAsync = async (ethConnectedSigner: Signer, {
     const transactionRequest = {
       from: from.toLowerCase(),
       to: to?.toLowerCase(),
+      gasLimit: 25000,
       value
     }
     transactionResponse = await ethConnectedSigner.sendTransaction(transactionRequest)
@@ -48,7 +49,7 @@ const transferAsync = async (ethConnectedSigner: Signer, {
     const tokenID = getTokenAddrByChainType(token, ChainType.ethereum)
     const erc20RW = new Contract(tokenID.toLowerCase(), erc20Abi, ethConnectedSigner)
     transactionResponse = await erc20RW.transfer(to, value, {
-      gasLimit: '100000'
+      gasLimit: 100000
     })
   }
   return transactionResponse
