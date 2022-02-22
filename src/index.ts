@@ -245,9 +245,9 @@ class Everpay extends EverpayBase {
           : toBN(foundExpressTokenData.withdrawFee)
 
         // 快速提现的 amount 为全部数量
-        decimalOperateAmountBN = fromUnitToDecimalBN(amount, token?.decimals ?? 0)
+        decimalOperateAmountBN = fromUnitToDecimalBN(amount, token?.decimals ?? 0).plus(quickWithdrawFeeBN)
 
-        if (decimalOperateAmountBN.plus(quickWithdrawFeeBN).gt(decimalBalanceBN)) {
+        if (decimalOperateAmountBN.gt(decimalBalanceBN)) {
           throw new Error(ERRORS.WITHDRAW_AMOUNT_LESS_THAN_FEE)
         }
 
