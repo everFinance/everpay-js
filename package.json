@@ -1,6 +1,6 @@
 {
   "name": "everpay",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "main": "./cjs/index.js",
   "module": "./esm/index.js",
   "files": [
