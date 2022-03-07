@@ -20,7 +20,7 @@ export const checkItem = (itemName: string, param?: unknown): void => {
   if (param === null || param === undefined || param === '' || param === 0) {
     throw new Error(cases[itemName])
   }
-  if (itemName === 'amount' && !((param as number) > 0)) {
+  if (itemName === 'amount' && !((param as number) >= 0)) {
     throw new Error(ERRORS.INVALID_AMOUNT)
   }
   const actions = [
