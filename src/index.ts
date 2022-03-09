@@ -87,7 +87,7 @@ class Everpay extends EverpayBase {
   }
 
   async balances (params?: BalancesParams): Promise<BalanceItem[]> {
-    await this.info()
+    const info = await this.info()
     params = (params ?? {}) as BalanceParams
     const { account } = params
     const acc = account ?? this._config.account as string
@@ -98,11 +98,11 @@ class Everpay extends EverpayBase {
     const everpayBalances = await getEverpayBalances(this._apiHost, mergedParams)
     const balances = everpayBalances.balances.map(item => {
       const tag = item.tag
-      const [chainType, symbol, address] = tag.split('-')
+      const token = info.tokenList.find(token => token.tag === tag) as Token
       return {
-        chainType,
-        symbol: symbol.toUpperCase(),
-        address,
+        chainType: token?.chainType,
+        symbol: token?.symbol.toUpperCase(),
+        address: token.id,
         balance: fromDecimalToUnit(item.amount, item.decimals)
       }
     })

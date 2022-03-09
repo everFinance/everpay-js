@@ -20,19 +20,31 @@ export interface Config {
   arJWK?: ArJWK
 }
 
+export interface CrossChainInfo {
+  targetChainId: string
+  targetChainType: ChainType
+  targetDecimals: number
+  targetTokenId: string
+}
+
 export interface Token {
+  tag: string
   id: string
   symbol: string
   decimals: number
-  chainDecimals: string
   totalSupply: string
   chainID: string
   chainType: ChainType | string
+  crossChainInfoList: {
+    [propname: string]: CrossChainInfo
+  }
 }
 
 export interface FeeItem {
   tokenTag: string
-  burnFee: string
+  burnFeeMap: {
+    [propname: string]: string
+  }
   transferFee: string
   atomicBundleFee: string
   updatedAt: string
