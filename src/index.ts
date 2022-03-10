@@ -274,11 +274,8 @@ class Everpay extends EverpayBase {
           decimalFeeBN = toBN(getTokenBurnFeeByChainType(token as Token, feeItem, chainType) ?? '0')
         }
 
-        // 普通提现只有在可跨链提现的资产时，才需要 targetChainType
-        if (tokenChainType !== chainType && tokenChainType.includes(chainType)) {
-          const targetChainType = chainType
-          data = data !== undefined ? { ...data, targetChainType } : { targetChainType }
-        }
+        const targetChainType = chainType
+        data = data !== undefined ? { ...data, targetChainType } : { targetChainType }
         decimalOperateAmountBN = fromUnitToDecimalBN(amount, token?.decimals ?? 0)
 
         if (decimalOperateAmountBN.plus(decimalFeeBN).gt(decimalBalanceBN)) {
