@@ -223,7 +223,6 @@ class Everpay extends EverpayBase {
         throw new Error(ERRORS.PST_WITHDARW_TO_ARWEAVE_MUST_BE_INTEGER)
       }
 
-      const tokenChainType = token?.chainType as string
       const balance = await this.balance({ symbol })
       const decimalBalanceBN = fromUnitToDecimalBN(balance, token?.decimals ?? 0)
 
