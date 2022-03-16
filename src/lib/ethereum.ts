@@ -3,6 +3,7 @@ import { TransferAsyncParams } from './interface'
 import erc20Abi from '../constants/abi/erc20'
 import { getTokenAddrByChainType } from '../utils/util'
 import { ChainType, EthereumTransaction } from '../types'
+import { NATIVE_CHAIN_TOKENS } from '../constants'
 
 // 参考自 zkSync
 // https://github.com/WalletConnect/walletconnect-monorepo/issues/347#issuecomment-880553018
@@ -35,9 +36,13 @@ const transferAsync = async (ethConnectedSigner: Signer, {
   value
 }: TransferAsyncParams): Promise<EthereumTransaction> => {
   let transactionResponse: EthereumTransaction
+  const nativeToken = NATIVE_CHAIN_TOKENS.find(t => {
+    const signerNetwork = (ethConnectedSigner.provider as any)._network
+    return +t.chainId === +signerNetwork.chainId && t.network === signerNetwork.name
+  })
 
   // TODO: check balance
-  if (symbol.toLowerCase() === 'eth') {
+  if (symbol.toLowerCase() === nativeToken?.nativeSymbol) {
     const transactionRequest = {
       from: from.toLowerCase(),
       to: to?.toLowerCase(),
@@ -46,7 +51,7 @@ const transferAsync = async (ethConnectedSigner: Signer, {
     }
     transactionResponse = await ethConnectedSigner.sendTransaction(transactionRequest)
   } else {
-    const tokenID = getTokenAddrByChainType(token, ChainType.ethereum)
+    const tokenID = getTokenAddrByChainType(token, nativeToken?.chainType as ChainType)
     const erc20RW = new Contract(tokenID.toLowerCase(), erc20Abi, ethConnectedSigner)
     transactionResponse = await erc20RW.transfer(to, value, {
       gasLimit: 100000
