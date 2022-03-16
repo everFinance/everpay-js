@@ -15,7 +15,7 @@ export const NATIVE_CHAIN_TOKENS = [{
   nativeSymbol: 'glmr'
 }, {
   chainType: 'moonbase',
-  network: 'moonbase',
+  network: 'moonbase-alphanet',
   chainId: 1287,
   nativeSymbol: 'dev'
 }]

@@ -177,7 +177,15 @@ class Everpay extends EverpayBase {
       throw new Error(ERRORS.DEPOSIT_ARWEAVE_PST_MUST_BE_INTEGER)
     }
 
-    const chainDecimal = getChainDecimalByChainType(token, accountChainType)
+    let chainDecimal = 0
+
+    if (accountChainType === ChainType.arweave) {
+      chainDecimal = getChainDecimalByChainType(token, accountChainType)
+    } else if (accountChainType === ChainType.ethereum) {
+      console.log((this._config.ethConnectedSigner as any).provider._network)
+      chainDecimal = getChainDecimalByChainType(token, (this._config.ethConnectedSigner as any).provider._network.name)
+    }
+
     const value = utils.parseUnits(toBN(amount).toString(), chainDecimal)
 
     return await transferAsync(this._config, this._cachedInfo.everpay?.value as EverpayInfo, {
