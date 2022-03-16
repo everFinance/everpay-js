@@ -8,6 +8,7 @@ import { ERRORS } from '../utils/errors'
 import { getAccountChainType } from '../utils/util'
 import hashPersonalMessage from './hashPersonalMessage'
 
+// TODO: moonbase locker, moonbeam locker
 const getDepositAddr = (info: EverpayInfo, accountChainType: ChainType): string => {
   if (accountChainType === ChainType.ethereum) {
     return info?.ethLocker

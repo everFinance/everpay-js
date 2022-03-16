@@ -182,7 +182,6 @@ class Everpay extends EverpayBase {
     if (accountChainType === ChainType.arweave) {
       chainDecimal = getChainDecimalByChainType(token, accountChainType)
     } else if (accountChainType === ChainType.ethereum) {
-      console.log((this._config.ethConnectedSigner as any).provider._network)
       chainDecimal = getChainDecimalByChainType(token, (this._config.ethConnectedSigner as any).provider._network.name)
     }
 
