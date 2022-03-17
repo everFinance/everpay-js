@@ -77,7 +77,7 @@ export const getEverpayInfo = async (apiHost: string): Promise<EverpayInfo> => {
     decimals: 18,
     chainDecimals: '18',
     totalSupply: '80716479282262778054',
-    chainType: 'moonbase-alphanet',
+    chainType: 'moonbase',
     chainID: '42',
     burnFees: {
       moonbase: '4160000000000000'
