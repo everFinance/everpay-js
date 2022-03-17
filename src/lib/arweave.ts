@@ -99,7 +99,7 @@ const signMessageAsync = async (arJWK: ArJWK, address: string, everHash: string)
   return `${signatureB64url},${arOwner}`
 }
 
-const transferAsync = async (arJWK: ArJWK, {
+const transferAsync = async (arJWK: ArJWK, chainType: ChainType, {
   symbol,
   token,
   from,

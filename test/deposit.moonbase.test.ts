@@ -1,4 +1,4 @@
-import Everpay from '../src/index'
+import Everpay, { ChainType } from '../src/index'
 import { ethWalletHasUSDT } from './constants/wallet'
 import { ethers } from 'ethers'
 
@@ -12,6 +12,7 @@ const signer = new ethers.Wallet(ethWalletHasUSDT.privateKey, provider)
 
 const everpay = new Everpay({
   account: ethWalletHasUSDT.address,
+  chainType: ChainType.moonbase,
   ethConnectedSigner: signer,
   debug: true
 })

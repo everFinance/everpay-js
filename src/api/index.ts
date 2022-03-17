@@ -80,15 +80,15 @@ export const getEverpayInfo = async (apiHost: string): Promise<EverpayInfo> => {
     chainType: 'moonbase-alphanet',
     chainID: '42',
     burnFees: {
-      'moonbase-alphanet': '4160000000000000'
+      moonbase: '4160000000000000'
     },
     transferFee: '0',
     atomicBundleFee: '0',
     holderNum: 199,
     crossChainInfoList: {
-      'moonbase-alphanet': {
+      moonbase: {
         targetChainId: '1287',
-        targetChainType: 'moonbase-alphanet',
+        targetChainType: 'moonbase',
         targetDecimals: 18,
         targetTokenId: '0x0000000000000000000000000000000000000000'
       }

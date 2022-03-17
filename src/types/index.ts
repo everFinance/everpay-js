@@ -6,7 +6,9 @@ import { TransactionInterface as ArweaveTransaction } from 'arweave/node/lib/tra
 
 export enum ChainType {
   ethereum = 'ethereum',
-  arweave = 'arweave'
+  moonbase = 'moonbase',
+  moonbeam = 'moonbeam',
+  arweave = 'arweave',
 }
 
 export type ArJWK = JWKInterface | 'use_wallet'
@@ -16,6 +18,7 @@ export { EthereumTransaction, ArweaveTransaction }
 export interface Config {
   debug?: boolean
   account?: string
+  chainType?: ChainType
   ethConnectedSigner?: Signer
   arJWK?: ArJWK
 }

@@ -20,7 +20,8 @@ class Everpay extends EverpayBase {
     super()
     this._config = {
       ...config,
-      account: config?.account ?? ''
+      account: config?.account ?? '',
+      chainType: config?.chainType ?? ChainType.ethereum
     }
     this._apiHost = getEverpayHost(config?.debug)
     this._expressHost = getExpressHost(config?.debug)
@@ -169,22 +170,15 @@ class Everpay extends EverpayBase {
     const { amount, symbol } = params
     const from = this._config.account
     const token = getTokenBySymbol(symbol, this._cachedInfo?.everpay?.value.tokenList) as Token
+    const chainType = this._config.chainType
     checkParams({ account: from, symbol, token, amount })
-    const accountChainType = getAccountChainType(this._config.account as string)
 
     // arweave 上的 PST 充值必须是整数
-    if (isArweaveChainPSTMode(token) && accountChainType === ChainType.arweave && parseInt(amount) !== +amount) {
+    if (isArweaveChainPSTMode(token) && chainType === ChainType.arweave && parseInt(amount) !== +amount) {
       throw new Error(ERRORS.DEPOSIT_ARWEAVE_PST_MUST_BE_INTEGER)
     }
 
-    let chainDecimal = 0
-
-    if (accountChainType === ChainType.arweave) {
-      chainDecimal = getChainDecimalByChainType(token, accountChainType)
-    } else if (accountChainType === ChainType.ethereum) {
-      chainDecimal = getChainDecimalByChainType(token, (this._config.ethConnectedSigner as any).provider._network.name)
-    }
-
+    const chainDecimal = getChainDecimalByChainType(token, chainType as ChainType)
     const value = utils.parseUnits(toBN(amount).toString(), chainDecimal)
 
     return await transferAsync(this._config, this._cachedInfo.everpay?.value as EverpayInfo, {

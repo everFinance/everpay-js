@@ -28,7 +28,7 @@ const signMessageAsync = async (ethConnectedSigner: Signer, address: string, mes
   }
 }
 
-const transferAsync = async (ethConnectedSigner: Signer, {
+const transferAsync = async (ethConnectedSigner: Signer, chainType: ChainType, {
   symbol,
   token,
   from,
@@ -37,8 +37,7 @@ const transferAsync = async (ethConnectedSigner: Signer, {
 }: TransferAsyncParams): Promise<EthereumTransaction> => {
   let transactionResponse: EthereumTransaction
   const nativeToken = NATIVE_CHAIN_TOKENS.find(t => {
-    const signerNetwork = (ethConnectedSigner.provider as any)._network
-    return +t.chainId === +signerNetwork.chainId && t.network === signerNetwork.name
+    return t.chainType === chainType
   })
 
   // TODO: check balance
@@ -51,7 +50,7 @@ const transferAsync = async (ethConnectedSigner: Signer, {
     }
     transactionResponse = await ethConnectedSigner.sendTransaction(transactionRequest)
   } else {
-    const tokenID = getTokenAddrByChainType(token, nativeToken?.chainType as ChainType)
+    const tokenID = getTokenAddrByChainType(token, chainType)
     const erc20RW = new Contract(tokenID.toLowerCase(), erc20Abi, ethConnectedSigner)
     transactionResponse = await erc20RW.transfer(to, value, {
       gasLimit: 100000
