@@ -1,5 +1,5 @@
 import { isAddress } from '@ethersproject/address'
-import { isString } from 'lodash-es'
+import isString from 'lodash/isString'
 import { v4 as uuidv4 } from 'uuid'
 import BN from 'bignumber.js'
 import { ERRORS } from './errors'
