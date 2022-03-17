@@ -1,5 +1,5 @@
 import Arweave from 'arweave'
-import { isString } from 'lodash-es'
+import isString from 'lodash/isString'
 import { ArJWK, ArweaveTransaction, ChainType } from '../types'
 import { getTokenAddrByChainType } from '../utils/util'
 import { TransferAsyncParams } from './interface'

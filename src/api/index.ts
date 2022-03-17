@@ -1,5 +1,6 @@
 import axios, { AxiosRequestConfig, AxiosResponse } from 'axios'
-import { isObject, isString } from 'lodash-es'
+import isObject from 'lodash/isObject'
+import isString from 'lodash/isString'
 import { stringify as qsStringify } from 'query-string'
 import {
   EverpayInfo,
