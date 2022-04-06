@@ -72,36 +72,17 @@ export const getAccountChainType = (from: string): ChainType => {
 }
 
 export const getTokenAddrByChainType = (token: Token, chainType: ChainType): string => {
-  const chainTypes = token.chainType.split(',') as ChainType[]
-  const tokenAddrs = token.id.split(',')
-  const index = chainTypes.findIndex(c => c === chainType)
-  if (index === -1) {
-    throw new Error(ERRORS.TOKEN_NOT_FOUND)
-  }
-  return tokenAddrs[index]
+  const crossChainInfo = token.crossChainInfoList[chainType]
+  return crossChainInfo.targetTokenId
 }
 
 export const getChainDecimalByChainType = (token: Token, chainType: ChainType): number => {
-  const chainTypes = token.chainType.split(',') as ChainType[]
-  const tokenChainDecimals = token.chainDecimals.split(',')
-  if (tokenChainDecimals.length === 1) {
-    return +tokenChainDecimals[0]
-  }
-  const index = chainTypes.findIndex(c => c === chainType)
-  if (index === -1) {
-    throw new Error(ERRORS.TOKEN_NOT_FOUND)
-  }
-  return +tokenChainDecimals[index]
+  const crossChainInfo = token.crossChainInfoList[chainType]
+  return crossChainInfo.targetDecimals
 }
 
 export const getTokenBurnFeeByChainType = (token: Token, feeItem: FeeItem, chainType: ChainType): string => {
-  const chainTypes = token.chainType.split(',') as ChainType[]
-  const tokenBurnFees = feeItem.burnFee.split(',')
-  const index = chainTypes.findIndex(c => c === chainType)
-  if (index === -1) {
-    throw new Error(ERRORS.TOKEN_NOT_FOUND)
-  }
-  return tokenBurnFees[index] !== undefined ? tokenBurnFees[index] : feeItem.burnFee
+  return feeItem.burnFeeMap[chainType]
 }
 
 export const genTokenTag = (token: Token): string => {

@@ -13,6 +13,6 @@ test('everpey fees got correct', async () => {
 
 test('everpey fee got correct', async () => {
   return await everpay.fee('ar').then(fee => {
-    expect(fee.burnFee.includes(',')).toBeTruthy()
+    expect(fee.burnFeeMap.arweave).toBeTruthy()
   })
 })

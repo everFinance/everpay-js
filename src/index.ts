@@ -87,7 +87,7 @@ class Everpay extends EverpayBase {
   }
 
   async balances (params?: BalancesParams): Promise<BalanceItem[]> {
-    await this.info()
+    const info = await this.info()
     params = (params ?? {}) as BalanceParams
     const { account } = params
     const acc = account ?? this._config.account as string
@@ -98,11 +98,11 @@ class Everpay extends EverpayBase {
     const everpayBalances = await getEverpayBalances(this._apiHost, mergedParams)
     const balances = everpayBalances.balances.map(item => {
       const tag = item.tag
-      const [chainType, symbol, address] = tag.split('-')
+      const token = info.tokenList.find(token => token.tag === tag) as Token
       return {
-        chainType,
-        symbol: symbol.toUpperCase(),
-        address,
+        chainType: token?.chainType,
+        symbol: token?.symbol.toUpperCase(),
+        address: token.id,
         balance: fromDecimalToUnit(item.amount, item.decimals)
       }
     })
@@ -223,7 +223,6 @@ class Everpay extends EverpayBase {
         throw new Error(ERRORS.PST_WITHDARW_TO_ARWEAVE_MUST_BE_INTEGER)
       }
 
-      const tokenChainType = token?.chainType as string
       const balance = await this.balance({ symbol })
       const decimalBalanceBN = fromUnitToDecimalBN(balance, token?.decimals ?? 0)
 
@@ -274,11 +273,8 @@ class Everpay extends EverpayBase {
           decimalFeeBN = toBN(getTokenBurnFeeByChainType(token as Token, feeItem, chainType) ?? '0')
         }
 
-        // 普通提现只有在可跨链提现的资产时，才需要 targetChainType
-        if (tokenChainType !== chainType && tokenChainType.includes(chainType)) {
-          const targetChainType = chainType
-          data = data !== undefined ? { ...data, targetChainType } : { targetChainType }
-        }
+        const targetChainType = chainType
+        data = data !== undefined ? { ...data, targetChainType } : { targetChainType }
         decimalOperateAmountBN = fromUnitToDecimalBN(amount, token?.decimals ?? 0)
 
         if (decimalOperateAmountBN.plus(decimalFeeBN).gt(decimalBalanceBN)) {

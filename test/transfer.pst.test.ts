@@ -1,7 +1,7 @@
 import Everpay from '../src/index'
 import { arWallet2, ethWalletHasUSDT } from './constants/wallet'
 
-test(`${arWallet2.address} withdraw ar to ${arWallet2.address}`, async () => {
+test(`${arWallet2.address} transfer VRT to ${ethWalletHasUSDT.address}`, async () => {
   const everpay = new Everpay({
     account: arWallet2.address,
     arJWK: arWallet2.jwk,

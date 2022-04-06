@@ -20,7 +20,7 @@ test(`${arWallet2.address} withdraw vrt to ${arWallet2.address}`, async () => {
   })
 })
 
-test(`check ${arWallet2.address} deposit VRT failed`, async () => {
+test(`check ${arWallet2.address} withdraw VRT failed`, async () => {
   const everpay = new Everpay({
     account: arWallet2.address,
     arJWK: arWallet2.jwk,
@@ -37,7 +37,7 @@ test(`check ${arWallet2.address} deposit VRT failed`, async () => {
     .toThrow('PST_WITHDARW_TO_ARWEAVE_MUST_BE_INTEGER')
 })
 
-test(`${arWallet2.address} withdraw ar to ethereum address ${ethWalletHasUSDT.address}`, async () => {
+test(`${arWallet2.address} withdraw vrt to ethereum address ${ethWalletHasUSDT.address}`, async () => {
   const everpay = new Everpay({
     account: arWallet2.address,
     arJWK: arWallet2.jwk,
