@@ -67,32 +67,6 @@ export const getEverpayInfo = async (apiHost: string): Promise<EverpayInfo> => {
   const result = await sendRequest({
     url,
     method: 'GET'
-  });
-
-  // TODO: for test
-  (result as any).data.tokenList.push({
-    tag: 'moonbase-dev-0x0000000000000000000000000000000000000000',
-    id: '0x0000000000000000000000000000000000000000',
-    symbol: 'DEV',
-    decimals: 18,
-    chainDecimals: '18',
-    totalSupply: '80716479282262778054',
-    chainType: 'moonbase',
-    chainID: '42',
-    burnFees: {
-      moonbase: '4160000000000000'
-    },
-    transferFee: '0',
-    atomicBundleFee: '0',
-    holderNum: 199,
-    crossChainInfoList: {
-      moonbase: {
-        targetChainId: '1287',
-        targetChainType: 'moonbase',
-        targetDecimals: 18,
-        targetTokenId: '0x0000000000000000000000000000000000000000'
-      }
-    }
   })
 
   return result.data

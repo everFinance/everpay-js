@@ -9,12 +9,12 @@ export const NATIVE_CHAIN_TOKENS = [{
   chainId: 42,
   nativeSymbol: 'eth'
 }, {
-  chainType: 'moonbeam',
+  chainType: 'moon',
   network: 'moonbeam',
   chainId: 1284,
   nativeSymbol: 'glmr'
 }, {
-  chainType: 'moonbase',
+  chainType: 'moon',
   network: 'moonbase-alphanet',
   chainId: 1287,
   nativeSymbol: 'dev'

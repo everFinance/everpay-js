@@ -6,8 +6,7 @@ import { TransactionInterface as ArweaveTransaction } from 'arweave/node/lib/tra
 
 export enum ChainType {
   ethereum = 'ethereum',
-  moonbase = 'moonbase',
-  moonbeam = 'moonbeam',
+  moon = 'moon',
   arweave = 'arweave',
 }
 
@@ -54,8 +53,9 @@ export interface FeeItem {
 }
 
 export interface EverpayInfo {
-  ethLocker: string
-  arLocker: string
+  lockers: {
+    [propName: string]: string
+  }
   ethChainID: string
   feeRecipient: string
   owner: string

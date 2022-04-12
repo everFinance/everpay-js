@@ -9,13 +9,12 @@ import hashPersonalMessage from './hashPersonalMessage'
 
 const getDepositAddr = (info: EverpayInfo, accountChainType: ChainType): string => {
   if (accountChainType === ChainType.ethereum) {
-    return info?.ethLocker
+    return info?.lockers.ethereum
   } else if (accountChainType === ChainType.arweave) {
     // AR 大小写敏感
-    return info?.arLocker
-  // TODO: moonbase locker, moonbeam locker
-  } else if (accountChainType === ChainType.moonbase) {
-    return info?.ethLocker
+    return info?.lockers.arweave
+  } else if (accountChainType === ChainType.moon) {
+    return info?.lockers.moon
   }
   throw new Error(ERRORS.INVALID_ACCOUNT_TYPE)
 }
@@ -47,7 +46,7 @@ export const signMessageAsync = async (config: Config, messageData: string): Pro
   let sig = ''
   checkSignConfig(accountChainType, config)
 
-  if ([ChainType.ethereum, ChainType.moonbase, ChainType.moonbeam].includes(accountChainType)) {
+  if ([ChainType.ethereum, ChainType.moon].includes(accountChainType)) {
     sig = await ethereumLib.signMessageAsync(config.ethConnectedSigner as Signer, from, messageData)
   } else if (accountChainType === ChainType.arweave) {
     sig = await arweaveLib.signMessageAsync(config.arJWK as ArJWK, from, personalMsgHex)
@@ -67,7 +66,7 @@ export const transferAsync = async (
   const to = getDepositAddr(info, config.chainType as ChainType)
   const paramsMergedTo = { ...params, to }
 
-  if ([ChainType.ethereum, ChainType.moonbase, ChainType.moonbeam].includes(config.chainType as ChainType)) {
+  if ([ChainType.ethereum, ChainType.moon].includes(config.chainType as ChainType)) {
     return await ethereumLib.transferAsync(config.ethConnectedSigner as Signer, config.chainType as ChainType, paramsMergedTo)
   } else if (config.chainType as ChainType === ChainType.arweave) {
     return await arweaveLib.transferAsync(config.arJWK as ArJWK, config.chainType as ChainType, paramsMergedTo)
