@@ -36,12 +36,12 @@ const transferAsync = async (ethConnectedSigner: Signer, chainType: ChainType, {
   value
 }: TransferAsyncParams): Promise<EthereumTransaction> => {
   let transactionResponse: EthereumTransaction
-  const nativeToken = NATIVE_CHAIN_TOKENS.find(t => {
-    return t.chainType === chainType
+  const foundNative = NATIVE_CHAIN_TOKENS.find(t => {
+    return t.chainType === chainType && t.nativeSymbol === symbol.toLowerCase()
   })
 
   // TODO: check balance
-  if (symbol.toLowerCase() === nativeToken?.nativeSymbol) {
+  if (foundNative != null) {
     const transactionRequest = {
       from: from.toLowerCase(),
       to: to?.toLowerCase(),
