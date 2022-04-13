@@ -10,7 +10,7 @@ import {
   Config, EverpayInfo, EverpayBase, BalanceParams, BalancesParams, DepositParams, SwapInfo,
   SendEverpayTxResult, TransferParams, WithdrawParams, EverpayTxWithoutSig, EverpayAction, BundleData,
   SwapOrder, SwapPriceParams, SwapPriceResult, FeeItem, ChainType,
-  BalanceItem, TxsParams, TxsByAccountParams, TxsResult, EverpayTransaction, Token, EthereumTransaction, ArweaveTransaction, ExpressInfo, CachedInfo, InternalTransferItem, BundleDataWithSigs, BundleParams
+  BalanceItem, TxsParams, TxsByAccountParams, TxsResult, EverpayTransaction, Token, EthereumTransaction, ArweaveTransaction, ExpressInfo, CachedInfo, InternalTransferItem, BundleDataWithSigs, BundleParams, EverpayTx
 } from './types'
 import { swapParamsClientToServer, swapParamsServerToClient } from './utils/swap'
 
@@ -306,13 +306,18 @@ class Everpay extends EverpayBase {
     return getEverpayTxMessage(everpayTxWithoutSig)
   }
 
-  async sendEverpayTx (everpayTxWithoutSig: EverpayTxWithoutSig): Promise<SendEverpayTxResult> {
+  async signedEverpayTx (everpayTxWithoutSig: EverpayTxWithoutSig): Promise<{everpayTx: EverpayTx, everHash: string}> {
     const messageData = getEverpayTxMessage(everpayTxWithoutSig)
-    const { everHash, sig } = await signMessageAsync(this._config, messageData)
+    const { sig, everHash } = await signMessageAsync(this._config, messageData)
     const everpayTx = {
       ...everpayTxWithoutSig,
       sig
     }
+    return { everpayTx, everHash }
+  }
+
+  async sendEverpayTx (everpayTxWithoutSig: EverpayTxWithoutSig): Promise<SendEverpayTxResult> {
+    const { everpayTx, everHash } = await this.signedEverpayTx(everpayTxWithoutSig)
     const postEverpayTxResult = await postTx(this._apiHost, everpayTx)
     return {
       ...postEverpayTxResult,
