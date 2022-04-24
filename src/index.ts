@@ -10,7 +10,7 @@ import {
   Config, EverpayInfo, EverpayBase, BalanceParams, BalancesParams, DepositParams, SwapInfo,
   SendEverpayTxResult, TransferParams, WithdrawParams, EverpayTxWithoutSig, EverpayAction, BundleData,
   SwapOrder, SwapPriceParams, SwapPriceResult, FeeItem, ChainType,
-  BalanceItem, TxsParams, TxsByAccountParams, TxsResult, EverpayTransaction, Token, EthereumTransaction, ArweaveTransaction, ExpressInfo, CachedInfo, InternalTransferItem, BundleDataWithSigs, BundleParams
+  BalanceItem, TxsParams, TxsByAccountParams, TxsResult, EverpayTransaction, Token, EthereumTransaction, ArweaveTransaction, ExpressInfo, CachedInfo, InternalTransferItem, BundleDataWithSigs, BundleParams, EverpayTx
 } from './types'
 import { swapParamsClientToServer, swapParamsServerToClient } from './utils/swap'
 
@@ -20,7 +20,8 @@ class Everpay extends EverpayBase {
     super()
     this._config = {
       ...config,
-      account: config?.account ?? ''
+      account: config?.account ?? '',
+      chainType: config?.chainType ?? ChainType.ethereum
     }
     this._apiHost = getEverpayHost(config?.debug)
     this._expressHost = getExpressHost(config?.debug)
@@ -169,15 +170,15 @@ class Everpay extends EverpayBase {
     const { amount, symbol } = params
     const from = this._config.account
     const token = getTokenBySymbol(symbol, this._cachedInfo?.everpay?.value.tokenList) as Token
+    const chainType = this._config.chainType
     checkParams({ account: from, symbol, token, amount })
-    const accountChainType = getAccountChainType(this._config.account as string)
 
     // arweave 上的 PST 充值必须是整数
-    if (isArweaveChainPSTMode(token) && accountChainType === ChainType.arweave && parseInt(amount) !== +amount) {
+    if (isArweaveChainPSTMode(token) && chainType === ChainType.arweave && parseInt(amount) !== +amount) {
       throw new Error(ERRORS.DEPOSIT_ARWEAVE_PST_MUST_BE_INTEGER)
     }
 
-    const chainDecimal = getChainDecimalByChainType(token, accountChainType)
+    const chainDecimal = getChainDecimalByChainType(token, chainType as ChainType)
     const value = utils.parseUnits(toBN(amount).toString(), chainDecimal)
 
     return await transferAsync(this._config, this._cachedInfo.everpay?.value as EverpayInfo, {
@@ -305,13 +306,18 @@ class Everpay extends EverpayBase {
     return getEverpayTxMessage(everpayTxWithoutSig)
   }
 
-  async sendEverpayTx (everpayTxWithoutSig: EverpayTxWithoutSig): Promise<SendEverpayTxResult> {
+  async signedEverpayTx (everpayTxWithoutSig: EverpayTxWithoutSig): Promise<{everpayTx: EverpayTx, everHash: string}> {
     const messageData = getEverpayTxMessage(everpayTxWithoutSig)
-    const { everHash, sig } = await signMessageAsync(this._config, messageData)
+    const { sig, everHash } = await signMessageAsync(this._config, messageData)
     const everpayTx = {
       ...everpayTxWithoutSig,
       sig
     }
+    return { everpayTx, everHash }
+  }
+
+  async sendEverpayTx (everpayTxWithoutSig: EverpayTxWithoutSig): Promise<SendEverpayTxResult> {
+    const { everpayTx, everHash } = await this.signedEverpayTx(everpayTxWithoutSig)
     const postEverpayTxResult = await postTx(this._apiHost, everpayTx)
     return {
       ...postEverpayTxResult,
