@@ -80,11 +80,6 @@ export enum EverpayAction {
   withdraw = 'burn',
   bundle = 'bundle'
 }
-export interface SwapInfo {
-  fee: string
-  address: string
-  tokenList: string[]
-}
 
 export interface InternalTransferItem {
   symbol: string
@@ -257,29 +252,6 @@ export interface CachedInfo {
     value: ExpressInfo
     timestamp: number
   }
-  swap?: {
-    value: SwapInfo
-    timestamp: number
-  }
-}
-
-export interface SwapPriceParams {
-  tokenIn: string
-  tokenOut: string
-  tokenInAmount?: string
-  tokenOutAmount?: string
-}
-
-export interface SwapOrder {
-  tokenIn: string
-  tokenOut: string
-  tokenInAmount: string
-  tokenOutAmount: string
-}
-
-export interface SwapPriceResult extends SwapOrder {
-  spreadPercent: string
-  indicativePrice: string
 }
 
 export abstract class EverpayBase {
