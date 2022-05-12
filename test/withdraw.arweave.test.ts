@@ -5,6 +5,7 @@ import { ChainType } from '../src/types'
 test(`${arWallet1.address} withdraw ar to ${arWallet1.address}`, async () => {
   const everpay = new Everpay({
     account: arWallet1.address,
+    chainType: ChainType.arweave,
     arJWK: arWallet1.jwk,
     debug: true
   })
@@ -23,6 +24,7 @@ test(`${arWallet1.address} withdraw ar to ${arWallet1.address}`, async () => {
 test(`${arWallet1.address} withdraw ar to ethereum address ${ethWalletHasUSDT.address}`, async () => {
   const everpay = new Everpay({
     account: arWallet1.address,
+    chainType: ChainType.arweave,
     arJWK: arWallet1.jwk,
     debug: true
   })

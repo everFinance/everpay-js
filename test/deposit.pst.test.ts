@@ -1,6 +1,6 @@
 import Everpay from '../src/index'
 import { ethWalletHasUSDT, arWallet2 } from './constants/wallet'
-import { ArweaveTransaction } from '../src/types'
+import { ArweaveTransaction, ChainType } from '../src/types'
 import { ethers } from 'ethers'
 
 const provider = new ethers.providers.InfuraProvider('kovan')
@@ -9,6 +9,7 @@ const signer = new ethers.Wallet(ethWalletHasUSDT.privateKey, provider)
 const everpayEthereumMode = new Everpay({
   account: ethWalletHasUSDT.address,
   ethConnectedSigner: signer,
+  chainType: ChainType.ethereum,
   debug: true
 })
 
@@ -25,6 +26,7 @@ test(`check ${ethWalletHasUSDT.address} deposit vrt`, async () => {
 const everpayARMode = new Everpay({
   account: arWallet2.address,
   arJWK: arWallet2.jwk,
+  chainType: ChainType.arweave,
   debug: true
 })
 

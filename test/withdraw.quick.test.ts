@@ -10,6 +10,7 @@ test(`${ethWalletHasUSDT.address} quick withdraw USDT to ${ethWalletHasUSDT.addr
   const everpay = new Everpay({
     account: ethWalletHasUSDT.address,
     ethConnectedSigner: signer,
+    chainType: ChainType.ethereum,
     debug: true
   })
 
@@ -28,6 +29,7 @@ test(`${arWallet1.address} quick withdraw USDT to ${ethWalletHasUSDT.address}`, 
   const everpay = new Everpay({
     account: arWallet1.address,
     arJWK: arWallet1.jwk,
+    chainType: ChainType.arweave,
     debug: true
   })
 
