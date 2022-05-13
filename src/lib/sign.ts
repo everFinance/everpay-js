@@ -48,7 +48,7 @@ export const signMessageAsync = async (config: Config, messageData: string): Pro
   let sig = ''
   checkSignConfig(accountChainType, config)
 
-  if ([ChainType.ethereum, ChainType.moon].includes(accountChainType)) {
+  if ([ChainType.ethereum, ChainType.moon, ChainType.conflux].includes(accountChainType)) {
     sig = await ethereumLib.signMessageAsync(config.ethConnectedSigner as Signer, from, messageData)
   } else if (accountChainType === ChainType.arweave) {
     sig = await arweaveLib.signMessageAsync(config.arJWK as ArJWK, from, personalMsgHex)
