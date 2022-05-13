@@ -18,4 +18,14 @@ export const NATIVE_CHAIN_TOKENS = [{
   network: 'moonbase-alphanet',
   chainId: 1287,
   nativeSymbol: 'dev'
+}, {
+  chainType: 'conflux',
+  network: 'conflux eSpace',
+  chainId: 1030,
+  nativeSymbol: 'cfx'
+}, {
+  chainType: 'conflux',
+  network: 'conflux eSpace Testnet',
+  chainId: 71,
+  nativeSymbol: 'cfx'
 }]
