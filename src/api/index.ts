@@ -8,8 +8,7 @@ import {
   EverpayTx,
   TxsResult,
   FeeItem,
-  ExpressInfo,
-  BundleDataWithSigs
+  ExpressInfo
 } from '../types'
 import {
   GetEverpayTransactionsParams,
