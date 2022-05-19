@@ -56,7 +56,7 @@ const isArweaveAddress = (address: string): boolean => {
 
 export const isArweaveChainPSTMode = (token?: Token): boolean => {
   if (token == null) return false
-  return !!token.chainType.includes(ChainType.arweave) && token.symbol.toUpperCase() !== 'AR'
+  return token.crossChainInfoList[ChainType.arweave] != null && token.symbol.toUpperCase() !== 'AR'
 }
 
 export const getAccountChainType = (from: string): ChainType => {
