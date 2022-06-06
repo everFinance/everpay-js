@@ -5,6 +5,7 @@ import { genTokenTag } from '../src/utils/util'
 import hashPersonalMessage from '../src/lib/hashPersonalMessage'
 import Arweave from 'arweave'
 import { b64UrlToBuffer } from 'arweave/web/lib/utils'
+import { ChainType } from '../src/types'
 
 const options = {
   host: 'arweave.net', // Hostname or IP address for a Arweave host
@@ -20,12 +21,14 @@ const signer = new ethers.Wallet(ethWalletHasUSDT.privateKey, provider)
 const everpayEthAccount = new Everpay({
   account: ethWalletHasUSDT.address,
   ethConnectedSigner: signer,
+  chainType: ChainType.ethereum,
   debug: true
 })
 
 const everpayArAccount = new Everpay({
   account: arWallet1.address,
   arJWK: arWallet1.jwk,
+  chainType: ChainType.arweave,
   debug: true
 })
 
@@ -108,6 +111,6 @@ describe('test bundle data generate & sign', () => {
     expect(bundleResult.status).toBe('ok')
 
     const everpayTransaction = await everpayArAccount.txByHash(bundleResult.everHash)
-    expect(everpayTransaction.internalStatus).toBe('success')
+    expect(JSON.parse(everpayTransaction.internalStatus).status).toBe('success')
   })
 })

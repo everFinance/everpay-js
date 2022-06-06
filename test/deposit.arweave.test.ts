@@ -1,10 +1,11 @@
 import Everpay from '../src/index'
 import { arWallet1 } from './constants/wallet'
-import { ArweaveTransaction } from '../src/types'
+import { ArweaveTransaction, ChainType } from '../src/types'
 
 const everpay = new Everpay({
   account: arWallet1.address,
   arJWK: arWallet1.jwk,
+  chainType: ChainType.arweave,
   debug: true
 })
 

@@ -4,6 +4,7 @@ import hashPersonalMessage from '../src/lib/hashPersonalMessage'
 import { getEverpayTxMessage, signMessageAsync } from '../src/lib/sign'
 import { b64UrlToBuffer } from 'arweave/web/lib/utils'
 import { arWallet1 } from './constants/wallet'
+import { ChainType } from '../src/types'
 
 const options = {
   host: 'arweave.net', // Hostname or IP address for a Arweave host
@@ -17,7 +18,8 @@ test('check arweaveLib.signMessageAsync', async () => {
   const bundleData = { items: [{ tag: 'ethereum-eth-0x0000000000000000000000000000000000000000', chainID: '42', from: '5NPqYBdIsIpJzPeYixuz7BEH_W7BEk_mb8HxBD3OHXo', to: '0x9430dBaAD43b5e0Bebe142f84582111Dd1D7cd00', amount: '606000000000000000' }, { tag: 'ethereum-usdt-0xd85476c906b5301e8e9eb58d174a6f96b9dfc5ee', chainID: '42', from: '0x9430dBaAD43b5e0Bebe142f84582111Dd1D7cd00', to: '5NPqYBdIsIpJzPeYixuz7BEH_W7BEk_mb8HxBD3OHXo', amount: '526526000000' }], expiration: 1629791059, salt: '83ea4d31-5819-4b02-8c1a-1e5d361d03be', version: 'v1' }
   const { sig } = await signMessageAsync({
     account: arWallet1.address,
-    arJWK: arWallet1.jwk
+    arJWK: arWallet1.jwk,
+    chainType: ChainType.arweave
   }, JSON.stringify(bundleData))
   const msgBase64WithArOwner = sig
 

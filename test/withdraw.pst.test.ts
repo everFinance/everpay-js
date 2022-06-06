@@ -6,6 +6,7 @@ test(`${arWallet2.address} withdraw vrt to ${arWallet2.address}`, async () => {
   const everpay = new Everpay({
     account: arWallet2.address,
     arJWK: arWallet2.jwk,
+    chainType: ChainType.arweave,
     debug: true
   })
 
@@ -24,6 +25,7 @@ test(`check ${arWallet2.address} withdraw VRT failed`, async () => {
   const everpay = new Everpay({
     account: arWallet2.address,
     arJWK: arWallet2.jwk,
+    chainType: ChainType.arweave,
     debug: true
   })
   await expect(
@@ -41,6 +43,7 @@ test(`${arWallet2.address} withdraw vrt to ethereum address ${ethWalletHasUSDT.a
   const everpay = new Everpay({
     account: arWallet2.address,
     arJWK: arWallet2.jwk,
+    chainType: ChainType.arweave,
     debug: true
   })
 

@@ -1,18 +1,17 @@
 import { getEverpayTxMessage, signMessageAsync, transferAsync } from './lib/sign'
-import { getSwapInfo, getEverpayBalance, getEverpayBalances, getEverpayInfo, getEverpayTransaction, getEverpayTransactions, getExpressInfo, getMintdEverpayTransactionByChainTxHash, postTx, getSwapPrice, placeSwapOrder, getFees, getFee } from './api'
-import { everpayTxVersion, getExpressHost, getEverpayHost, getSwapHost } from './config'
+import { getEverpayBalance, getEverpayBalances, getEverpayInfo, getEverpayTransaction, getEverpayTransactions, getExpressInfo, getMintdEverpayTransactionByChainTxHash, postTx, getFees, getFee } from './api'
+import { everpayTxVersion, getExpressHost, getEverpayHost } from './config'
 import { getTimestamp, getTokenBySymbol, toBN, getAccountChainType, fromDecimalToUnit, genTokenTag, matchTokenTag, genExpressData, fromUnitToDecimalBN, genBundleData, getTokenBurnFeeByChainType, getChainDecimalByChainType, isArweaveChainPSTMode } from './utils/util'
 import { GetEverpayBalanceParams, GetEverpayBalancesParams, GetEverpayTransactionsParams } from './types/api'
 import { checkParams } from './utils/check'
 import { ERRORS } from './utils/errors'
 import { utils } from 'ethers'
 import {
-  Config, EverpayInfo, EverpayBase, BalanceParams, BalancesParams, DepositParams, SwapInfo,
+  Config, EverpayInfo, EverpayBase, BalanceParams, BalancesParams, DepositParams,
   SendEverpayTxResult, TransferParams, WithdrawParams, EverpayTxWithoutSig, EverpayAction, BundleData,
-  SwapOrder, SwapPriceParams, SwapPriceResult, FeeItem, ChainType,
+  FeeItem, ChainType,
   BalanceItem, TxsParams, TxsByAccountParams, TxsResult, EverpayTransaction, Token, EthereumTransaction, ArweaveTransaction, ExpressInfo, CachedInfo, InternalTransferItem, BundleDataWithSigs, BundleParams, EverpayTx
 } from './types'
-import { swapParamsClientToServer, swapParamsServerToClient } from './utils/swap'
 
 export * from './types'
 class Everpay extends EverpayBase {
@@ -25,24 +24,22 @@ class Everpay extends EverpayBase {
     }
     this._apiHost = getEverpayHost(config?.debug)
     this._expressHost = getExpressHost(config?.debug)
-    this._swapHost = getSwapHost(config?.debug)
     this._cachedInfo = {}
   }
 
   private readonly _apiHost: string
   private readonly _expressHost: string
-  private readonly _swapHost: string
   private readonly _config: Config
   private _cachedInfo: CachedInfo
 
   getAccountChainType = getAccountChainType
 
-  private readonly cacheHelper = async (key: 'everpay' | 'express' | 'swap'): Promise<EverpayInfo | ExpressInfo | SwapInfo> => {
+  private readonly cacheHelper = async (key: 'everpay' | 'express'): Promise<EverpayInfo | ExpressInfo> => {
     const timestamp = getTimestamp()
     // cache info 3 mins
     if (this._cachedInfo[key]?.value != null &&
       (this._cachedInfo[key] as any).timestamp > timestamp - 3 * 60) {
-      return this._cachedInfo[key]?.value as EverpayInfo | ExpressInfo | SwapInfo
+      return this._cachedInfo[key]?.value as EverpayInfo | ExpressInfo
     }
 
     if (key === 'everpay') {
@@ -51,11 +48,8 @@ class Everpay extends EverpayBase {
     } else if (key === 'express') {
       const value = await await getExpressInfo(this._expressHost)
       this._cachedInfo[key] = { value, timestamp }
-    } else if (key === 'swap') {
-      const value = await await getSwapInfo(this._swapHost)
-      this._cachedInfo[key] = { value, timestamp }
     }
-    return this._cachedInfo[key]?.value as EverpayInfo | ExpressInfo | SwapInfo
+    return this._cachedInfo[key]?.value as EverpayInfo | ExpressInfo
   }
 
   async info (): Promise<EverpayInfo> {
@@ -66,11 +60,6 @@ class Everpay extends EverpayBase {
   async expressInfo (): Promise<ExpressInfo> {
     const result = await this.cacheHelper('express')
     return result as ExpressInfo
-  }
-
-  async swapInfo (): Promise<SwapInfo> {
-    const result = await this.cacheHelper('swap')
-    return result as SwapInfo
   }
 
   async balance (params: BalanceParams): Promise<string> {
@@ -367,58 +356,6 @@ class Everpay extends EverpayBase {
   async bundle (params: BundleParams): Promise<SendEverpayTxResult> {
     const everpayTxWithoutSig = await this.getEverpayTxWithoutSig('bundle', params)
     return await this.sendEverpayTx(everpayTxWithoutSig)
-  }
-
-  async swapPrice (params: SwapPriceParams): Promise<SwapPriceResult> {
-    await Promise.all([this.info(), this.swapInfo()])
-    const everpayInfo = this._cachedInfo.everpay?.value as EverpayInfo
-    const swapInfo = this._cachedInfo.swap?.value as SwapInfo
-    const paramsToServer = swapParamsClientToServer(
-      params,
-      everpayInfo,
-      swapInfo
-    )
-    const result = await getSwapPrice(this._swapHost, paramsToServer)
-    const formated = swapParamsServerToClient(result, everpayInfo, swapInfo) as SwapOrder
-    return {
-      ...formated,
-      indicativePrice: result.indicativePrice,
-      spreadPercent: result.spreadPercent
-    }
-  }
-
-  async getSwapBundleData (params: SwapOrder): Promise<BundleData> {
-    await Promise.all([this.info(), this.swapInfo()])
-    const swapInfo = this._cachedInfo.swap?.value as SwapInfo
-    const { tokenIn, tokenOut, tokenInAmount, tokenOutAmount } = params
-    return await this.getBundleData([
-      {
-        from: this._config.account as string,
-        to: swapInfo.address,
-        symbol: tokenIn,
-        amount: tokenInAmount
-      },
-      {
-        from: swapInfo.address,
-        to: this._config.account as string,
-        symbol: tokenOut,
-        amount: tokenOutAmount
-      }
-    ])
-  }
-
-  async swapOrder (bundleData: BundleData): Promise<string> {
-    const { items, expiration, salt, version } = bundleData
-    const { sig } = await signMessageAsync(this._config, JSON.stringify(bundleData))
-    return await placeSwapOrder(this._swapHost, {
-      items,
-      expiration,
-      salt,
-      version,
-      sigs: {
-        [this._config.account as string]: sig
-      }
-    })
   }
 }
 
