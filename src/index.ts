@@ -109,7 +109,7 @@ class Everpay extends EverpayBase {
       await this.info()
       const token = getTokenBySymbol(symbol, this._cachedInfo?.everpay?.value.tokenList) as Token
       checkParams({ token })
-      mergedParams.tokenId = token.id
+      mergedParams.symbol = token.symbol
     }
     if (action !== undefined) {
       checkParams({ action })
