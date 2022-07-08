@@ -28,4 +28,14 @@ export const NATIVE_CHAIN_TOKENS = [{
   network: 'conflux eSpace Testnet',
   chainId: 71,
   nativeSymbol: 'cfx'
+}, {
+  chainType: 'bsc',
+  network: 'bsc mainnet',
+  chainId: 56,
+  nativeSymbol: 'bnb'
+}, {
+  chainType: 'bsc',
+  network: 'bsc testnet',
+  chainId: 97,
+  nativeSymbol: 'bnb'
 }]
