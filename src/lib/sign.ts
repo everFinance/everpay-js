@@ -17,6 +17,8 @@ const getDepositAddr = (info: EverpayInfo, accountChainType: ChainType): string 
     return info?.lockers.moon
   } else if (accountChainType === ChainType.conflux) {
     return info?.lockers.conflux
+  } else if (accountChainType === ChainType.bsc) {
+    return info?.lockers.bsc
   }
   throw new Error(ERRORS.INVALID_ACCOUNT_TYPE)
 }
