@@ -11,8 +11,8 @@ const everpay = new Everpay({
 
 test(`check ${arWallet1.address} deposit ar`, async () => {
   return await everpay.deposit({
-    symbol: 'ar',
-    amount: '0.01'
+    tag: 'arweave,ethereum-ar-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA,0xcc9141efa8c20c7df0778748255b1487957811be',
+    amount: '0.0000001'
   }).then((arTx) => {
     console.log('arTx', arTx as ArweaveTransaction)
     expect((arTx as ArweaveTransaction).id).toBeTruthy()

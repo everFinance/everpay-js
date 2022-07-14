@@ -16,7 +16,7 @@ test(`${ethWalletHasUSDT.address} quick withdraw USDT to ${ethWalletHasUSDT.addr
 
   return await everpay.withdraw({
     chainType: ChainType.ethereum,
-    symbol: 'usdt',
+    tag: 'ethereum-usdt-0xd85476c906b5301e8e9eb58d174a6f96b9dfc5ee',
     amount: '99',
     quickMode: true
   }).then(withdrawResult => {
@@ -35,7 +35,7 @@ test(`${arWallet1.address} quick withdraw USDT to ${ethWalletHasUSDT.address}`, 
 
   return await everpay.withdraw({
     chainType: ChainType.ethereum,
-    symbol: 'USDT',
+    tag: 'ethereum-usdt-0xd85476c906b5301e8e9eb58d174a6f96b9dfc5ee',
     amount: '52.6',
     quickMode: true,
     to: ethWalletHasUSDT.address

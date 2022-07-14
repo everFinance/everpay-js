@@ -19,7 +19,7 @@ const everpay = new Everpay({
 
 test(`check Conflux ${ethWalletHasUSDT.address} deposit cfx`, async () => {
   return await everpay.deposit({
-    symbol: 'cfx',
+    tag: 'conflux-cfx-0x0000000000000000000000000000000000000000',
     amount: '0.01'
   }).then(ethTx => {
     console.log('ethTx', ethTx)

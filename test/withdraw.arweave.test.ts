@@ -12,7 +12,7 @@ test(`${arWallet1.address} withdraw ar to ${arWallet1.address}`, async () => {
 
   return await everpay.withdraw({
     chainType: ChainType.arweave,
-    symbol: 'ar',
+    tag: 'arweave,ethereum-ar-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA,0xcc9141efa8c20c7df0778748255b1487957811be',
     amount: '0.000010001',
     to: arWallet1.address
   }).then(withdrawResult => {
@@ -31,7 +31,7 @@ test(`${arWallet1.address} withdraw ar to ethereum address ${ethWalletHasUSDT.ad
 
   return await everpay.withdraw({
     chainType: ChainType.ethereum,
-    symbol: 'ar',
+    tag: 'arweave,ethereum-ar-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA,0xcc9141efa8c20c7df0778748255b1487957811be',
     amount: '0.000010001',
     to: ethWalletHasUSDT.address
   }).then(withdrawResult => {

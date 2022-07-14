@@ -19,7 +19,7 @@ const everpay = new Everpay({
 
 test(`check moonbase ${ethWalletHasUSDT.address} deposit dev`, async () => {
   return await everpay.deposit({
-    symbol: 'dev',
+    tag: 'moonbase-dev-0x0000000000000000000000000000000000000000',
     amount: '0.01'
   }).then(ethTx => {
     console.log('ethTx', ethTx)

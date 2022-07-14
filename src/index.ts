@@ -1,7 +1,7 @@
 import { getEverpayTxMessage, signMessageAsync, transferAsync } from './lib/sign'
 import { getEverpayBalance, getEverpayBalances, getEverpayInfo, getEverpayTransaction, getEverpayTransactions, getExpressInfo, getMintdEverpayTransactionByChainTxHash, postTx, getFees, getFee } from './api'
 import { everpayTxVersion, getExpressHost, getEverpayHost } from './config'
-import { getTimestamp, getTokenBySymbol, toBN, getAccountChainType, fromDecimalToUnit, genTokenTag, matchTokenTag, genExpressData, fromUnitToDecimalBN, genBundleData, getTokenBurnFeeByChainType, getChainDecimalByChainType, isArweaveChainPSTMode } from './utils/util'
+import { getTimestamp, toBN, getAccountChainType, fromDecimalToUnit, genTokenTag, matchTokenTag, genExpressData, fromUnitToDecimalBN, genBundleData, getTokenBurnFeeByChainType, getChainDecimalByChainType, isArweaveChainPSTMode, getTokenByTag } from './utils/util'
 import { GetEverpayBalanceParams, GetEverpayBalancesParams, GetEverpayTransactionsParams } from './types/api'
 import { checkParams } from './utils/check'
 import { ERRORS } from './utils/errors'
@@ -64,10 +64,10 @@ class Everpay extends EverpayBase {
 
   async balance (params: BalanceParams): Promise<string> {
     await this.info()
-    const { symbol, account } = params
+    const { tag, account } = params
     const acc = account ?? this._config.account as string
-    const token = getTokenBySymbol(symbol, this._cachedInfo?.everpay?.value.tokenList)
-    checkParams({ account: acc, symbol, token })
+    const token = getTokenByTag(tag, this._cachedInfo?.everpay?.value.tokenList)
+    checkParams({ account: acc, tag, token })
     const mergedParams: GetEverpayBalanceParams = {
       tokenTag: genTokenTag(token as Token),
       account: acc
@@ -92,6 +92,7 @@ class Everpay extends EverpayBase {
       return {
         chainType: token?.chainType,
         symbol: token?.symbol.toUpperCase(),
+        tag: token?.tag,
         address: token.id,
         balance: fromDecimalToUnit(item.amount, item.decimals)
       }
@@ -100,16 +101,16 @@ class Everpay extends EverpayBase {
   }
 
   private async getMergedTxsParams (params: TxsParams): Promise<GetEverpayTransactionsParams> {
-    const { page, symbol, action, withoutAction } = params
+    const { page, tag, action, withoutAction } = params
     const mergedParams: GetEverpayTransactionsParams = {}
     if (page !== undefined) {
       mergedParams.page = page
     }
-    if (symbol !== undefined) {
+    if (tag !== undefined) {
       await this.info()
-      const token = getTokenBySymbol(symbol, this._cachedInfo?.everpay?.value.tokenList) as Token
+      const token = getTokenByTag(tag, this._cachedInfo?.everpay?.value.tokenList) as Token
       checkParams({ token })
-      mergedParams.symbol = token.symbol
+      mergedParams.tag = token.tag
     }
     if (action !== undefined) {
       checkParams({ action })
@@ -147,20 +148,20 @@ class Everpay extends EverpayBase {
     return await getFees(this._apiHost)
   }
 
-  async fee (symbol: string): Promise<FeeItem> {
+  async fee (tag: string): Promise<FeeItem> {
     await this.info()
-    const token = getTokenBySymbol(symbol, this._cachedInfo?.everpay?.value.tokenList) as Token
-    checkParams({ symbol, token })
+    const token = getTokenByTag(tag, this._cachedInfo?.everpay?.value.tokenList) as Token
+    checkParams({ tag, token })
     return await getFee(this._apiHost, genTokenTag(token))
   }
 
   async deposit (params: DepositParams): Promise<EthereumTransaction | ArweaveTransaction> {
     await this.info()
-    const { amount, symbol } = params
+    const { amount, tag } = params
     const from = this._config.account
-    const token = getTokenBySymbol(symbol, this._cachedInfo?.everpay?.value.tokenList) as Token
+    const token = getTokenByTag(tag, this._cachedInfo?.everpay?.value.tokenList) as Token
     const chainType = this._config.chainType
-    checkParams({ account: from, symbol, token, amount })
+    checkParams({ account: from, tag, token, amount })
 
     // arweave 上的 PST 充值必须是整数
     if (isArweaveChainPSTMode(token) && chainType === ChainType.arweave && parseInt(amount) !== +amount) {
@@ -171,7 +172,7 @@ class Everpay extends EverpayBase {
     const value = utils.parseUnits(toBN(amount).toString(), chainDecimal)
 
     return await transferAsync(this._config, this._cachedInfo.everpay?.value as EverpayInfo, {
-      symbol,
+      symbol: token.symbol,
       token,
       from: from ?? '',
       value
@@ -184,8 +185,8 @@ class Everpay extends EverpayBase {
     params: TransferParams | WithdrawParams | BundleParams
   ): Promise<EverpayTxWithoutSig> {
     await this.info()
-    const { symbol, amount, fee, quickMode } = params as WithdrawParams
-    const token = getTokenBySymbol(symbol, this._cachedInfo?.everpay?.value.tokenList)
+    const { tag, amount, fee, quickMode } = params as WithdrawParams
+    const token = getTokenByTag(tag, this._cachedInfo?.everpay?.value.tokenList)
     const from = this._config.account as string
     let data = params.data
     let to = params?.to as string
@@ -193,7 +194,7 @@ class Everpay extends EverpayBase {
     let decimalOperateAmountBN = toBN(0)
     let action = EverpayAction.transfer
 
-    checkParams({ account: from, symbol, token, to })
+    checkParams({ account: from, tag, token, to })
 
     if (type === 'transfer') {
       checkParams({ amount })
@@ -213,7 +214,7 @@ class Everpay extends EverpayBase {
         throw new Error(ERRORS.PST_WITHDARW_TO_ARWEAVE_MUST_BE_INTEGER)
       }
 
-      const balance = await this.balance({ symbol })
+      const balance = await this.balance({ tag })
       const decimalBalanceBN = fromUnitToDecimalBN(balance, token?.decimals ?? 0)
 
       // 快速提现
@@ -274,7 +275,7 @@ class Everpay extends EverpayBase {
     }
 
     const everpayTxWithoutSig: EverpayTxWithoutSig = {
-      tokenSymbol: symbol,
+      tokenSymbol: token?.symbol as string,
       action,
       from,
       to,

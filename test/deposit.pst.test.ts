@@ -15,7 +15,7 @@ const everpayEthereumMode = new Everpay({
 
 test(`check ${ethWalletHasUSDT.address} deposit vrt`, async () => {
   return await everpayEthereumMode.deposit({
-    symbol: 'vrt',
+    tag: 'arweave-vrt-usjm4PCxUd5mtaon7zc97-dt-3qf67yPyqgzLnLqk5A',
     amount: '0.000000001'
   }).then(ethTx => {
     console.log('ethTx', ethTx)
@@ -32,7 +32,7 @@ const everpayARMode = new Everpay({
 
 test(`check ${arWallet2.address} deposit VRT`, async () => {
   return await everpayARMode.deposit({
-    symbol: 'vrt',
+    tag: 'arweave-vrt-usjm4PCxUd5mtaon7zc97-dt-3qf67yPyqgzLnLqk5A',
     amount: '1'
   }).then((arTx) => {
     console.log('arTx', arTx as ArweaveTransaction)
@@ -43,7 +43,7 @@ test(`check ${arWallet2.address} deposit VRT`, async () => {
 test(`check ${arWallet2.address} deposit VRT failed`, async () => {
   await expect(
     everpayARMode.deposit({
-      symbol: 'vrt',
+      tag: 'arweave-vrt-usjm4PCxUd5mtaon7zc97-dt-3qf67yPyqgzLnLqk5A',
       amount: '0.1'
     })
   )

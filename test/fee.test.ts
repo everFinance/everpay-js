@@ -12,7 +12,7 @@ test('everpey fees got correct', async () => {
 })
 
 test('everpey fee got correct', async () => {
-  return await everpay.fee('ar').then(fee => {
+  return await everpay.fee('arweave,ethereum-ar-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA,0xcc9141efa8c20c7df0778748255b1487957811be').then(fee => {
     expect(fee.burnFeeMap.arweave).toBeTruthy()
   })
 })

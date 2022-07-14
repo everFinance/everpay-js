@@ -84,7 +84,7 @@ export enum EverpayAction {
 }
 
 export interface InternalTransferItem {
-  symbol: string
+  tag: string
   from: string
   to: string
   amount: string
@@ -180,7 +180,7 @@ export interface TxsResult {
 }
 
 export interface BalanceParams {
-  symbol: string
+  tag: string
   account?: string
 }
 
@@ -190,19 +190,20 @@ export interface BalancesParams {
 
 export interface BalanceItem {
   chainType: string
+  tag: string
   symbol: string
   balance: string
   address: string
 }
 
 export interface DepositParams {
-  symbol: string
+  tag: string
   amount: string
 }
 
 export interface WithdrawParams {
   chainType: ChainType
-  symbol: string
+  tag: string
   amount: string
   fee?: string
   quickMode?: boolean
@@ -211,14 +212,14 @@ export interface WithdrawParams {
 }
 
 export interface TransferParams {
-  symbol: string
+  tag: string
   amount: string
   data?: Record<string, unknown>
   to: string
 }
 
 export interface BundleParams {
-  symbol: string
+  tag: string
   amount: string
   data: {
     bundle: BundleDataWithSigs
@@ -228,7 +229,7 @@ export interface BundleParams {
 
 export interface TxsParams {
   page?: number
-  symbol?: string
+  tag?: string
   action?: EverpayActionWithDeposit
   withoutAction?: EverpayActionWithDeposit
 }
@@ -236,7 +237,7 @@ export interface TxsParams {
 export interface TxsByAccountParams {
   page?: number
   account?: string
-  symbol?: string
+  tag?: string
   action?: EverpayActionWithDeposit
 }
 
