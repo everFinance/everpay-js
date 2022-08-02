@@ -19,6 +19,8 @@ const getDepositAddr = (info: EverpayInfo, accountChainType: ChainType): string 
     return info?.lockers.conflux
   } else if (accountChainType === ChainType.bsc) {
     return info?.lockers.bsc
+  } else if (accountChainType === ChainType.platon) {
+    return info?.lockers.platon
   }
   throw new Error(ERRORS.INVALID_ACCOUNT_TYPE)
 }
@@ -50,7 +52,13 @@ export const signMessageAsync = async (config: Config, messageData: string): Pro
   let sig = ''
   checkSignConfig(accountChainType, config)
 
-  if ([ChainType.ethereum, ChainType.moon, ChainType.conflux, ChainType.bsc].includes(accountChainType)) {
+  if ([
+    ChainType.ethereum,
+    ChainType.moon,
+    ChainType.conflux,
+    ChainType.bsc,
+    ChainType.platon
+  ].includes(accountChainType)) {
     sig = await ethereumLib.signMessageAsync(config.ethConnectedSigner as Signer, from, messageData)
   } else if (accountChainType === ChainType.arweave) {
     sig = await arweaveLib.signMessageAsync(config.arJWK as ArJWK, from, personalMsgHex)
@@ -70,7 +78,13 @@ export const transferAsync = async (
   const to = getDepositAddr(info, config.chainType as ChainType)
   const paramsMergedTo = { ...params, to }
 
-  if ([ChainType.ethereum, ChainType.moon, ChainType.conflux, ChainType.bsc].includes(config.chainType as ChainType)) {
+  if ([
+    ChainType.ethereum,
+    ChainType.moon,
+    ChainType.conflux,
+    ChainType.bsc,
+    ChainType.platon
+  ].includes(config.chainType as ChainType)) {
     return await ethereumLib.transferAsync(config.ethConnectedSigner as Signer, config.chainType as ChainType, paramsMergedTo)
   } else if (config.chainType as ChainType === ChainType.arweave) {
     return await arweaveLib.transferAsync(config.arJWK as ArJWK, config.chainType as ChainType, paramsMergedTo)
