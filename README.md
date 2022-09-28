@@ -4,4 +4,4 @@
 
 See [everpay-js docs](https://docs.everpay.io/en/docs/sdk/everpay-js/intro)
 
-everFinance Team.
+everVision Team.
