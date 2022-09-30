@@ -38,4 +38,14 @@ export const NATIVE_CHAIN_TOKENS = [{
   network: 'bsc testnet',
   chainId: 97,
   nativeSymbol: 'bnb'
+}, {
+  chainType: 'platon',
+  network: 'platon mainnet',
+  chainId: 210425,
+  nativeSymbol: 'lat'
+}, {
+  chainType: 'platon',
+  network: 'platon testnet',
+  chainId: 2206132,
+  nativeSymbol: 'lat'
 }]
