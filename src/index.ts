@@ -6,11 +6,38 @@ import { GetEverpayBalanceParams, GetEverpayBalancesParams, GetEverpayTransactio
 import { checkParams } from './utils/check'
 import { ERRORS } from './utils/errors'
 import { utils } from 'ethers'
+import { v4 as uuidv4 } from 'uuid'
 import {
-  Config, EverpayInfo, EverpayBase, BalanceParams, BalancesParams, DepositParams,
-  SendEverpayTxResult, TransferParams, WithdrawParams, EverpayTxWithoutSig, EverpayAction, BundleData,
-  FeeItem, ChainType,
-  BalanceItem, TxsParams, TxsByAccountParams, TxsResult, EverpayTransaction, Token, EthereumTransaction, ArweaveTransaction, ExpressInfo, CachedInfo, InternalTransferItem, BundleDataWithSigs, BundleParams, EverpayTx
+  Config,
+  EverpayInfo,
+  EverpayBase,
+  BalanceParams,
+  BalancesParams,
+  DepositParams,
+  SendEverpayTxResult,
+  TransferParams,
+  WithdrawParams,
+  EverpayTxWithoutSig,
+  EverpayAction,
+  BundleData,
+  FeeItem,
+  ChainType,
+  BalanceItem,
+  TxsParams,
+  TxsByAccountParams,
+  TxsResult,
+  EverpayTransaction,
+  Token,
+  EthereumTransaction,
+  ArweaveTransaction,
+  ExpressInfo,
+  CachedInfo,
+  InternalTransferItem,
+  BundleDataWithSigs,
+  BundleParams,
+  EverpayTx,
+  AddTokenSet,
+  NewToken, SetParams, TargetChainMeta, AddTargetChainSet, TokenDisplaySet, OwnershipSet
 } from './types'
 
 export * from './types'
@@ -180,8 +207,8 @@ class Everpay extends EverpayBase {
 
   // amount 为实际收款数量
   async getEverpayTxWithoutSig (
-    type: 'transfer' | 'withdraw' | 'bundle',
-    params: TransferParams | WithdrawParams | BundleParams
+    type: 'transfer' | 'withdraw' | 'bundle' | 'set',
+    params: TransferParams | WithdrawParams | BundleParams | SetParams
   ): Promise<EverpayTxWithoutSig> {
     await this.info()
     const { symbol, amount, fee, quickMode } = params as WithdrawParams
@@ -204,6 +231,9 @@ class Everpay extends EverpayBase {
       decimalOperateAmountBN = fromUnitToDecimalBN(amount, token?.decimals ?? 0)
 
       // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
+    } else if (type === 'set') {
+      action = EverpayAction.set
+      decimalOperateAmountBN = fromUnitToDecimalBN(amount, token?.decimals ?? 0)
     } else if (type === 'withdraw') {
       checkParams({ amount })
       const chainType = (params as WithdrawParams).chainType
@@ -355,6 +385,104 @@ class Everpay extends EverpayBase {
 
   async bundle (params: BundleParams): Promise<SendEverpayTxResult> {
     const everpayTxWithoutSig = await this.getEverpayTxWithoutSig('bundle', params)
+    return await this.sendEverpayTx(everpayTxWithoutSig)
+  }
+
+  async signAddTokenSet (newToken: NewToken): Promise<AddTokenSet> {
+    const addToken: AddTokenSet = {
+      action: 'addToken',
+      operator: this._config.account as string,
+      salt: uuidv4(),
+      version: 'v1',
+      expiration: Math.round(Date.now() / 1000) + 100,
+      token: newToken,
+      sig: ''
+    }
+    const { sig } = await signMessageAsync(this._config, JSON.stringify({
+      action: addToken.action,
+      operator: addToken.operator,
+      salt: addToken.salt,
+      version: addToken.version,
+      expiration: addToken.expiration,
+      token: addToken.token
+    }))
+    addToken.sig = sig
+    return addToken
+  }
+
+  async signAddTargetChainSet (tokenTag: string, targetChain: TargetChainMeta): Promise<AddTargetChainSet> {
+    const addTargetChain: AddTargetChainSet = {
+      action: 'addTargetChain',
+      operator: this._config.account as string,
+      salt: uuidv4(),
+      version: 'v1',
+      expiration: Math.round(Date.now() / 1000) + 100,
+      tokenTag: tokenTag,
+      targetChain: targetChain,
+      sig: ''
+    }
+    const { sig } = await signMessageAsync(this._config, JSON.stringify({
+      action: addTargetChain.action,
+      operator: addTargetChain.operator,
+      salt: addTargetChain.salt,
+      version: addTargetChain.version,
+      expiration: addTargetChain.expiration,
+      tokenTag: addTargetChain.tokenTag,
+      targetChain: addTargetChain.targetChain
+    }))
+    addTargetChain.sig = sig
+    return addTargetChain
+  }
+
+  async signTokenDisplaySet (tokenTag: string, display: boolean): Promise<TokenDisplaySet> {
+    const tokenDisplay: TokenDisplaySet = {
+      action: 'setTokenDisplay',
+      operator: this._config.account as string,
+      salt: uuidv4(),
+      version: 'v1',
+      expiration: Math.round(Date.now() / 1000) + 100,
+      tokenTag: tokenTag,
+      display: display,
+      sig: ''
+    }
+    const { sig } = await signMessageAsync(this._config, JSON.stringify({
+      action: tokenDisplay.action,
+      operator: tokenDisplay.operator,
+      salt: tokenDisplay.salt,
+      version: tokenDisplay.version,
+      expiration: tokenDisplay.expiration,
+      tokenTag: tokenDisplay.tokenTag,
+      display: tokenDisplay.display
+    }))
+    tokenDisplay.sig = sig
+    return tokenDisplay
+  }
+
+  async signOwnershipSet (newOwner: string): Promise<OwnershipSet> {
+    const ownership: OwnershipSet = {
+      action: 'transferOwnership',
+      operator: this._config.account as string,
+      salt: uuidv4(),
+      version: 'v1',
+      expiration: Math.round(Date.now() / 1000) + 100,
+      newOwner: newOwner,
+      sig: ''
+    }
+    const { sig } = await signMessageAsync(this._config, JSON.stringify({
+      action: ownership.action,
+      operator: ownership.operator,
+      salt: ownership.salt,
+      version: ownership.version,
+      expiration: ownership.expiration,
+      newOwner: ownership.newOwner
+    }))
+    ownership.sig = sig
+    return ownership
+  }
+
+  async setTx (setData: any): Promise<SendEverpayTxResult> {
+    const setParams: SetParams = { amount: '0', data: setData, symbol: 'eth', to: this._config.account as string }
+    const everpayTxWithoutSig = await this.getEverpayTxWithoutSig('set', setParams)
     return await this.sendEverpayTx(everpayTxWithoutSig)
   }
 }

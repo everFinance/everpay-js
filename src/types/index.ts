@@ -80,7 +80,8 @@ export interface ExpressInfo {
 export enum EverpayAction {
   transfer = 'transfer',
   withdraw = 'burn',
-  bundle = 'bundle'
+  bundle = 'bundle',
+  set = 'set'
 }
 
 export interface InternalTransferItem {
@@ -109,6 +110,52 @@ export interface BundleDataWithSigs extends BundleData {
   sigs: {
     [account: string]: string
   }
+}
+
+export interface CommonSet {
+  action: string
+  operator: string
+  salt: string
+  version: string
+  expiration: number
+}
+
+export interface TargetChainMeta {
+  targetChainId: string
+  targetChainType: string
+  targetDecimals: number
+  targetTokenId: string
+}
+
+export interface NewToken {
+  tokenID: string
+  symbol: string
+  chainType: string
+  chainID: string
+  everDecimals: number
+  targetChains: TargetChainMeta[]
+}
+
+export interface AddTokenSet extends CommonSet {
+  token: NewToken
+  sig: string
+}
+
+export interface AddTargetChainSet extends CommonSet {
+  tokenTag: string
+  targetChain: TargetChainMeta
+  sig: string
+}
+
+export interface TokenDisplaySet extends CommonSet {
+  tokenTag: string
+  display: boolean
+  sig: string
+}
+
+export interface OwnershipSet extends CommonSet {
+  newOwner: string
+  sig: string
 }
 
 export interface EverpayTxWithoutSig {
@@ -223,6 +270,13 @@ export interface BundleParams {
   data: {
     bundle: BundleDataWithSigs
   }
+  to: string
+}
+
+export interface SetParams {
+  symbol: string
+  amount: string
+  data: any
   to: string
 }
 
