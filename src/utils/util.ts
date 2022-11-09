@@ -89,7 +89,13 @@ export const genTokenTag = (token: Token): string => {
   const { chainType, symbol, id } = token
   const chainTypes = chainType.split(',')
   const tokenAddrs = id.split(',').map((addr: string, index: number) => {
-    if (chainTypes[index] === ChainType.ethereum) {
+    if ([
+      ChainType.ethereum,
+      ChainType.bsc,
+      ChainType.conflux,
+      ChainType.moon,
+      ChainType.platon
+    ].includes(chainTypes[index] as ChainType)) {
       return addr.toLowerCase()
     }
     return addr
