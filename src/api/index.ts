@@ -92,9 +92,9 @@ export const getEverpayBalances = async (apiHost: string, {
 }
 
 export const getEverpayTransactions = async (apiHost: string, params: GetEverpayTransactionsParams): Promise<TxsResult> => {
-  const { account, page, symbol, action, withoutAction } = params
+  const { account, page, tag, action, withoutAction } = params
   const baseUrl = account !== undefined ? `${apiHost}/txs/${account}` : `${apiHost}/txs`
-  const queryString = qsStringify({ page, symbol, action, withoutAction }, { skipNull: true })
+  const queryString = qsStringify({ page, tag, action, withoutAction }, { skipNull: true })
   const result = await sendRequest({
     ...rConfig,
     url: `${baseUrl}${queryString !== '' ? `?${queryString}` : ''}`,
