@@ -13,7 +13,7 @@ const everpay = new Everpay({
 
 test(`check ${ethWalletHasUSDT.address} deposit usdt`, async () => {
   return await everpay.deposit({
-    symbol: 'eth',
+    tag: 'ethereum-eth-0x0000000000000000000000000000000000000000',
     amount: '0.01'
   }).then(ethTx => {
     console.log('ethTx', ethTx)

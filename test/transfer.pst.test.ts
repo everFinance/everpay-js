@@ -11,7 +11,7 @@ test(`${arWallet2.address} transfer VRT to ${ethWalletHasUSDT.address}`, async (
   })
 
   return await everpay.transfer({
-    symbol: 'VRT',
+    tag: 'arweave-vrt-usjm4PCxUd5mtaon7zc97-dt-3qf67yPyqgzLnLqk5A',
     amount: '0.000010001',
     to: ethWalletHasUSDT.address
   }).then(withdrawResult => {

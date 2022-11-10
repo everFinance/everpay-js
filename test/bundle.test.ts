@@ -37,12 +37,12 @@ describe('test bundle data generate & sign', () => {
     const everpayInfo = await everpayArAccount.info()
     const bundleData = await everpayArAccount.getBundleData([
       {
-        symbol: 'ETH',
+        tag: 'ethereum-eth-0x0000000000000000000000000000000000000000',
         from: ethWalletHasUSDT.address,
         to: arWallet1.address,
         amount: '0.001'
       }, {
-        symbol: 'USDT',
+        tag: 'ethereum-usdt-0xd85476c906b5301e8e9eb58d174a6f96b9dfc5ee',
         from: arWallet1.address,
         to: ethWalletHasUSDT.address,
         amount: '10'
@@ -56,12 +56,12 @@ describe('test bundle data generate & sign', () => {
   test('test sign bundle data', async () => {
     const bundleData = await everpayArAccount.getBundleData([
       {
-        symbol: 'ETH',
+        tag: 'ethereum-eth-0x0000000000000000000000000000000000000000',
         from: ethWalletHasUSDT.address,
         to: arWallet1.address,
         amount: '0.001'
       }, {
-        symbol: 'USDT',
+        tag: 'ethereum-usdt-0xd85476c906b5301e8e9eb58d174a6f96b9dfc5ee',
         from: arWallet1.address,
         to: ethWalletHasUSDT.address,
         amount: '10'
@@ -86,12 +86,12 @@ describe('test bundle data generate & sign', () => {
   test('send bundle tx', async () => {
     const bundleData = await everpayArAccount.getBundleData([
       {
-        symbol: 'ETH',
+        tag: 'ethereum-eth-0x0000000000000000000000000000000000000000',
         from: ethWalletHasUSDT.address,
         to: arWallet1.address,
         amount: '0.001'
       }, {
-        symbol: 'USDT',
+        tag: 'ethereum-usdt-0xd85476c906b5301e8e9eb58d174a6f96b9dfc5ee',
         from: arWallet1.address,
         to: ethWalletHasUSDT.address,
         amount: '10'
@@ -101,7 +101,7 @@ describe('test bundle data generate & sign', () => {
     const bundleDataWithSigs2 = await everpayEthAccount.signBundleData(bundleDataWithSigs1)
 
     const bundleResult = await everpayArAccount.bundle({
-      symbol: 'ETH',
+      tag: 'ethereum-eth-0x0000000000000000000000000000000000000000',
       to: arWallet1.address,
       amount: '0',
       data: {

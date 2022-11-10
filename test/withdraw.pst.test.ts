@@ -12,7 +12,7 @@ test(`${arWallet2.address} withdraw vrt to ${arWallet2.address}`, async () => {
 
   return await everpay.withdraw({
     chainType: ChainType.arweave,
-    symbol: 'vrt',
+    tag: 'arweave-vrt-usjm4PCxUd5mtaon7zc97-dt-3qf67yPyqgzLnLqk5A',
     amount: '1',
     to: arWallet2.address
   }).then(withdrawResult => {
@@ -31,7 +31,7 @@ test(`check ${arWallet2.address} withdraw VRT failed`, async () => {
   await expect(
     everpay.withdraw({
       chainType: ChainType.arweave,
-      symbol: 'vrt',
+      tag: 'arweave-vrt-usjm4PCxUd5mtaon7zc97-dt-3qf67yPyqgzLnLqk5A',
       amount: '0.1'
     })
   )
@@ -49,7 +49,7 @@ test(`${arWallet2.address} withdraw vrt to ethereum address ${ethWalletHasUSDT.a
 
   return await everpay.withdraw({
     chainType: ChainType.ethereum,
-    symbol: 'vrt',
+    tag: 'arweave-vrt-usjm4PCxUd5mtaon7zc97-dt-3qf67yPyqgzLnLqk5A',
     amount: '0.000010001',
     to: ethWalletHasUSDT.address
   }).then(withdrawResult => {

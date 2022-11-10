@@ -8,7 +8,7 @@ const everpay = new Everpay({
 })
 
 test('everpey txsByAccount got correct', async () => {
-  return await everpay.txsByAccount({ page: 1, symbol: 'usdt', action: EverpayActionWithDeposit.deposit }).then(txResult => {
+  return await everpay.txsByAccount({ page: 1, tag: 'ethereum-usdt-0xd85476c906b5301e8e9eb58d174a6f96b9dfc5ee', action: EverpayActionWithDeposit.deposit }).then(txResult => {
     expect(txResult.txs.length).toBeGreaterThan(0)
     expect(txResult.currentPage).toBe(1)
     expect(txResult.txs.every(item => item.action === EverpayActionWithDeposit.deposit)).toBe(true)

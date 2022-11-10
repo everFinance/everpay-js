@@ -11,7 +11,7 @@ const everpay = new Everpay({
 
 test(`check ${arWallet1.address} transfer ar`, async () => {
   return await everpay.transfer({
-    symbol: 'ar',
+    tag: 'arweave,ethereum-ar-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA,0xcc9141efa8c20c7df0778748255b1487957811be',
     amount: '0.0000000001',
     to: ethWalletHasUSDT.address,
     data: { hello: 'world', this: 'is everpay' }

@@ -13,7 +13,7 @@ const everpay = new Everpay({
 
 test(`check ${ethWalletHasUSDT.address} transfer usdt to ${ethWalletHasUSDT2.address}`, async () => {
   return await everpay.transfer({
-    symbol: 'usdt',
+    tag: 'ethereum-usdt-0xd85476c906b5301e8e9eb58d174a6f96b9dfc5ee',
     amount: '5.26',
     to: '5NPqYBdIsIpJzPeYixuz7BEH_W7BEk_mb8HxBD3OHXo',
     data: { hello: 'world', this: 'is everpay' }

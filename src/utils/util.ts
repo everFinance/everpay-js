@@ -40,10 +40,6 @@ export const fromDecimalToUnit = (x: number | string | BN, decimals: number): st
 
 export const getTimestamp = (): number => Math.round(Date.now() / 1000)
 
-export const getTokenBySymbol = (symbol: string, tokenList?: Token[]): Token | undefined => {
-  return tokenList?.find(t => t.symbol.toUpperCase() === symbol.toUpperCase())
-}
-
 export const getTokenByTag = (tag: string, tokenList?: Token[]): Token | undefined => {
   return tokenList?.find(t => matchTokenTag(genTokenTag(t), tag))
 }
@@ -139,8 +135,8 @@ interface GenBundleDataParams {
 
 export const genBundleData = (params: GenBundleDataParams): BundleData => {
   const items = params.items.map((item: InternalTransferItem) => {
-    const { symbol, amount, from, to } = item
-    const token = getTokenBySymbol(symbol, params.tokenList) as Token
+    const { tag, amount, from, to } = item
+    const token = getTokenByTag(tag, params.tokenList) as Token
     // 注意：顺序必须与后端保持一致，来让 JSON.stringify() 生成的字符串顺序与后端也一致
     return {
       tag: genTokenTag(token),
