@@ -294,6 +294,7 @@ export interface TxsByAccountParams {
   account?: string
   tag?: string
   action?: EverpayActionWithDeposit
+  withoutAction?: EverpayActionWithDeposit
 }
 
 export interface SendEverpayTxResult extends PostEverpayTxResult {

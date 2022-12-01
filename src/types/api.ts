@@ -1,6 +1,6 @@
 export interface GetEverpayTransactionsParams {
   account?: string
-  tag?: string
+  tokenTag?: string
   action?: string
   withoutAction?: string
   page?: number

@@ -137,7 +137,7 @@ class Everpay extends EverpayBase {
       await this.info()
       const token = getTokenByTag(tag, this._cachedInfo?.everpay?.value.tokenList) as Token
       checkParams({ token })
-      mergedParams.tag = token.tag
+      mergedParams.tokenTag = token.tag
     }
     if (action !== undefined) {
       checkParams({ action })
