@@ -100,7 +100,7 @@ export const genTokenTag = (token: Token): string => {
 }
 
 export const matchTokenTag = (tag1: string, tag2: string): boolean => {
-  return tag1.toLowerCase() === tag2.toLowerCase()
+  return tag1?.toLowerCase() === tag2?.toLowerCase()
 }
 
 interface GenExpressDataParams {
