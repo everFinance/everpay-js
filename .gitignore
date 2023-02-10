@@ -108,3 +108,5 @@ lib
 cjs
 
 esm
+
+umd
