@@ -1,9 +1,8 @@
 {
   "name": "everpay",
-  "version": "0.6.1",
+  "version": "0.6.2",
   "main": "./cjs/index.js",
   "module": "./esm/index.js",
-  "type": "module",
   "files": [
     "cjs",
     "esm",
@@ -27,7 +26,7 @@
   "scripts": {
     "lint": "eslint src test",
     "test": "jest",
-    "build": "rm -rf ./esm && rm -rf ./cjs && tsc -p tsconfig.json && tsc -p tsconfig.cjs.json && rollup -c rollup.config.js",
+    "build": "rm -rf ./esm && rm -rf ./cjs && tsc -p tsconfig.json && tsc -p tsconfig.cjs.json && rollup -c rollup.config.js --bundleConfigAsCjs",
     "prepublish": "npm run build"
   },
   "sideEffects": false,
