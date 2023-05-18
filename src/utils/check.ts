@@ -14,7 +14,7 @@ const cases: CaseObject = {
   tag: ERRORS.TAG_NOT_FOUND,
   action: ERRORS.INVALID_ACTION,
   to: ERRORS.TO_NOT_FOUND,
-  ethConnectedSigner: ERRORS.ETH_SIGENER_NOT_FOUND
+  ethConnectedSigner: ERRORS.ETH_SIGNER_NOT_FOUND
 }
 
 export const checkItem = (itemName: string, param?: unknown): void => {
