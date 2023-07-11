@@ -5,8 +5,8 @@ export const NATIVE_CHAIN_TOKENS = [{
   nativeSymbol: 'eth'
 }, {
   chainType: 'ethereum',
-  network: 'kovan',
-  chainId: 42,
+  network: 'goerli',
+  chainId: 5,
   nativeSymbol: 'eth'
 }, {
   chainType: 'moon',
