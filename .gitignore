@@ -110,3 +110,5 @@ cjs
 esm
 
 umd
+
+test/constants/wallet.ts
