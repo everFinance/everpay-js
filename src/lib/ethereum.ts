@@ -1,4 +1,4 @@
-import { Contract, Signer, utils, providers } from 'ethers'
+import { ethers, Contract, Signer, utils, providers } from 'ethers'
 import { TransferAsyncParams } from './interface'
 import erc20Abi from '../constants/abi/erc20'
 import { getTokenAddrByChainType } from '../utils/util'
@@ -26,6 +26,11 @@ const signMessageAsync = async (ethConnectedSigner: Signer, address: string, mes
   } else {
     return await ethConnectedSigner.signMessage(messageBytes)
   }
+}
+
+const verifySigAsync = async (address: string, messageData: string, sig: string): Promise<boolean> => {
+  const recoveredAddress = await ethers.utils.verifyMessage(messageData, sig)
+  return recoveredAddress.toLowerCase() === address.toLowerCase()
 }
 
 const transferAsync = async (ethConnectedSigner: Signer, chainType: ChainType, {
@@ -61,5 +66,6 @@ const transferAsync = async (ethConnectedSigner: Signer, chainType: ChainType, {
 
 export default {
   signMessageAsync,
+  verifySigAsync,
   transferAsync
 }

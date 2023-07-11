@@ -1,4 +1,4 @@
-import { getEverpayTxMessage, signMessageAsync, transferAsync } from './lib/sign'
+import { getEverpayTxMessage, signMessageAsync, transferAsync, verifySigAsync } from './lib/sign'
 import { getEverpayBalance, getEverpayBalances, getEverpayInfo, getEverpayTransaction, getEverpayTransactions, getExpressInfo, getMintdEverpayTransactionByChainTxHash, postTx, getFees, getFee } from './api'
 import { everpayTxVersion, getExpressHost, getEverpayHost } from './config'
 import { getTimestamp, toBN, getAccountChainType, fromDecimalToUnit, genTokenTag, matchTokenTag, genExpressData, fromUnitToDecimalBN, genBundleData, getTokenBurnFeeByChainType, getChainDecimalByChainType, isArweaveChainPSTMode, getTokenByTag, isArweaveL2PSTTokenSymbol } from './utils/util'
@@ -485,6 +485,10 @@ class Everpay extends EverpayBase {
     const setParams: SetParams = { amount: '0', data: setData, symbol: 'eth', to: this._config.account as string }
     const everpayTxWithoutSig = await this.getEverpayTxWithoutSig('set', setParams)
     return await this.sendEverpayTx(everpayTxWithoutSig)
+  }
+
+  async verifyTx (tx: EverpayTransaction): Promise<boolean> {
+    return await verifySigAsync(tx)
   }
 }
 

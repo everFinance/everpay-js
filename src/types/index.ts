@@ -208,6 +208,10 @@ export interface EverpayTransaction {
   feeRecipient: string
   sig: string
   everHash: string
+  chainID: string
+  chainType: string
+  tokenID: string
+  version: string
   status: EverpayTransactionStatus
   internalStatus: string
   timestamp: number

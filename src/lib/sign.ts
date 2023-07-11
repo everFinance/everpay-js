@@ -1,11 +1,12 @@
 import { SignMessageAsyncResult, TransferAsyncParams } from './interface'
 import ethereumLib from './ethereum'
 import arweaveLib from './arweave'
-import { ArJWK, ChainType, Config, EverpayInfo, EverpayTxWithoutSig, EthereumTransaction, ArweaveTransaction } from '../types'
+import { ArJWK, ChainType, Config, EverpayInfo, EverpayTxWithoutSig, EthereumTransaction, ArweaveTransaction, EverpayTransaction } from '../types'
 import { checkSignConfig } from '../utils/check'
 import { Signer } from '@ethersproject/abstract-signer'
 import { ERRORS } from '../utils/errors'
 import hashPersonalMessage from './hashPersonalMessage'
+import { getAccountChainType } from '../utils/util'
 
 const getDepositAddr = (info: EverpayInfo, accountChainType: ChainType): string => {
   if (accountChainType === ChainType.ethereum) {
@@ -66,6 +67,17 @@ export const signMessageAsync = async (config: Config, messageData: string): Pro
     throw new Error(ERRORS.INVALID_ACCOUNT_TYPE)
   }
   return { everHash: personalMsgHex, sig }
+}
+
+export const verifySigAsync = async (tx: EverpayTransaction): Promise<boolean> => {
+  const from = tx.from
+  const chainType = getAccountChainType(from)
+  const messageData = getEverpayTxMessage(tx as any)
+  if (chainType === ChainType.arweave) {
+    return await arweaveLib.verifySigAsync(from, messageData, tx.sig)
+  } else {
+    return await ethereumLib.verifySigAsync(from, messageData, tx.sig)
+  }
 }
 
 export const transferAsync = async (

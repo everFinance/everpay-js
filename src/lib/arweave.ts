@@ -3,6 +3,7 @@ import isString from 'lodash/isString'
 import { ArJWK, ArweaveTransaction, ChainType } from '../types'
 import { getTokenAddrByChainType, isArweaveL2PSTTokenSymbol } from '../utils/util'
 import { TransferAsyncParams } from './interface'
+import hashPersonalMessage from './hashPersonalMessage'
 import { sendRequest } from '../api'
 
 const options = {
@@ -60,7 +61,7 @@ const signMessageAsync = async (arJWK: ArJWK, address: string, everHash: string)
     }
     try {
       // TODO: wait arweave-js update arconnect.d.ts
-      arOwner = await (window.arweaveWallet).getActivePublicKey()
+      arOwner = await (window.arweaveWallet as any).getActivePublicKey()
     } catch {
       throw new Error(ERRORS.ACCESS_PUBLIC_KEY_FAILED)
     }
@@ -78,7 +79,7 @@ const signMessageAsync = async (arJWK: ArJWK, address: string, everHash: string)
 
     try {
       // TODO: wait arweave-js update arconnect.d.ts
-      const signature = await (window.arweaveWallet).signature(
+      const signature = await (window.arweaveWallet as any).signature(
         everHashBuffer,
         algorithm
       )
@@ -98,6 +99,26 @@ const signMessageAsync = async (arJWK: ArJWK, address: string, everHash: string)
   }
 
   return `${signatureB64url},${arOwner}`
+}
+
+const verifySigAsync = async (address: string, messageData: string, sig: string): Promise<boolean> => {
+  const options = {
+    host: 'arweave.net',
+    port: 443,
+    protocol: 'https',
+    timeout: 20000,
+    logging: false
+  }
+  const [signature, owner] = sig.split(',')
+  const arweave = Arweave.init(options)
+  const ownerAddr = await arweave.wallets.ownerToAddress(owner)
+  const personalMsgHashBuffer = hashPersonalMessage(Buffer.from(messageData))
+  const isCorrectOwner = ownerAddr === address
+  if (!isCorrectOwner) {
+    return false
+  }
+  const verified = await arweave.crypto.verify(owner, personalMsgHashBuffer, arweave.utils.b64UrlToBuffer(signature))
+  return verified
 }
 
 const transferAsync = async (arJWK: ArJWK, chainType: ChainType, {
@@ -197,5 +218,6 @@ const transferAsync = async (arJWK: ArJWK, chainType: ChainType, {
 
 export default {
   signMessageAsync,
+  verifySigAsync,
   transferAsync
 }
