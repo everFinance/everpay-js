@@ -1,6 +1,6 @@
 {
   "name": "everpay",
-  "version": "0.6.4",
+  "version": "0.6.5",
   "main": "./cjs/index.js",
   "module": "./esm/index.js",
   "files": [
@@ -62,7 +62,7 @@
   },
   "dependencies": {
     "@types/lodash": "^4.14.180",
-    "arweave": "^1.10.16",
+    "arweave": "^1.14.0",
     "axios": "^0.21.1",
     "bignumber.js": "^9.0.1",
     "ethers": "^5.4.6",
