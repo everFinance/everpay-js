@@ -1,7 +1,7 @@
 import { getEverpayTxMessage, signMessageAsync, transferAsync } from './lib/sign'
 import { getEverpayBalance, getEverpayBalances, getEverpayInfo, getEverpayTransaction, getEverpayTransactions, getExpressInfo, getMintdEverpayTransactionByChainTxHash, postTx, getFees, getFee } from './api'
 import { everpayTxVersion, getExpressHost, getEverpayHost } from './config'
-import { getTimestamp, toBN, getAccountChainType, fromDecimalToUnit, genTokenTag, matchTokenTag, genExpressData, fromUnitToDecimalBN, genBundleData, getTokenBurnFeeByChainType, getChainDecimalByChainType, isArweaveChainPSTMode, getTokenByTag } from './utils/util'
+import { getTimestamp, toBN, getAccountChainType, fromDecimalToUnit, genTokenTag, matchTokenTag, genExpressData, fromUnitToDecimalBN, genBundleData, getTokenBurnFeeByChainType, getChainDecimalByChainType, isArweaveChainPSTMode, getTokenByTag, isArweaveL2PSTTokenSymbol } from './utils/util'
 import { GetEverpayBalanceParams, GetEverpayBalancesParams, GetEverpayTransactionsParams } from './types/api'
 import { checkParams } from './utils/check'
 import { ERRORS } from './utils/errors'
@@ -191,7 +191,7 @@ class Everpay extends EverpayBase {
     checkParams({ account: from, tag, token, amount })
 
     // arweave 上的 PST 充值必须是整数
-    if (isArweaveChainPSTMode(token) && chainType === ChainType.arweave && parseInt(amount) !== +amount) {
+    if (isArweaveChainPSTMode(token) && chainType === ChainType.arweave && !isArweaveL2PSTTokenSymbol(token.symbol) && parseInt(amount) !== +amount) {
       throw new Error(ERRORS.DEPOSIT_ARWEAVE_PST_MUST_BE_INTEGER)
     }
 
@@ -240,7 +240,7 @@ class Everpay extends EverpayBase {
       const chainType = (params as WithdrawParams).chainType
 
       // PST 提现到 arweave 网络必须是整数
-      if (isArweaveChainPSTMode(token) && chainType === ChainType.arweave && parseInt(amount) !== +amount) {
+      if (isArweaveChainPSTMode(token) && chainType === ChainType.arweave && !isArweaveL2PSTTokenSymbol(token?.symbol as string) && parseInt(amount) !== +amount) {
         throw new Error(ERRORS.PST_WITHDARW_TO_ARWEAVE_MUST_BE_INTEGER)
       }
 

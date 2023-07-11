@@ -1,8 +1,9 @@
 import Arweave from 'arweave'
 import isString from 'lodash/isString'
 import { ArJWK, ArweaveTransaction, ChainType } from '../types'
-import { getTokenAddrByChainType } from '../utils/util'
+import { getTokenAddrByChainType, isArweaveL2PSTTokenSymbol } from '../utils/util'
 import { TransferAsyncParams } from './interface'
+import { sendRequest } from '../api'
 
 const options = {
   host: 'arweave.net', // Hostname or IP address for a Arweave host
@@ -59,7 +60,7 @@ const signMessageAsync = async (arJWK: ArJWK, address: string, everHash: string)
     }
     try {
       // TODO: wait arweave-js update arconnect.d.ts
-      arOwner = await (window.arweaveWallet as any).getActivePublicKey()
+      arOwner = await (window.arweaveWallet).getActivePublicKey()
     } catch {
       throw new Error(ERRORS.ACCESS_PUBLIC_KEY_FAILED)
     }
@@ -77,7 +78,7 @@ const signMessageAsync = async (arJWK: ArJWK, address: string, everHash: string)
 
     try {
       // TODO: wait arweave-js update arconnect.d.ts
-      const signature = await (window.arweaveWallet as any).signature(
+      const signature = await (window.arweaveWallet).signature(
         everHashBuffer,
         algorithm
       )
@@ -119,7 +120,9 @@ const transferAsync = async (arJWK: ArJWK, chainType: ChainType, {
   } else {
     const tokenID = getTokenAddrByChainType(token, ChainType.arweave)
     transactionTransfer = await arweave.createTransaction({
-      data: (Math.random() * 10000).toFixed()
+      data: (Math.random() * 10000).toFixed(),
+      last_tx: isArweaveL2PSTTokenSymbol(token.symbol) ? 'p7vc1iSP6bvH_fCeUFa9LqoV5qiyW-jdEKouAT0XMoSwrNraB9mgpi29Q10waEpO' : undefined,
+      reward: isArweaveL2PSTTokenSymbol(token.symbol) ? '0' : undefined
     }, arJWK)
     transactionTransfer.addTag('App-Name', 'SmartWeaveAction')
     transactionTransfer.addTag('App-Version', '0.3.0')
@@ -153,7 +156,35 @@ const transferAsync = async (arJWK: ArJWK, chainType: ChainType, {
     // 直接给原来 transaction 赋值了 signature 值
     await arweave.transactions.sign(transactionTransfer, arJWK)
   }
-  const responseTransfer = await arweave.transactions.post(transactionTransfer)
+  let responseTransfer = null as any
+  if (isArweaveL2PSTTokenSymbol(token.symbol)) {
+    await sendRequest({
+      url: 'https://gateway.warp.cc/gateway/sequencer/register',
+      data: transactionTransfer,
+      headers: {
+        // 'Accept-Encoding': 'gzip, deflate, br',
+        'Content-Type': 'application/json',
+        Accept: 'application/json'
+      },
+      method: 'POST'
+    })
+    responseTransfer = {
+      status: 200,
+      data: {}
+    }
+    // responseTransfer = await fetch('https://gateway.warp.cc/gateway/sequencer/register', {
+    //   method: 'POST',
+    //   body: JSON.stringify(transactionTransfer),
+    //   headers: {
+    //     'Accept-Encoding': 'gzip, deflate, br',
+    //     'Content-Type': 'application/json',
+    //     Accept: 'application/json'
+    //   }
+    // })
+  } else {
+    responseTransfer = await arweave.transactions.post(transactionTransfer)
+  }
+
   if (responseTransfer.status === 200) {
     // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
     if (responseTransfer.data.error) {

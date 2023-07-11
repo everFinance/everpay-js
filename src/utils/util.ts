@@ -55,6 +55,10 @@ export const isArweaveChainPSTMode = (token?: Token): boolean => {
   return token.crossChainInfoList[ChainType.arweave] != null && token.symbol.toUpperCase() !== 'AR'
 }
 
+export const isArweaveL2PSTTokenSymbol = (symbol: string): boolean => {
+  return symbol?.toUpperCase() === 'STAMP' || symbol.toUpperCase() === 'U'
+}
+
 export const getAccountChainType = (from: string): ChainType => {
   if (isEthereumAddress(from)) {
     return ChainType.ethereum
