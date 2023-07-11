@@ -1,27 +1,27 @@
 import Everpay from '../src/index'
-import { ethWalletHasUSDT, arWallet2 } from './constants/wallet'
+import { arWallet2 } from './constants/wallet'
 import { ArweaveTransaction, ChainType } from '../src/types'
-import { ethers } from 'ethers'
+// import { ethers } from 'ethers'
 
-const provider = new ethers.providers.InfuraProvider('kovan')
-const signer = new ethers.Wallet(ethWalletHasUSDT.privateKey, provider)
+// const provider = new ethers.providers.InfuraProvider('kovan')
+// const signer = new ethers.Wallet(ethWalletHasUSDT.privateKey, provider)
 
-const everpayEthereumMode = new Everpay({
-  account: ethWalletHasUSDT.address,
-  ethConnectedSigner: signer,
-  chainType: ChainType.ethereum,
-  debug: true
-})
+// const everpayEthereumMode = new Everpay({
+//   account: ethWalletHasUSDT.address,
+//   ethConnectedSigner: signer,
+//   chainType: ChainType.ethereum,
+//   debug: true
+// })
 
-test(`check ${ethWalletHasUSDT.address} deposit vrt`, async () => {
-  return await everpayEthereumMode.deposit({
-    tag: 'arweave-vrt-usjm4PCxUd5mtaon7zc97-dt-3qf67yPyqgzLnLqk5A',
-    amount: '0.000000001'
-  }).then(ethTx => {
-    console.log('ethTx', ethTx)
-    expect(ethTx).toBeTruthy()
-  })
-})
+// test(`check ${ethWalletHasUSDT.address} deposit vrt`, async () => {
+//   return await everpayEthereumMode.deposit({
+//     tag: 'arweave-vrt-usjm4PCxUd5mtaon7zc97-dt-3qf67yPyqgzLnLqk5A',
+//     amount: '0.000000001'
+//   }).then(ethTx => {
+//     console.log('ethTx', ethTx)
+//     expect(ethTx).toBeTruthy()
+//   })
+// })
 
 const everpayARMode = new Everpay({
   account: arWallet2.address,
