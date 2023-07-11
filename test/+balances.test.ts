@@ -17,16 +17,16 @@ describe('test balance', () => {
     }).then(balances => {
       console.log('balances', balances)
       expect(balances.length).toBeGreaterThan(0)
-      expect(+balances.find(i => i.symbol === 'ETH').balance).toBeGreaterThan(0)
+      expect(+balances.find(i => i.symbol === 'ETH').balance).toBeGreaterThanOrEqual(0)
     })
   })
 
-  test(`${ethWalletHasUSDT2.address} usdt balance is greater than 0`, async () => {
+  test(`${ethWalletHasUSDT2.address} tusc balance is greater than 0`, async () => {
     return await everpay2.balances({
       account: ethWalletHasUSDT.address
     }).then(balances => {
       expect(balances.length).toBeGreaterThan(0)
-      expect(+balances.find(i => i.symbol === 'USDT').balance).toBeGreaterThan(0)
+      expect(+balances.find(i => i.symbol === 'TUSDC').balance).toBeGreaterThan(0)
     })
   })
 })

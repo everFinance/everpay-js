@@ -42,7 +42,7 @@ describe('test bundle data generate & sign', () => {
         to: arWallet1.address,
         amount: '0.001'
       }, {
-        tag: 'ethereum-usdt-0xd85476c906b5301e8e9eb58d174a6f96b9dfc5ee',
+        tag: 'bsc-tusdc-0xf17a50ecc5fe5f476de2da5481cdd0f0ffef7712',
         from: arWallet1.address,
         to: ethWalletHasUSDT.address,
         amount: '10'
@@ -50,7 +50,7 @@ describe('test bundle data generate & sign', () => {
     ])
 
     expect(bundleData.items[0].tag).toBe(genTokenTag(everpayInfo.tokenList.find(t => t.symbol.toUpperCase() === 'ETH')))
-    expect(bundleData.items[1].tag).toBe(genTokenTag(everpayInfo.tokenList.find(t => t.symbol.toUpperCase() === 'USDT')))
+    expect(bundleData.items[1].tag).toBe(genTokenTag(everpayInfo.tokenList.find(t => t.symbol.toUpperCase() === 'TUSDC')))
   })
 
   test('test sign bundle data', async () => {
@@ -61,7 +61,7 @@ describe('test bundle data generate & sign', () => {
         to: arWallet1.address,
         amount: '0.001'
       }, {
-        tag: 'ethereum-usdt-0xd85476c906b5301e8e9eb58d174a6f96b9dfc5ee',
+        tag: 'bsc-tusdc-0xf17a50ecc5fe5f476de2da5481cdd0f0ffef7712',
         from: arWallet1.address,
         to: ethWalletHasUSDT.address,
         amount: '10'
@@ -86,12 +86,12 @@ describe('test bundle data generate & sign', () => {
   test('send bundle tx', async () => {
     const bundleData = await everpayArAccount.getBundleData([
       {
-        tag: 'ethereum-eth-0x0000000000000000000000000000000000000000',
+        tag: 'bsc-tusdc-0xf17a50ecc5fe5f476de2da5481cdd0f0ffef7712',
         from: ethWalletHasUSDT.address,
         to: arWallet1.address,
         amount: '0.001'
       }, {
-        tag: 'ethereum-usdt-0xd85476c906b5301e8e9eb58d174a6f96b9dfc5ee',
+        tag: 'bsc-tusdc-0xf17a50ecc5fe5f476de2da5481cdd0f0ffef7712',
         from: arWallet1.address,
         to: ethWalletHasUSDT.address,
         amount: '10'

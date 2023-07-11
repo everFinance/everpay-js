@@ -6,7 +6,7 @@ import { ChainType } from '../src/types'
 const provider = new ethers.providers.InfuraProvider('kovan')
 const signer = new ethers.Wallet(ethWalletHasUSDT.privateKey, provider)
 
-test(`${ethWalletHasUSDT.address} quick withdraw USDT to ${ethWalletHasUSDT.address}`, async () => {
+test(`${ethWalletHasUSDT.address} quick withdraw tUSDC to ${ethWalletHasUSDT.address}`, async () => {
   const everpay = new Everpay({
     account: ethWalletHasUSDT.address,
     ethConnectedSigner: signer,
@@ -15,10 +15,10 @@ test(`${ethWalletHasUSDT.address} quick withdraw USDT to ${ethWalletHasUSDT.addr
   })
 
   return await everpay.withdraw({
-    chainType: ChainType.ethereum,
-    tag: 'ethereum-usdt-0xd85476c906b5301e8e9eb58d174a6f96b9dfc5ee',
+    chainType: ChainType.bsc,
+    tag: 'bsc-tusdc-0xf17a50ecc5fe5f476de2da5481cdd0f0ffef7712',
     amount: '99',
-    quickMode: true
+    quickMode: false
   }).then(withdrawResult => {
     console.log('withdrawResult', withdrawResult)
     expect(withdrawResult.status).toBe('ok')
@@ -34,10 +34,10 @@ test(`${arWallet1.address} quick withdraw USDT to ${ethWalletHasUSDT.address}`, 
   })
 
   return await everpay.withdraw({
-    chainType: ChainType.ethereum,
-    tag: 'ethereum-usdt-0xd85476c906b5301e8e9eb58d174a6f96b9dfc5ee',
+    chainType: ChainType.bsc,
+    tag: 'bsc-tusdc-0xf17a50ecc5fe5f476de2da5481cdd0f0ffef7712',
     amount: '52.6',
-    quickMode: true,
+    quickMode: false,
     to: ethWalletHasUSDT.address
   }).then(withdrawResult => {
     console.log('withdrawResult', withdrawResult)

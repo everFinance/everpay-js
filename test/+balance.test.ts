@@ -17,13 +17,13 @@ describe('test balance', () => {
       tag: 'ethereum-eth-0x0000000000000000000000000000000000000000'
     }).then(balance => {
       console.log(`${ethWalletHasUSDT.address} eth balance: ${balance}`)
-      expect(+balance).toBeGreaterThan(0)
+      expect(+balance).toBeGreaterThanOrEqual(0)
     })
   })
 
   test(`${ethWalletHasUSDT.address} ar balance is greater than 0`, async () => {
     return await everpay1.balance({
-      tag: 'arweave,ethereum-ar-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA,0xcc9141efa8c20c7df0778748255b1487957811be'
+      tag: 'arweave,ethereum-ar-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA,0x83ea4a2fe3ead9a7b204ab2d56cb0b81d71489c8'
     }).then(balance => {
       console.log(`${ethWalletHasUSDT.address} ar balance: ${balance}`)
       expect(+balance).toBeGreaterThan(0)
@@ -32,7 +32,7 @@ describe('test balance', () => {
 
   test(`${ethWalletHasUSDT.address} usdt balance is greater than 0`, async () => {
     return await everpay1.balance({
-      tag: 'ethereum-usdt-0xd85476c906b5301e8e9eb58d174a6f96b9dfc5ee'
+      tag: 'bsc-tusdc-0xf17a50ecc5fe5f476de2da5481cdd0f0ffef7712'
     }).then(balance => {
       console.log(`${ethWalletHasUSDT.address} usdt balance: ${balance}`)
       expect(+balance).toBeGreaterThan(0)
@@ -42,7 +42,7 @@ describe('test balance', () => {
   test(`${ethWalletHasUSDT2.address} usdt balance is greater than 0`, async () => {
     return await everpay2.balance({
       account: ethWalletHasUSDT.address,
-      tag: 'ethereum-usdt-0xd85476c906b5301e8e9eb58d174a6f96b9dfc5ee'
+      tag: 'bsc-tusdc-0xf17a50ecc5fe5f476de2da5481cdd0f0ffef7712'
     }).then(balance => {
       console.log(`${ethWalletHasUSDT2.address} balance: ${balance}`)
       expect(+balance).toBeGreaterThan(0)

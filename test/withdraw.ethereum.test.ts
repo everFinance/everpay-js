@@ -14,8 +14,8 @@ test(`${ethWalletHasUSDT.address} withdraw USDT to ${ethWalletHasUSDT2.address}`
   })
 
   return await everpay.withdraw({
-    chainType: ChainType.ethereum,
-    tag: 'ethereum-usdt-0xd85476c906b5301e8e9eb58d174a6f96b9dfc5ee',
+    chainType: ChainType.bsc,
+    tag: 'bsc-tusdc-0xf17a50ecc5fe5f476de2da5481cdd0f0ffef7712',
     amount: '100',
     to: ethWalletHasUSDT2.address
   }).then(withdrawResult => {
@@ -34,8 +34,8 @@ test(`use another ${ethWalletHasUSDT.address} singer to sign ${ethWalletHasUSDT2
 
   await expect(
     everpay.withdraw({
-      chainType: ChainType.ethereum,
-      tag: 'ethereum-usdt-0xd85476c906b5301e8e9eb58d174a6f96b9dfc5ee',
+      chainType: ChainType.bsc,
+      tag: 'bsc-tusdc-0xf17a50ecc5fe5f476de2da5481cdd0f0ffef7712',
       amount: '101',
       to: ethWalletHasUSDT.address
     })
