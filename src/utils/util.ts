@@ -94,7 +94,8 @@ export const genTokenTag = (token: Token): string => {
       ChainType.bsc,
       ChainType.conflux,
       ChainType.moon,
-      ChainType.platon
+      ChainType.platon,
+      'everpay'
     ].includes(chainTypes[index] as ChainType)) {
       return addr.toLowerCase()
     }
