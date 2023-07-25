@@ -47,9 +47,18 @@ export const checkArPermissions = async (permissions: string[] | string): Promis
   }
 }
 
+const toArrayBuffer = (buffer: Buffer): Uint8Array => {
+  const arrayBuffer = new ArrayBuffer(buffer.length)
+  const view = new Uint8Array(arrayBuffer)
+  for (let i = 0; i < buffer.length; ++i) {
+    view[i] = buffer[i]
+  }
+  return view
+}
+
 const signMessageAsync = async (arJWK: ArJWK, address: string, everHash: string): Promise<string> => {
   const arweave = Arweave.init(options)
-  const everHashBuffer: Buffer = Buffer.from(everHash.slice(2), 'hex')
+  const everHashUnit8Array: Uint8Array = toArrayBuffer(Buffer.from(everHash.slice(2), 'hex'))
   let arOwner = ''
   let signatureB64url = ''
   // web
@@ -78,9 +87,8 @@ const signMessageAsync = async (arJWK: ArJWK, address: string, everHash: string)
     }
 
     try {
-      // TODO: wait arweave-js update arconnect.d.ts
       const signature = await (window.arweaveWallet as any).signature(
-        everHashBuffer,
+        everHashUnit8Array,
         algorithm
       )
       const buf = new Uint8Array(Object.values(signature))
@@ -91,7 +99,7 @@ const signMessageAsync = async (arJWK: ArJWK, address: string, everHash: string)
 
   // node
   } else {
-    const buf = await arweave.crypto.sign(arJWK, everHashBuffer, {
+    const buf = await arweave.crypto.sign(arJWK, everHashUnit8Array, {
       saltLength: 32
     })
     arOwner = arJWK.n
