@@ -62,7 +62,7 @@ export const signMessageAsync = async (config: Config, messageData: string): Pro
   ].includes(accountChainType)) {
     sig = await ethereumLib.signMessageAsync(config.ethConnectedSigner as Signer, from, messageData)
   } else if (accountChainType === ChainType.arweave) {
-    sig = await arweaveLib.signMessageAsync(config.arJWK as ArJWK, from, personalMsgHex)
+    sig = await arweaveLib.signMessageAsync(config.arJWK as ArJWK, from, messageData)
   } else {
     throw new Error(ERRORS.INVALID_ACCOUNT_TYPE)
   }

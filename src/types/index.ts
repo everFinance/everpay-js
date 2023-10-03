@@ -56,6 +56,8 @@ export interface FeeItem {
 }
 
 export interface EverpayInfo {
+  isClosed: boolean
+  isSynced: boolean
   lockers: {
     [propName: string]: string
   }
@@ -228,6 +230,7 @@ export interface TxsResult {
   accid?: string
   currentPage: number
   totalPages: number
+  hasNextPage: boolean
   txs: EverpayTransaction[]
 }
 
@@ -289,6 +292,7 @@ export interface SetParams {
 export interface TxsParams {
   page?: number
   tag?: string
+  cursor?: number
   action?: EverpayActionWithDeposit
   withoutAction?: EverpayActionWithDeposit
 }
@@ -296,6 +300,7 @@ export interface TxsParams {
 export interface TxsByAccountParams {
   page?: number
   account?: string
+  cursor?: number
   tag?: string
   action?: EverpayActionWithDeposit
   withoutAction?: EverpayActionWithDeposit

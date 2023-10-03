@@ -47,18 +47,10 @@ export const checkArPermissions = async (permissions: string[] | string): Promis
   }
 }
 
-const toArrayBuffer = (buffer: Buffer): Uint8Array => {
-  const arrayBuffer = new ArrayBuffer(buffer.length)
-  const view = new Uint8Array(arrayBuffer)
-  for (let i = 0; i < buffer.length; ++i) {
-    view[i] = buffer[i]
-  }
-  return view
-}
-
-const signMessageAsync = async (arJWK: ArJWK, address: string, everHash: string): Promise<string> => {
+const signMessageAsync = async (arJWK: ArJWK, address: string, messageData: string): Promise<string> => {
   const arweave = Arweave.init(options)
-  const everHashUnit8Array: Uint8Array = toArrayBuffer(Buffer.from(everHash.slice(2), 'hex'))
+  const msgDataBuffer = Buffer.from(messageData, 'utf-8')
+  const personalMsgHashBuffer = hashPersonalMessage(msgDataBuffer)
   let arOwner = ''
   let signatureB64url = ''
   // web
@@ -70,7 +62,7 @@ const signMessageAsync = async (arJWK: ArJWK, address: string, everHash: string)
     }
     try {
       // TODO: wait arweave-js update arconnect.d.ts
-      arOwner = await (window.arweaveWallet as any).getActivePublicKey()
+      arOwner = await (window.arweaveWallet).getActivePublicKey()
     } catch {
       throw new Error(ERRORS.ACCESS_PUBLIC_KEY_FAILED)
     }
@@ -86,20 +78,34 @@ const signMessageAsync = async (arJWK: ArJWK, address: string, everHash: string)
       saltLength: 32
     }
 
-    try {
-      const signature = await (window.arweaveWallet as any).signature(
-        everHashUnit8Array,
-        algorithm
-      )
-      const buf = new Uint8Array(Object.values(signature))
-      signatureB64url = Arweave.utils.bufferTob64Url(buf)
-    } catch {
-      throw new Error(ERRORS.SIGNATURE_FAILED)
+    if ((window.arweaveWallet as any).signMessage !== undefined) {
+      try {
+        const signature = await (window.arweaveWallet as any).signMessage(
+          msgDataBuffer,
+          { hashAlgorithm: 'SHA-256' }
+        )
+        const buf = new Uint8Array(Object.values(signature))
+        signatureB64url = Arweave.utils.bufferTob64Url(buf)
+      } catch {
+        throw new Error(ERRORS.SIGNATURE_FAILED)
+      }
+    } else {
+      try {
+      // TODO: wait arweave-js update arconnect.d.ts
+        const signature = await (window.arweaveWallet).signature(
+          personalMsgHashBuffer,
+          algorithm
+        )
+        const buf = new Uint8Array(Object.values(signature))
+        signatureB64url = Arweave.utils.bufferTob64Url(buf)
+      } catch {
+        throw new Error(ERRORS.SIGNATURE_FAILED)
+      }
     }
 
   // node
   } else {
-    const buf = await arweave.crypto.sign(arJWK, everHashUnit8Array, {
+    const buf = await arweave.crypto.sign(arJWK, personalMsgHashBuffer, {
       saltLength: 32
     })
     arOwner = arJWK.n
