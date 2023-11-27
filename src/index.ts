@@ -1,9 +1,10 @@
-import { getEverpayTxMessage, signMessageAsync, transferAsync, verifySigAsync } from './lib/sign'
-import { getEverpayBalance, getEverpayBalances, getEverpayInfo, getEverpayTransaction, getEverpayTransactions, getExpressInfo, getMintdEverpayTransactionByChainTxHash, postTx, getFees, getFee } from './api'
+import { getEverpayTxMessage, signMessageAsync, signRegisterAsync, transferAsync, getRedPackTxMessage } from './lib/sign'
+import { getEverpayBalance, getEverpayBalances, getEverpayInfo, getEverpayTransaction, getEverpayTransactions, getExpressInfo, getMintdEverpayTransactionByChainTxHash, postTx, getFees, getFee, getEmailRegisterData, getAccountData } from './api'
 import { everpayTxVersion, getExpressHost, getEverpayHost } from './config'
-import { getTimestamp, toBN, getAccountChainType, fromDecimalToUnit, genTokenTag, matchTokenTag, genExpressData, fromUnitToDecimalBN, genBundleData, getTokenBurnFeeByChainType, getChainDecimalByChainType, isArweaveChainPSTMode, getTokenByTag, isArweaveL2PSTTokenSymbol } from './utils/util'
+import { getTimestamp, toBN, getAccountChainType, fromDecimalToUnit, genTokenTag, matchTokenTag, genExpressData, fromUnitToDecimalBN, genBundleData, getTokenBurnFeeByChainType, getChainDecimalByChainType, isArweaveChainPSTMode, getTokenByTag, isArweaveL2PSTTokenSymbol, isSmartAccount, genEverId, getUserId } from './utils/util'
 import { GetEverpayBalanceParams, GetEverpayBalancesParams, GetEverpayTransactionsParams } from './types/api'
 import { checkParams } from './utils/check'
+import { CliamParams } from './types'
 import { ERRORS } from './utils/errors'
 import { utils } from 'ethers'
 import { v4 as uuidv4 } from 'uuid'
@@ -37,10 +38,31 @@ import {
   BundleParams,
   EverpayTx,
   AddTokenSet,
-  NewToken, SetParams, TargetChainMeta, AddTargetChainSet, TokenDisplaySet, OwnershipSet
+  NewToken, SetParams, TargetChainMeta, AddTargetChainSet, TokenDisplaySet, OwnershipSet, EmailRegisterData, EmailRegisterDataWithCode
 } from './types'
+import { openPopup, runPopup } from './lib/popup'
 
 export * from './types'
+
+const _cachedInfo: CachedInfo = {} as any
+const cacheHelper = async (key: 'everpay' | 'express', host: string): Promise<EverpayInfo | ExpressInfo> => {
+  const timestamp = getTimestamp()
+  // cache info 3 mins
+  if (_cachedInfo[key]?.value != null &&
+    (_cachedInfo[key] as any).timestamp > timestamp - 3 * 60) {
+    return _cachedInfo[key]?.value as EverpayInfo | ExpressInfo
+  }
+
+  if (key === 'everpay') {
+    const value = await getEverpayInfo(host)
+    _cachedInfo[key] = { value, timestamp }
+  } else if (key === 'express') {
+    const value = await getExpressInfo(host)
+    _cachedInfo[key] = { value, timestamp }
+  }
+  return _cachedInfo[key]?.value as EverpayInfo | ExpressInfo
+}
+
 class Everpay extends EverpayBase {
   constructor (config?: Config) {
     super()
@@ -51,49 +73,44 @@ class Everpay extends EverpayBase {
     }
     this._apiHost = getEverpayHost(config?.debug)
     this._expressHost = getExpressHost(config?.debug)
-    this._cachedInfo = {}
   }
 
   private readonly _apiHost: string
   private readonly _expressHost: string
   private readonly _config: Config
-  private _cachedInfo: CachedInfo
 
   getAccountChainType = getAccountChainType
 
-  private readonly cacheHelper = async (key: 'everpay' | 'express'): Promise<EverpayInfo | ExpressInfo> => {
-    const timestamp = getTimestamp()
-    // cache info 3 mins
-    if (this._cachedInfo[key]?.value != null &&
-      (this._cachedInfo[key] as any).timestamp > timestamp - 3 * 60) {
-      return this._cachedInfo[key]?.value as EverpayInfo | ExpressInfo
-    }
-
-    if (key === 'everpay') {
-      const value = await await getEverpayInfo(this._apiHost)
-      this._cachedInfo[key] = { value, timestamp }
-    } else if (key === 'express') {
-      const value = await await getExpressInfo(this._expressHost)
-      this._cachedInfo[key] = { value, timestamp }
-    }
-    return this._cachedInfo[key]?.value as EverpayInfo | ExpressInfo
-  }
-
   async info (): Promise<EverpayInfo> {
-    const result = await this.cacheHelper('everpay')
+    const result = await cacheHelper('everpay', this._apiHost)
     return result as EverpayInfo
   }
 
   async expressInfo (): Promise<ExpressInfo> {
-    const result = await this.cacheHelper('express')
+    const result = await cacheHelper('express', this._expressHost)
     return result as ExpressInfo
+  }
+
+  async getEmailRegisterData (): Promise<EmailRegisterData> {
+    const result = await getEmailRegisterData(this._apiHost, this._config.account as string)
+    return result
+  }
+
+  async getAccountData (): Promise<any> {
+    const acc = isSmartAccount(this._config.account as string) ? genEverId(this._config.account as string) : this._config.account as string
+    const uId = await getUserId(true, acc)
+    console.log('acc', acc)
+    console.log('uid', uId)
+    const result = await getAccountData(this._apiHost, acc)
+    return result
   }
 
   async balance (params: BalanceParams): Promise<string> {
     await this.info()
     const { tag, account } = params
-    const acc = account ?? this._config.account as string
-    const token = getTokenByTag(tag, this._cachedInfo?.everpay?.value.tokenList)
+    const accTemp = account ?? this._config.account as string
+    const acc = isSmartAccount(accTemp) ? genEverId(accTemp) : accTemp
+    const token = getTokenByTag(tag, _cachedInfo?.everpay?.value.tokenList)
     checkParams({ account: acc, tag, token })
     const mergedParams: GetEverpayBalanceParams = {
       tokenTag: genTokenTag(token as Token),
@@ -107,13 +124,20 @@ class Everpay extends EverpayBase {
     const info = await this.info()
     params = (params ?? {}) as BalanceParams
     const { account } = params
-    const acc = account ?? this._config.account as string
+    const accTemp = account ?? this._config.account as string
+    const acc = isSmartAccount(accTemp) ? genEverId(accTemp) : accTemp
     checkParams({ account: acc })
     const mergedParams: GetEverpayBalancesParams = {
       account: acc
     }
     const everpayBalances = await getEverpayBalances(this._apiHost, mergedParams)
-    const balances = everpayBalances.balances.map(item => {
+    const argTag = !this._config.debug ? 'bsc-arg-0xb5eadfdbdb40257d1d24a1432faa2503a867c270' : 'bsc-arg-0x7846cf6e181bb5c909d6010d15af5fffd3b61229'
+    const fraTag = !this._config.debug ? 'bsc-fra-0xeb042ffdabc535de2716c6b51a965f124050d4e1' : 'bsc-fra-0xa98242557818f0135b2381893caec3d4a64f88e5'
+    const deleteTag = [
+      argTag,
+      fraTag
+    ]
+    const balances =everpayBalances.balances.filter((t) => t.tag !== deleteTag[0] && t.tag !== deleteTag[1]).map(item => {
       const tag = item.tag
       const token = info.tokenList.find(token => token.tag === tag) as Token
       return {
@@ -138,7 +162,7 @@ class Everpay extends EverpayBase {
     }
     if (tag !== undefined) {
       await this.info()
-      const token = getTokenByTag(tag, this._cachedInfo?.everpay?.value.tokenList) as Token
+      const token = getTokenByTag(tag, _cachedInfo?.everpay?.value.tokenList) as Token
       checkParams({ token })
       mergedParams.tokenTag = token.tag
     }
@@ -158,9 +182,11 @@ class Everpay extends EverpayBase {
   }
 
   async txsByAccount (params: TxsByAccountParams): Promise<TxsResult> {
-    checkParams({ account: params.account ?? this._config.account })
+    const accTemp = params.account ?? this._config.account as string
+    const acc = isSmartAccount(accTemp) ? genEverId(accTemp) : accTemp
+    checkParams({ account: acc })
     const mergedParams: GetEverpayTransactionsParams = await this.getMergedTxsParams(params)
-    mergedParams.account = params.account ?? this._config.account
+    mergedParams.account = acc
     return await getEverpayTransactions(this._apiHost, mergedParams)
   }
 
@@ -180,16 +206,27 @@ class Everpay extends EverpayBase {
 
   async fee (tag: string): Promise<FeeItem> {
     await this.info()
-    const token = getTokenByTag(tag, this._cachedInfo?.everpay?.value.tokenList) as Token
+    const token = getTokenByTag(tag, _cachedInfo?.everpay?.value.tokenList) as Token
     checkParams({ tag, token })
     return await getFee(this._apiHost, genTokenTag(token))
+  }
+
+  async smartAccountAuth (logo: string): Promise<any> {
+    const debug = Boolean(this._config.debug)
+    const url = `https://beta${debug ? '-dev' : ''}.everpay.io/auth?host=${encodeURIComponent(window.location.host)}&logo=${encodeURIComponent(logo)}`
+    // const url = 'http://localhost:8080/entry?auth=1'
+    const popup = openPopup(url)
+    return await runPopup({
+      popup,
+      type: 'auth'
+    })
   }
 
   async deposit (params: DepositParams): Promise<EthereumTransaction | ArweaveTransaction> {
     await this.info()
     const { amount, tag } = params
     const from = this._config.account
-    const token = getTokenByTag(tag, this._cachedInfo?.everpay?.value.tokenList) as Token
+    const token = getTokenByTag(tag, _cachedInfo?.everpay?.value.tokenList) as Token
     const chainType = this._config.chainType
     checkParams({ account: from, tag, token, amount })
 
@@ -201,7 +238,7 @@ class Everpay extends EverpayBase {
     const chainDecimal = getChainDecimalByChainType(token, chainType as ChainType)
     const value = utils.parseUnits(toBN(amount).toString(), chainDecimal)
 
-    return await transferAsync(this._config, this._cachedInfo.everpay?.value as EverpayInfo, {
+    return await transferAsync(this._config, _cachedInfo.everpay?.value as EverpayInfo, {
       symbol: token.symbol,
       token,
       from: from ?? '',
@@ -214,9 +251,11 @@ class Everpay extends EverpayBase {
     type: 'transfer' | 'withdraw' | 'bundle' | 'set',
     params: TransferParams | WithdrawParams | BundleParams | SetParams
   ): Promise<EverpayTxWithoutSig> {
-    await this.info()
+    if (_cachedInfo?.everpay?.value == null) {
+      await this.info()
+    }
     const { tag, amount, fee, quickMode } = params as WithdrawParams
-    const token = getTokenByTag(tag, this._cachedInfo?.everpay?.value.tokenList)
+    const token = getTokenByTag(tag, _cachedInfo?.everpay?.value.tokenList)
     const from = this._config.account as string
     let data = params.data
     let to = params?.to as string
@@ -310,11 +349,11 @@ class Everpay extends EverpayBase {
     const everpayTxWithoutSig: EverpayTxWithoutSig = {
       tokenSymbol: token?.symbol as string,
       action,
-      from,
-      to,
+      from: isSmartAccount(from) ? genEverId(from) : from,
+      to: isSmartAccount(to) ? genEverId(to) : to,
       amount: decimalOperateAmountBN.toString(),
       fee: decimalFeeBN.toString(),
-      feeRecipient: this._cachedInfo?.everpay?.value.feeRecipient ?? '',
+      feeRecipient: _cachedInfo?.everpay?.value.feeRecipient ?? '',
       nonce: Date.now().toString(),
       tokenID: token?.id as string,
       chainType: token?.chainType as string,
@@ -339,8 +378,56 @@ class Everpay extends EverpayBase {
     return { everpayTx, everHash }
   }
 
+  // sig redpacket
+  async signedRedPackTx (redPackTxSig: CliamParams): Promise<{redpackTx: CliamParams, everHash: string}> {
+    const messageData = getRedPackTxMessage(redPackTxSig)
+    const { sig, everHash } = await signMessageAsync(this._config, messageData)
+    const redpackTx = {
+      ...redPackTxSig,
+      signature: sig
+    }
+    return { redpackTx, everHash }
+  }
+
   async sendEverpayTx (everpayTxWithoutSig: EverpayTxWithoutSig): Promise<SendEverpayTxResult> {
     const { everpayTx, everHash } = await this.signedEverpayTx(everpayTxWithoutSig)
+    const postEverpayTxResult = await postTx(this._apiHost, everpayTx)
+    return {
+      ...postEverpayTxResult,
+      everpayTx,
+      everHash
+    }
+  }
+
+  async register (params?: EmailRegisterDataWithCode): Promise<SendEverpayTxResult> {
+    if (_cachedInfo?.everpay?.value == null) {
+      await this.info()
+    }
+    const everpayInfo = _cachedInfo?.everpay?.value as EverpayInfo
+    const token = everpayInfo.tokenList.find((t) => {
+      return t.symbol.toUpperCase() === 'ETH'
+    }) as any
+    const everpayTxWithoutSig: EverpayTxWithoutSig = {
+      tokenSymbol: token?.symbol as string,
+      action: 'register' as any,
+      from: isSmartAccount(this._config.account as string) ? genEverId(this._config.account as string) : this._config.account as string,
+      to: isSmartAccount(this._config.account as string) ? genEverId(this._config.account as string) : this._config.account as string,
+      amount: '0',
+      fee: '0',
+      feeRecipient: _cachedInfo?.everpay?.value.feeRecipient ?? '',
+      nonce: Date.now().toString(),
+      tokenID: token?.id as string,
+      chainType: token?.chainType as string,
+      chainID: token?.chainID as string,
+      data: params !== undefined ? JSON.stringify({ mailVerify: params }) : '',
+      version: everpayTxVersion
+    }
+    const messageData = getEverpayTxMessage(everpayTxWithoutSig)
+    const { sig, everHash } = await signRegisterAsync(this._config, messageData)
+    const everpayTx = {
+      ...everpayTxWithoutSig,
+      sig
+    }
     const postEverpayTxResult = await postTx(this._apiHost, everpayTx)
     return {
       ...postEverpayTxResult,
@@ -355,7 +442,9 @@ class Everpay extends EverpayBase {
   }
 
   async withdraw (params: WithdrawParams): Promise<SendEverpayTxResult> {
-    await this.info()
+    if (_cachedInfo?.everpay?.value == null) {
+      await this.info()
+    }
     const to = params.to ?? this._config.account as string
     const everpayTxWithoutSig = await this.getEverpayTxWithoutSig('withdraw', {
       ...params,
@@ -364,26 +453,30 @@ class Everpay extends EverpayBase {
     return await this.sendEverpayTx(everpayTxWithoutSig)
   }
 
-  async getBundleData (items: InternalTransferItem[], expiration?: number): Promise<BundleData> {
-    await this.info()
+  async getBundleData (items: InternalTransferItem[], expiration?: number, data?: string): Promise<BundleData> {
+    if (_cachedInfo?.everpay?.value == null) {
+      await this.info()
+    }
     return genBundleData({
       items,
-      tokenList: this._cachedInfo.everpay?.value?.tokenList as Token[],
+      tokenList: _cachedInfo.everpay?.value?.tokenList as Token[],
       // 设置 60s 过期
-      expiration: expiration ?? Math.round(Date.now() / 1000) + 60
+      expiration: expiration ?? Math.round(Date.now() / 1000) + 60,
+      data
     })
   }
 
   async signBundleData (bundleData: BundleData | BundleDataWithSigs): Promise<BundleDataWithSigs> {
-    const { items, expiration, salt, version } = bundleData
+    const { items, expiration, salt, version, data } = bundleData
     const { sig } = await signMessageAsync(this._config, JSON.stringify({
       // 只签名这几个字段，并且顺序需要保持一致
       items, expiration, salt, version
     }))
     const sigs = (bundleData as BundleDataWithSigs).sigs != null ? (bundleData as BundleDataWithSigs).sigs : {}
-    sigs[this._config.account as string] = sig
+    const acc = isSmartAccount(this._config.account as string) ? genEverId(this._config.account as string) : this._config.account as string
+    sigs[acc] = sig
     return {
-      items, expiration, salt, version, sigs
+      items, expiration, salt, version, sigs, data
     }
   }
 
@@ -488,10 +581,6 @@ class Everpay extends EverpayBase {
     const setParams: SetParams = { amount: '0', data: setData, symbol: 'eth', to: this._config.account as string }
     const everpayTxWithoutSig = await this.getEverpayTxWithoutSig('set', setParams)
     return await this.sendEverpayTx(everpayTxWithoutSig)
-  }
-
-  async verifyTx (tx: EverpayTransaction): Promise<boolean> {
-    return await verifySigAsync(tx)
   }
 }
 
