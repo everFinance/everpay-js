@@ -1,6 +1,6 @@
 {
   "name": "everpay",
-  "version": "0.7.0",
+  "version": "1.0.0",
   "main": "./cjs/index.js",
   "module": "./esm/index.js",
   "files": [
@@ -18,9 +18,9 @@
     "crypto"
   ],
   "description": "everPay client JS-SDK, supports web and nodeJS to make everPay payments",
-  "author": "everFinance Team <dev@ever.finance>",
+  "author": "everFinance Team <dev@ever.vision>",
   "contributors": [
-    "Xaber <xaber@ever.finance>"
+    "Xaber <xaber@ever.vision>"
   ],
   "license": "MIT",
   "scripts": {
@@ -61,10 +61,12 @@
     "typescript": "^4.9.5"
   },
   "dependencies": {
+    "@types/crypto-js": "^4.2.1",
     "@types/lodash": "^4.14.180",
-    "arweave": "=1.11.8",
+    "arweave": "1.11.9",
     "axios": "^0.21.1",
     "bignumber.js": "^9.0.1",
+    "crypto-js": "^4.1.1",
     "ethers": "^5.4.6",
     "keccak": "^3.0.2",
     "lodash": "^4.17.21",

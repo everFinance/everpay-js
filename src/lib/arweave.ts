@@ -47,7 +47,7 @@ export const checkArPermissions = async (permissions: string[] | string): Promis
   }
 }
 
-const signMessageAsync = async (arJWK: ArJWK, address: string, messageData: string): Promise<string> => {
+const signMessageAsync = async (debug: boolean, arJWK: ArJWK, address: string, messageData: string): Promise<string> => {
   const arweave = Arweave.init(options)
   const msgDataBuffer = Buffer.from(messageData, 'utf-8')
   const personalMsgHashBuffer = hashPersonalMessage(msgDataBuffer)
@@ -113,26 +113,6 @@ const signMessageAsync = async (arJWK: ArJWK, address: string, messageData: stri
   }
 
   return `${signatureB64url},${arOwner}`
-}
-
-const verifySigAsync = async (address: string, messageData: string, sig: string): Promise<boolean> => {
-  const options = {
-    host: 'arweave.net',
-    port: 443,
-    protocol: 'https',
-    timeout: 20000,
-    logging: false
-  }
-  const [signature, owner] = sig.split(',')
-  const arweave = Arweave.init(options)
-  const ownerAddr = await arweave.wallets.ownerToAddress(owner)
-  const personalMsgHashBuffer = hashPersonalMessage(Buffer.from(messageData))
-  const isCorrectOwner = ownerAddr === address
-  if (!isCorrectOwner) {
-    return false
-  }
-  const verified = await arweave.crypto.verify(owner, personalMsgHashBuffer, arweave.utils.b64UrlToBuffer(signature))
-  return verified
 }
 
 const transferAsync = async (arJWK: ArJWK, chainType: ChainType, {
@@ -232,6 +212,5 @@ const transferAsync = async (arJWK: ArJWK, chainType: ChainType, {
 
 export default {
   signMessageAsync,
-  verifySigAsync,
   transferAsync
 }

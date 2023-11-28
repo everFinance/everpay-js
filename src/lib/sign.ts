@@ -1,12 +1,15 @@
 import { SignMessageAsyncResult, TransferAsyncParams } from './interface'
 import ethereumLib from './ethereum'
 import arweaveLib from './arweave'
-import { ArJWK, ChainType, Config, EverpayInfo, EverpayTxWithoutSig, EthereumTransaction, ArweaveTransaction, EverpayTransaction } from '../types'
+import smartAccountLib from './smartAccount'
+import { ArJWK, ChainType, Config, EverpayInfo, EverpayTxWithoutSig, EthereumTransaction, ArweaveTransaction } from '../types'
 import { checkSignConfig } from '../utils/check'
+import { CliamParams } from '../types'
 import { Signer } from '@ethersproject/abstract-signer'
 import { ERRORS } from '../utils/errors'
 import hashPersonalMessage from './hashPersonalMessage'
-import { getAccountChainType } from '../utils/util'
+import { isNodeJs } from '../utils/util'
+import { openPopup, runPopup } from './popup'
 
 const getDepositAddr = (info: EverpayInfo, accountChainType: ChainType): string => {
   if (accountChainType === ChainType.ethereum) {
@@ -45,7 +48,7 @@ export const getEverpayTxMessage = (everpayTxWithoutSig: EverpayTxWithoutSig): s
   return keys.map(key => `${key}:${everpayTxWithoutSig[key]}`).join('\n')
 }
 
-export const signMessageAsync = async (config: Config, messageData: string): Promise<SignMessageAsyncResult> => {
+export const signRegisterAsync = async (config: Config, messageData: string): Promise<SignMessageAsyncResult> => {
   const from = config.account as string
   const accountChainType = config.chainType as ChainType
   const personalMsgHashBuffer = hashPersonalMessage(Buffer.from(messageData))
@@ -53,31 +56,70 @@ export const signMessageAsync = async (config: Config, messageData: string): Pro
   let sig = ''
   checkSignConfig(accountChainType, config)
 
-  if ([
+  if (config.isSmartAccount ?? false) {
+    sig = await smartAccountLib.signRegisterAsync(Boolean(config.debug), Boolean(config.isSmartAccount), from, personalMsgHex)
+  } else if ([
     ChainType.ethereum,
     ChainType.moon,
     ChainType.conflux,
     ChainType.bsc,
     ChainType.platon
   ].includes(accountChainType)) {
-    sig = await ethereumLib.signMessageAsync(config.ethConnectedSigner as Signer, from, messageData)
+    sig = await ethereumLib.signMessageAsync(Boolean(config.debug), config.ethConnectedSigner as Signer, from, messageData)
+    sig = `${sig},,ECDSA`
   } else if (accountChainType === ChainType.arweave) {
-    sig = await arweaveLib.signMessageAsync(config.arJWK as ArJWK, from, messageData)
+    sig = await arweaveLib.signMessageAsync(Boolean(config.debug), config.arJWK as ArJWK, from, messageData)
+    sig = `${sig},RSA`
   } else {
     throw new Error(ERRORS.INVALID_ACCOUNT_TYPE)
   }
   return { everHash: personalMsgHex, sig }
 }
 
-export const verifySigAsync = async (tx: EverpayTransaction): Promise<boolean> => {
-  const from = tx.from
-  const chainType = getAccountChainType(from)
-  const messageData = getEverpayTxMessage(tx as any)
-  if (chainType === ChainType.arweave) {
-    return await arweaveLib.verifySigAsync(from, messageData, tx.sig)
+export const signMessageAsync = async (config: Config, messageData: string, accountData?: any): Promise<SignMessageAsyncResult> => {
+  const from = config.account as string
+  const accountChainType = config.chainType as ChainType
+  const personalMsgHashBuffer = hashPersonalMessage(Buffer.from(messageData))
+  const personalMsgHex = `0x${personalMsgHashBuffer.toString('hex')}`
+  let sig = ''
+  checkSignConfig(accountChainType, config)
+
+  if (!isNodeJs() && Boolean(config.isSmartAccount) && !window.location.host.includes('everpay.io')) {
+    const url = `https://beta${(config.debug ?? false) ? '-dev' : ''}.everpay.io/sign?account=${config.account as string}&message=${encodeURIComponent(messageData)}&host=${encodeURIComponent(window.location.host)}`
+    // const url = `http://localhost:8080/sign?account=${config.account as string}&message=${encodeURIComponent(messageData)}`
+    const popup = openPopup(url)
+    sig = await runPopup({
+      popup,
+      type: 'sign'
+    })
   } else {
-    return await ethereumLib.verifySigAsync(from, messageData, tx.sig)
+    if (config.isSmartAccount ?? false) {
+      sig = await smartAccountLib.signMessageAsync(Boolean(config.debug), Boolean(config.isSmartAccount), from, personalMsgHex, accountData)
+    } else if ([
+      ChainType.ethereum,
+      ChainType.moon,
+      ChainType.conflux,
+      ChainType.bsc,
+      ChainType.platon
+    ].includes(accountChainType)) {
+      sig = await ethereumLib.signMessageAsync(Boolean(config.debug), config.ethConnectedSigner as Signer, from, messageData)
+    } else if (accountChainType === ChainType.arweave) {
+      sig = await arweaveLib.signMessageAsync(Boolean(config.debug), config.arJWK as ArJWK, from, messageData)
+    } else {
+      throw new Error(ERRORS.INVALID_ACCOUNT_TYPE)
+    }
   }
+  return { everHash: personalMsgHex, sig }
+}
+
+export const getRedPackTxMessage = (redPackTxSig: CliamParams): string => {
+  const keys = [
+    'redpacketUUID',
+    'claimBy',
+    'salt',
+    'createdAt'
+  ] as const
+  return keys.map(key => `${key}:${redPackTxSig[key]}`).join('\n')
 }
 
 export const transferAsync = async (

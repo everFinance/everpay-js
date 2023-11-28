@@ -8,7 +8,8 @@ import {
   EverpayTx,
   TxsResult,
   FeeItem,
-  ExpressInfo
+  ExpressInfo,
+  EmailRegisterData
 } from '../types'
 import {
   GetEverpayTransactionsParams,
@@ -92,7 +93,7 @@ export const getEverpayBalances = async (apiHost: string, {
 }
 
 export const getEverpayTransactions = async (apiHost: string, params: GetEverpayTransactionsParams): Promise<TxsResult> => {
-  const { account, cursor, tokenTag, action, withoutAction } = params
+  const { account, tokenTag, action, withoutAction, cursor } = params
   const baseUrl = account !== undefined ? `${apiHost}/txs/${account}` : `${apiHost}/txs`
   const queryString = qsStringify({ cursor, tokenTag, action, withoutAction }, { skipNull: true })
   const result = await sendRequest({
@@ -155,6 +156,26 @@ export const postTx = async (apiHost: string, params: EverpayTx): Promise<PostEv
 
 export const getExpressInfo = async (apiHost: string): Promise<ExpressInfo> => {
   const url = `${apiHost}/withdraw/info`
+  const result = await sendRequest({
+    url,
+    method: 'GET'
+  })
+
+  return result.data
+}
+
+export const getEmailRegisterData = async (apiHost: string, email: string): Promise<EmailRegisterData> => {
+  const url = `${apiHost}/account/register/${email}`
+  const result = await sendRequest({
+    url,
+    method: 'GET'
+  })
+
+  return result.data
+}
+
+export const getAccountData = async (apiHost: string, account: string): Promise<any> => {
+  const url = `${apiHost}/account/${account}`
   const result = await sendRequest({
     url,
     method: 'GET'

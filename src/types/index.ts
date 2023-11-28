@@ -1,8 +1,8 @@
 import { Signer } from 'ethers'
 import { JWKInterface } from 'arweave/node/lib/wallet'
 import { PostEverpayTxResult } from './api'
-import { TransactionResponse as EthereumTransaction } from '@ethersproject/abstract-provider'
-import { TransactionInterface as ArweaveTransaction } from 'arweave/node/lib/transaction'
+import type { TransactionResponse as EthereumTransaction } from '@ethersproject/abstract-provider'
+import type { TransactionInterface as ArweaveTransaction } from 'arweave/node/lib/transaction'
 
 export enum ChainType {
   ethereum = 'ethereum',
@@ -23,6 +23,7 @@ export interface Config {
   chainType?: ChainType
   ethConnectedSigner?: Signer
   arJWK?: ArJWK
+  isSmartAccount?: boolean
 }
 
 export interface CrossChainInfo {
@@ -43,6 +44,15 @@ export interface Token {
   crossChainInfoList: {
     [propname: string]: CrossChainInfo
   }
+}
+
+export interface EmailRegisterData {
+  timestamp: number
+  sig: string
+}
+
+export interface EmailRegisterDataWithCode extends EmailRegisterData {
+  code: string
 }
 
 export interface FeeItem {
@@ -84,7 +94,8 @@ export enum EverpayAction {
   transfer = 'transfer',
   withdraw = 'burn',
   bundle = 'bundle',
-  set = 'set'
+  set = 'set',
+  register = 'register'
 }
 
 export interface InternalTransferItem {
@@ -92,6 +103,7 @@ export interface InternalTransferItem {
   from: string
   to: string
   amount: string
+  data?: string
 }
 
 export interface BundleItem {
@@ -100,6 +112,7 @@ export interface BundleItem {
   from: string
   to: string
   tag: string
+  data: string
 }
 
 export interface BundleData {
@@ -107,6 +120,7 @@ export interface BundleData {
   expiration: number
   salt: string
   version: string
+  data: string
 }
 
 export interface BundleDataWithSigs extends BundleData {
@@ -291,8 +305,8 @@ export interface SetParams {
 
 export interface TxsParams {
   page?: number
-  tag?: string
   cursor?: number
+  tag?: string
   action?: EverpayActionWithDeposit
   withoutAction?: EverpayActionWithDeposit
 }
@@ -320,6 +334,14 @@ export interface CachedInfo {
     value: ExpressInfo
     timestamp: number
   }
+}
+
+export interface CliamParams {
+  redpacketUUID: string
+  claimBy: string
+  salt: string
+  createdAt: string
+  signature?: string
 }
 
 export abstract class EverpayBase {

@@ -5,6 +5,8 @@ import BN from 'bignumber.js'
 import { ERRORS } from './errors'
 import { BundleData, ChainType, InternalTransferItem, Token, FeeItem } from '../types'
 import { bundleInternalTxVersion } from '../config'
+import sha256 from 'crypto-js/sha256'
+import encHex from 'crypto-js/enc-hex'
 
 BN.config({
   EXPONENTIAL_AT: 1000
@@ -44,9 +46,9 @@ export const getTokenByTag = (tag: string, tokenList?: Token[]): Token | undefin
   return tokenList?.find(t => matchTokenTag(genTokenTag(t), tag))
 }
 
-const isEthereumAddress = isAddress
+export const isEthereumAddress = isAddress
 
-const isArweaveAddress = (address: string): boolean => {
+export const isArweaveAddress = (address: string): boolean => {
   return isString(address) && address.length === 43 && address.search(/[a-z0-9A-Z_-]{43}/g) === 0
 }
 
@@ -135,12 +137,13 @@ export const genExpressData = (params: GenExpressDataParams): ExpressData => {
 interface GenBundleDataParams {
   tokenList: Token[]
   items: InternalTransferItem[]
+  data?: string
   expiration: number
 }
 
 export const genBundleData = (params: GenBundleDataParams): BundleData => {
   const items = params.items.map((item: InternalTransferItem) => {
-    const { tag, amount, from, to } = item
+    const { tag, amount, from, to, data } = item
     const token = getTokenByTag(tag, params.tokenList) as Token
     // 注意：顺序必须与后端保持一致，来让 JSON.stringify() 生成的字符串顺序与后端也一致
     return {
@@ -148,6 +151,7 @@ export const genBundleData = (params: GenBundleDataParams): BundleData => {
       chainID: token.chainID,
       from,
       to,
+      data: data != null ? data : '',
       amount: fromUnitToDecimal(amount, token.decimals)
     }
   })
@@ -158,6 +162,48 @@ export const genBundleData = (params: GenBundleDataParams): BundleData => {
     items,
     expiration: params.expiration,
     salt,
-    version
+    version,
+    data: params.data != null ? params.data : ''
   }
 }
+
+export const isSmartAccount = (account: string): boolean => {
+  return /^\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$/.test(account)
+}
+
+export const getUserId = (debug: boolean, everId: string): string => {
+  const everpayChainIdStr = debug ? '5' : '1'
+  // hash the message
+  const hash = sha256(`${everId.trim().toLowerCase()}${everpayChainIdStr}`)
+  const arrBuffer = hexToUint8Array(hash.toString()).slice(0, 10)
+  const b64encoded = window.btoa(String.fromCharCode.apply(null, arrBuffer as any))
+  return b64encoded
+}
+
+const checkSum = (idBytes: Uint8Array): Uint8Array => {
+  const hash = sha256(encHex.parse(uint8ArrayToHex(Uint8Array.from([...Buffer.from('eid'), ...idBytes]))))
+  return hexToUint8Array(hash.toString()).slice(0, 2)
+}
+
+export const uint8ArrayToHex = (uint8Array: Uint8Array): string => {
+  return [...uint8Array].map((b) => {
+    return b.toString(16).padStart(2, '0')
+  }).join('')
+}
+
+export const hexToUint8Array = (hexString: string): Uint8Array =>
+  Uint8Array.from((hexString.match(/.{1,2}/g) as any).map((byte: any) => parseInt(byte, 16)))
+
+export const genEverId = (email: string): string => {
+  const str = email.toLowerCase().trim()
+  const hash = sha256(str)
+  const idBytes = hexToUint8Array(hash.toString())
+  const sum = checkSum(idBytes)
+  const concatArray = Uint8Array.from([...idBytes, ...sum])
+  return `eid${uint8ArrayToHex(concatArray)}`
+}
+
+export const isNodeJs = (): boolean =>
+  typeof process !== 'undefined' &&
+  process.versions != null &&
+  process.versions.node != null
