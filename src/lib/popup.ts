@@ -14,7 +14,7 @@ export interface PopupConfigOptions {
   type: 'auth' | 'sign'
 }
 
-const DEFAULT_AUTHORIZE_TIMEOUT_IN_SECONDS = 300
+const DEFAULT_AUTHORIZE_TIMEOUT_IN_SECONDS = 480
 
 export const openPopup = (url = ''): any => {
   const width = 375
@@ -49,6 +49,7 @@ export const runPopup = async (
 
     timeoutId = setTimeout(() => {
       clearInterval(popupTimer)
+      config.popup.close()
       reject(new Error('AUTHORIZE_TIMEOUT'))
       window.removeEventListener('message', popupEventListener, false)
     }, (config.timeoutInSeconds != null ? config.timeoutInSeconds : DEFAULT_AUTHORIZE_TIMEOUT_IN_SECONDS) * 1000)
