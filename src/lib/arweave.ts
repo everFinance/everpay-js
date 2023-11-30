@@ -1,10 +1,10 @@
 import Arweave from 'arweave'
 import isString from 'lodash/isString'
 import { ArJWK, ArweaveTransaction, ChainType } from '../types'
-import { getTokenAddrByChainType, isArweaveL2PSTTokenSymbol } from '../utils/util'
+import { getTokenAddrByChainType, hexToUint8Array, isArweaveL2PSTTokenSymbol } from '../utils/util'
 import { TransferAsyncParams } from './interface'
-import hashPersonalMessage from './hashPersonalMessage'
 import { sendRequest } from '../api'
+import sha256 from 'crypto-js/sha256'
 
 const options = {
   host: 'arweave.net', // Hostname or IP address for a Arweave host
@@ -50,7 +50,6 @@ export const checkArPermissions = async (permissions: string[] | string): Promis
 const signMessageAsync = async (debug: boolean, arJWK: ArJWK, address: string, messageData: string): Promise<string> => {
   const arweave = Arweave.init(options)
   const msgDataBuffer = Buffer.from(messageData, 'utf-8')
-  const personalMsgHashBuffer = hashPersonalMessage(msgDataBuffer)
   let arOwner = ''
   let signatureB64url = ''
   // web
@@ -73,39 +72,21 @@ const signMessageAsync = async (debug: boolean, arJWK: ArJWK, address: string, m
       throw new Error(ERRORS.SIGNATURE_PERMISSION_NEEDED)
     }
 
-    const algorithm = {
-      name: 'RSA-PSS',
-      saltLength: 32
-    }
-
-    if ((window.arweaveWallet as any).signMessage !== undefined) {
-      try {
-        const signature = await (window.arweaveWallet as any).signMessage(
-          msgDataBuffer,
-          { hashAlgorithm: 'SHA-256' }
-        )
-        const buf = new Uint8Array(Object.values(signature))
-        signatureB64url = Arweave.utils.bufferTob64Url(buf)
-      } catch {
-        throw new Error(ERRORS.SIGNATURE_FAILED)
-      }
-    } else {
-      try {
-      // TODO: wait arweave-js update arconnect.d.ts
-        const signature = await (window.arweaveWallet).signature(
-          personalMsgHashBuffer,
-          algorithm
-        )
-        const buf = new Uint8Array(Object.values(signature))
-        signatureB64url = Arweave.utils.bufferTob64Url(buf)
-      } catch {
-        throw new Error(ERRORS.SIGNATURE_FAILED)
-      }
+    try {
+      const signature = await (window.arweaveWallet as any).signMessage(
+        msgDataBuffer,
+        { hashAlgorithm: 'SHA-256' }
+      )
+      const buf = new Uint8Array(Object.values(signature))
+      signatureB64url = Arweave.utils.bufferTob64Url(buf)
+    } catch {
+      throw new Error(ERRORS.SIGNATURE_FAILED)
     }
 
   // node
   } else {
-    const buf = await arweave.crypto.sign(arJWK, personalMsgHashBuffer, {
+    const hash = sha256(messageData)
+    const buf = await arweave.crypto.sign(arJWK, hexToUint8Array(hash.toString()), {
       saltLength: 32
     })
     arOwner = arJWK.n
