@@ -16,17 +16,22 @@ export interface PopupConfigOptions {
 
 const DEFAULT_AUTHORIZE_TIMEOUT_IN_SECONDS = 480
 
-export const openPopup = (url = ''): any => {
+export const openPopup = async (url = ''): Promise<any> => {
   const width = 375
   const height = 660
   const left = window.screenX + (window.innerWidth - width) / 2
   const top = window.screenY + (window.innerHeight - height) / 2
 
-  return window.open(
-    url,
-    'everpay:authorize:popup',
-    `left=${left},top=${top},width=${width},height=${height},resizable,scrollbars=yes,status=1`
-  )
+  return await new Promise((resolve) => {
+    setTimeout(() => {
+      const popup = window.open(
+        url,
+        'everpay:authorize:popup',
+        `left=${left},top=${top},width=${width},height=${height},resizable,scrollbars=yes,status=1`
+      )
+      resolve(popup)
+    }, 0)
+  })
 }
 
 export const runPopup = async (

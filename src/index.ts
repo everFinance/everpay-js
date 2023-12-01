@@ -4,11 +4,8 @@ import { everpayTxVersion, getExpressHost, getEverpayHost } from './config'
 import { getTimestamp, toBN, getAccountChainType, fromDecimalToUnit, genTokenTag, matchTokenTag, genExpressData, fromUnitToDecimalBN, genBundleData, getTokenBurnFeeByChainType, getChainDecimalByChainType, isArweaveChainPSTMode, getTokenByTag, isArweaveL2PSTTokenSymbol, isSmartAccount, genEverId, getUserId } from './utils/util'
 import { GetEverpayBalanceParams, GetEverpayBalancesParams, GetEverpayTransactionsParams } from './types/api'
 import { checkParams } from './utils/check'
-import { CliamParams } from './types'
-import { ERRORS } from './utils/errors'
-import { utils } from 'ethers'
-import { v4 as uuidv4 } from 'uuid'
 import {
+  CliamParams,
   Config,
   EverpayInfo,
   EverpayBase,
@@ -40,6 +37,10 @@ import {
   AddTokenSet,
   NewToken, SetParams, TargetChainMeta, AddTargetChainSet, TokenDisplaySet, OwnershipSet, EmailRegisterData, EmailRegisterDataWithCode
 } from './types'
+import { ERRORS } from './utils/errors'
+import { utils } from 'ethers'
+import { v4 as uuidv4 } from 'uuid'
+
 import { openPopup, runPopup } from './lib/popup'
 
 export * from './types'
@@ -137,7 +138,7 @@ class Everpay extends EverpayBase {
       argTag,
       fraTag
     ]
-    const balances =everpayBalances.balances.filter((t) => t.tag !== deleteTag[0] && t.tag !== deleteTag[1]).map(item => {
+    const balances = everpayBalances.balances.filter((t) => t.tag !== deleteTag[0] && t.tag !== deleteTag[1]).map(item => {
       const tag = item.tag
       const token = info.tokenList.find(token => token.tag === tag) as Token
       return {
@@ -215,7 +216,7 @@ class Everpay extends EverpayBase {
     const debug = Boolean(this._config.debug)
     const url = `https://beta${debug ? '-dev' : ''}.everpay.io/auth?host=${encodeURIComponent(window.location.host)}&logo=${encodeURIComponent(logo)}`
     // const url = 'http://localhost:8080/entry?auth=1'
-    const popup = openPopup(url)
+    const popup = await openPopup(url)
     return await runPopup({
       popup,
       type: 'auth'

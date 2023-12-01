@@ -2,9 +2,9 @@ import { SignMessageAsyncResult, TransferAsyncParams } from './interface'
 import ethereumLib from './ethereum'
 import arweaveLib from './arweave'
 import smartAccountLib from './smartAccount'
-import { ArJWK, ChainType, Config, EverpayInfo, EverpayTxWithoutSig, EthereumTransaction, ArweaveTransaction } from '../types'
+import { ArJWK, ChainType, Config, EverpayInfo, EverpayTxWithoutSig, EthereumTransaction, ArweaveTransaction, CliamParams } from '../types'
 import { checkSignConfig } from '../utils/check'
-import { CliamParams } from '../types'
+
 import { Signer } from '@ethersproject/abstract-signer'
 import { ERRORS } from '../utils/errors'
 import hashPersonalMessage from './hashPersonalMessage'
@@ -87,7 +87,7 @@ export const signMessageAsync = async (config: Config, messageData: string, acco
   if (!isNodeJs() && Boolean(config.isSmartAccount) && !window.location.host.includes('everpay.io')) {
     const url = `https://beta${(config.debug ?? false) ? '-dev' : ''}.everpay.io/sign?account=${config.account as string}&message=${encodeURIComponent(messageData)}&host=${encodeURIComponent(window.location.host)}`
     // const url = `http://localhost:8080/sign?account=${config.account as string}&message=${encodeURIComponent(messageData)}`
-    const popup = openPopup(url)
+    const popup = await openPopup(url)
     sig = await runPopup({
       popup,
       type: 'sign'
