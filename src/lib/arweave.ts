@@ -72,15 +72,34 @@ const signMessageAsync = async (debug: boolean, arJWK: ArJWK, address: string, m
       throw new Error(ERRORS.SIGNATURE_PERMISSION_NEEDED)
     }
 
-    try {
-      const signature = await (window.arweaveWallet as any).signMessage(
-        msgDataBuffer,
-        { hashAlgorithm: 'SHA-256' }
-      )
-      const buf = new Uint8Array(Object.values(signature))
-      signatureB64url = Arweave.utils.bufferTob64Url(buf)
-    } catch {
-      throw new Error(ERRORS.SIGNATURE_FAILED)
+    const algorithm = {
+      name: 'RSA-PSS',
+      saltLength: 32
+    }
+
+    if ((window.arweaveWallet as any).signMessage !== undefined) {
+      try {
+        const signature = await (window.arweaveWallet as any).signMessage(
+          msgDataBuffer,
+          { hashAlgorithm: 'SHA-256' }
+        )
+        const buf = new Uint8Array(Object.values(signature))
+        signatureB64url = Arweave.utils.bufferTob64Url(buf)
+      } catch {
+        throw new Error(ERRORS.SIGNATURE_FAILED)
+      }
+    } else {
+      try {
+        const hash = sha256(messageData)
+        const signature = await (window.arweaveWallet).signature(
+          hexToUint8Array(hash.toString()),
+          algorithm
+        )
+        const buf = new Uint8Array(Object.values(signature))
+        signatureB64url = Arweave.utils.bufferTob64Url(buf)
+      } catch {
+        throw new Error(ERRORS.SIGNATURE_FAILED)
+      }
     }
 
   // node
