@@ -28,7 +28,7 @@ const validateStatus = function (status: number): boolean {
 }
 
 const rConfig = {
-  timeout: 5000,
+  timeout: 15000,
   validateStatus,
   headers: {
     'Content-Type': 'application/json'
