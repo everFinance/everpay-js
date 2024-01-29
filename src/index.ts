@@ -1,9 +1,10 @@
 import { getEverpayTxMessage, signMessageAsync, signRegisterAsync, transferAsync, getRedPackTxMessage } from './lib/sign'
-import { getEverpayBalance, getEverpayBalances, getEverpayInfo, getEverpayTransaction, getEverpayTransactions, getExpressInfo, getMintdEverpayTransactionByChainTxHash, postTx, getFees, getFee, getEmailRegisterData, getAccountData } from './api'
+import { getEverpayBalance, getEverpayBalances, getEverpayInfo, getEverpayTransaction, getEverpayTransactions, getExpressInfo, getMintdEverpayTransactionByChainTxHash, postTx, getFees, getFee, getEmailRegisterData, getAccountData, verifySig } from './api'
 import { everpayTxVersion, getExpressHost, getEverpayHost } from './config'
-import { getTimestamp, toBN, getAccountChainType, fromDecimalToUnit, genTokenTag, matchTokenTag, genExpressData, fromUnitToDecimalBN, genBundleData, getTokenBurnFeeByChainType, getChainDecimalByChainType, isArweaveChainPSTMode, getTokenByTag, isArweaveL2PSTTokenSymbol, isSmartAccount, genEverId, getUserId } from './utils/util'
+import { getTimestamp, toBN, getAccountChainType, fromDecimalToUnit, genTokenTag, matchTokenTag, genExpressData, fromUnitToDecimalBN, genBundleData, getTokenBurnFeeByChainType, getChainDecimalByChainType, isArweaveChainPSTMode, getTokenByTag, isArweaveL2PSTTokenSymbol, isSmartAccount, genEverId, getUserId, isArweaveAddress, uint8ArrayToHex, isEthereumAddress } from './utils/util'
 import { GetEverpayBalanceParams, GetEverpayBalancesParams, GetEverpayTransactionsParams } from './types/api'
 import { checkParams } from './utils/check'
+import sha256 from 'crypto-js/sha256'
 import {
   CliamParams,
   Config,
@@ -35,13 +36,16 @@ import {
   BundleParams,
   EverpayTx,
   AddTokenSet,
-  NewToken, SetParams, TargetChainMeta, AddTargetChainSet, TokenDisplaySet, OwnershipSet, EmailRegisterData, EmailRegisterDataWithCode
+  NewToken, SetParams, TargetChainMeta, AddTargetChainSet, TokenDisplaySet, OwnershipSet, EmailRegisterData, EmailRegisterDataWithCode, VerifyMessageResult, VerifyMessageParams, SignMessageResult
 } from './types'
 import { ERRORS } from './utils/errors'
 import { utils } from 'ethers'
 import { v4 as uuidv4 } from 'uuid'
 
 import { openPopup, runPopup } from './lib/popup'
+import { EVERPAY_JS_VERSION } from './constants'
+import hashPersonalMessage from './lib/hashPersonalMessage'
+import isString from 'lodash/isString'
 
 export * from './types'
 
@@ -99,9 +103,6 @@ class Everpay extends EverpayBase {
 
   async getAccountData (): Promise<any> {
     const acc = isSmartAccount(this._config.account as string) ? genEverId(this._config.account as string) : this._config.account as string
-    const uId = await getUserId(true, acc)
-    console.log('acc', acc)
-    console.log('uid', uId)
     const result = await getAccountData(this._apiHost, acc)
     return result
   }
@@ -214,12 +215,73 @@ class Everpay extends EverpayBase {
 
   async smartAccountAuth (logo: string): Promise<any> {
     const debug = Boolean(this._config.debug)
-    const url = `https://beta${debug ? '-dev' : ''}.everpay.io/auth?host=${encodeURIComponent(window.location.host)}&logo=${encodeURIComponent(logo)}`
-    // const url = 'http://localhost:8080/entry?auth=1'
+    const url = `https://beta${debug ? '-dev' : ''}.everpay.io/auth?host=${encodeURIComponent(window.location.host)}&logo=${encodeURIComponent(logo)}&version=${EVERPAY_JS_VERSION}`
+    // const url = `http://localhost:8080/auth?host=${encodeURIComponent(window.location.host)}&logo=${encodeURIComponent(logo)}&version=${EVERPAY_JS_VERSION}`
     const popup = await openPopup(url)
     return await runPopup({
       popup,
       type: 'auth'
+    })
+  }
+
+  genEverId (account?: string): string {
+    const acc = account ?? this._config.account as string
+    return isSmartAccount(acc) ? genEverId(acc) : acc
+  }
+
+  hashMessage (message: string): string {
+    const personalMsgHashBuffer = hashPersonalMessage(Buffer.from(message))
+    const personalMsgHex = `0x${personalMsgHashBuffer.toString('hex')}`
+    return personalMsgHex
+  }
+
+  async signMessage (message: string, smartAccountDirectly?: boolean): Promise<SignMessageResult> {
+    if (!isString(message)) {
+      throw new Error(ERRORS.MESSAGE_INCORRECT)
+    }
+    if (isSmartAccount(this._config.account as string)) {
+      if (smartAccountDirectly != null) {
+        if (message.length >= 96) {
+          const { sig } = await signMessageAsync(this._config, message, undefined, true)
+          return { message, sig }
+        } else {
+          throw new Error(ERRORS.MESSAGE_INCORRECT)
+        }
+      } else {
+        const personalMsgHashBuffer = hashPersonalMessage(Buffer.from(message))
+        const messageHash = `0x${personalMsgHashBuffer.toString('hex')}`
+        const { sig } = await signMessageAsync(this._config, message)
+        return { message: messageHash, sig }
+      }
+    } else {
+      const { sig } = await signMessageAsync(this._config, message)
+      return { message, sig }
+    }
+  }
+
+  async verifyMessage (params: VerifyMessageParams): Promise<VerifyMessageResult> {
+    const { account, message, type, sig } = params
+    const everId = this.genEverId(account)
+    let messageHash = ''
+
+    if (isEthereumAddress(account)) {
+      const personalMsgHashBuffer = hashPersonalMessage(Buffer.from(message))
+      messageHash = `0x${personalMsgHashBuffer.toString('hex')}`
+    } else if (isArweaveAddress(account)) {
+      messageHash = `0x${sha256(message).toString()}`
+    } else if (isSmartAccount(account)) {
+      messageHash = `0x${uint8ArrayToHex(Buffer.from(message))}`
+    } else {
+      throw new Error(ERRORS.ACCOUNT_INVALID)
+    }
+
+    const [splitSig, splitPublic] = sig.split(',')
+    return await verifySig(this._apiHost, {
+      account: everId,
+      message: messageHash,
+      type,
+      sig: splitSig,
+      public: splitPublic
     })
   }
 
@@ -249,7 +311,7 @@ class Everpay extends EverpayBase {
 
   // amount 为实际收款数量
   async getEverpayTxWithoutSig (
-    type: 'transfer' | 'withdraw' | 'bundle' | 'set',
+    type: 'transfer' | 'withdraw' | 'bundle' | 'set' | 'setAcc',
     params: TransferParams | WithdrawParams | BundleParams | SetParams
   ): Promise<EverpayTxWithoutSig> {
     if (_cachedInfo?.everpay?.value == null) {
@@ -277,6 +339,9 @@ class Everpay extends EverpayBase {
       // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
     } else if (type === 'set') {
       action = EverpayAction.set
+      decimalOperateAmountBN = fromUnitToDecimalBN(amount, token?.decimals ?? 0)
+    } else if (type === 'setAcc') {
+      action = EverpayAction.setAcc
       decimalOperateAmountBN = fromUnitToDecimalBN(amount, token?.decimals ?? 0)
     } else if (type === 'withdraw') {
       checkParams({ amount })
@@ -400,7 +465,7 @@ class Everpay extends EverpayBase {
     }
   }
 
-  async register (params?: EmailRegisterDataWithCode): Promise<SendEverpayTxResult> {
+  async register (params?: EmailRegisterDataWithCode, attachment?: string): Promise<SendEverpayTxResult> {
     if (_cachedInfo?.everpay?.value == null) {
       await this.info()
     }
@@ -424,7 +489,7 @@ class Everpay extends EverpayBase {
       version: everpayTxVersion
     }
     const messageData = getEverpayTxMessage(everpayTxWithoutSig)
-    const { sig, everHash } = await signRegisterAsync(this._config, messageData)
+    const { sig, everHash } = await signRegisterAsync(this._config, messageData, attachment)
     const everpayTx = {
       ...everpayTxWithoutSig,
       sig
@@ -582,6 +647,29 @@ class Everpay extends EverpayBase {
     const setParams: SetParams = { amount: '0', data: setData, symbol: 'eth', to: this._config.account as string }
     const everpayTxWithoutSig = await this.getEverpayTxWithoutSig('set', setParams)
     return await this.sendEverpayTx(everpayTxWithoutSig)
+  }
+
+  async setAcc (data: any, accountData?: any): Promise<SendEverpayTxResult> {
+    const params = {
+      amount: '0',
+      data,
+      tag: 'ethereum-eth-0x0000000000000000000000000000000000000000',
+      to: this._config.account as string
+    }
+    const everpayTxWithoutSig = await this.getEverpayTxWithoutSig('setAcc', params)
+
+    const messageData = getEverpayTxMessage(everpayTxWithoutSig)
+    const { sig, everHash } = await signMessageAsync(this._config, messageData, accountData)
+    const everpayTx = {
+      ...everpayTxWithoutSig,
+      sig
+    }
+    const postEverpayTxResult = await postTx(this._apiHost, everpayTx)
+    return {
+      ...postEverpayTxResult,
+      everpayTx,
+      everHash
+    }
   }
 }
 

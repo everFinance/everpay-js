@@ -33,3 +33,16 @@ export interface PostEverpayTxResult {
   // TODO: ok or other status
   status: string
 }
+
+export interface VerifySigParams {
+  account: string
+  type: 'register' | 'sign'
+  message: string
+  sig: string
+  public?: string
+}
+
+export interface VerifySigResult {
+  publicId: string
+  public: string
+}

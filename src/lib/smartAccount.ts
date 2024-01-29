@@ -4,9 +4,9 @@ import { ChainType } from '../types'
 import { ERRORS } from '../utils/errors'
 import { getAccountData } from '../api'
 import { getEverpayHost } from '../config'
-import { genEverId, getUserId } from '../utils/util'
+import { genEverId, getUserId, isMobile } from '../utils/util'
 
-const getRpId = (): string => {
+export const getRpId = (): string => {
   const domain = document.domain
   if (domain === 'localhost') {
     return domain
@@ -17,9 +17,17 @@ const getRpId = (): string => {
   return domain
 }
 
-const signRegisterAsync = async (debug: boolean, isSmartAccount: boolean, email: string, everHash: string): Promise<string> => {
+const signRegisterAsync = async (
+  debug: boolean,
+  isSmartAccount: boolean,
+  email: string,
+  everHash: string,
+  accountData?: any,
+  attachment?: string
+): Promise<string> => {
   const everId = genEverId(email)
   const userId = getUserId(debug, everId)
+  const arr = accountData && accountData.publicValues ? Object.entries(accountData.publicValues) : []
   const credential = await navigator.credentials.create({
     publicKey: {
       rp: {
@@ -43,11 +51,28 @@ const signRegisterAsync = async (debug: boolean, isSmartAccount: boolean, email:
           alg: -257
         }
       ],
+      // 排除已经注册过的
+      excludeCredentials: arr.map((publicIdValueArr: any) => {
+        const id = publicIdValueArr[0]
+        return {
+          type: 'public-key',
+          id: Arweave.utils.b64UrlToBuffer(id),
+          transports: [
+            'internal',
+            'usb',
+            'nfc',
+            'ble'
+          ].concat(!isMobile ? ['hybrid'] : []) as any
+        }
+      }),
       timeout: 300000,
       authenticatorSelection: {
-        requireResidentKey: false,
-        residentKey: 'preferred',
-        userVerification: 'preferred'
+        requireResidentKey: true,
+        residentKey: 'required',
+        userVerification: 'required',
+        ...(attachment === 'platform' ? {
+          authenticatorAttachment: 'platform',
+        } : {})
       }
     }
   }) as any
@@ -74,12 +99,11 @@ const signMessageAsync = async (debug: boolean, isSmartAccount: boolean, email: 
     const everId = genEverId(email)
     accountData = await getAccountData(everpayHost, everId)
   }
-  const arr = Object.entries(accountData.publicValues)[0] as string[]
-  const id = arr[0]
-  const publicValue = arr[1]
+  const arr = Object.entries(accountData.publicValues) as any
   const publicKeyData = {
-    allowCredentials: [
-      {
+    allowCredentials: arr.map((publicIdValueArr: any) => {
+      const id = publicIdValueArr[0]
+      return {
         type: 'public-key',
         id: Arweave.utils.b64UrlToBuffer(id),
         transports: [
@@ -87,9 +111,9 @@ const signMessageAsync = async (debug: boolean, isSmartAccount: boolean, email: 
           'usb',
           'nfc',
           'ble'
-        ]
+        ].concat(!isMobile ? ['hybrid'] : [])
       }
-    ]
+    })
   }
   const assertion = await navigator.credentials.get({
     publicKey: {
@@ -116,7 +140,7 @@ const signMessageAsync = async (debug: boolean, isSmartAccount: boolean, email: 
     userHandle: Arweave.utils.bufferTob64Url(userHandle)
   }
   const sig = window.btoa(JSON.stringify(sigJson))
-  return `${sig},${publicValue},FIDO2`
+  return `${sig},${accountData.publicValues[assertion?.id]},FIDO2`
 }
 
 const transferAsync = async (isSmartAccount: boolean, chainType: ChainType, {
