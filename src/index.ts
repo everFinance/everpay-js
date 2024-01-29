@@ -36,7 +36,7 @@ import {
   BundleParams,
   EverpayTx,
   AddTokenSet,
-  NewToken, SetParams, TargetChainMeta, AddTargetChainSet, TokenDisplaySet, OwnershipSet, EmailRegisterData, EmailRegisterDataWithCode, VerifyMessageResult, VerifyMessageParams, SignMessageResult
+  NewToken, SetParams, TargetChainMeta, AddTargetChainSet, TokenDisplaySet, OwnershipSet, EmailRegisterData, EmailRegisterDataWithCode, VerifyMessageResult, VerifyMessageParams, SignMessageResult, SmartAccountAuthResult
 } from './types'
 import { ERRORS } from './utils/errors'
 import { utils } from 'ethers'
@@ -213,7 +213,7 @@ class Everpay extends EverpayBase {
     return await getFee(this._apiHost, genTokenTag(token))
   }
 
-  async smartAccountAuth (logo: string): Promise<any> {
+  async smartAccountAuth (logo: string): Promise<SmartAccountAuthResult> {
     const debug = Boolean(this._config.debug)
     const url = `https://beta${debug ? '-dev' : ''}.everpay.io/auth?host=${encodeURIComponent(window.location.host)}&logo=${encodeURIComponent(logo)}&version=${EVERPAY_JS_VERSION}`
     // const url = `http://localhost:8080/auth?host=${encodeURIComponent(window.location.host)}&logo=${encodeURIComponent(logo)}&version=${EVERPAY_JS_VERSION}`

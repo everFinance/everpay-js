@@ -363,6 +363,15 @@ export interface VerifyMessageResult {
   public: string
 }
 
+export interface SmartAccountAuthResult {
+  account: string
+  publicId: string
+  public: string
+  type: 'sign' | 'register'
+  message: string
+  sig: string
+}
+
 export abstract class EverpayBase {
   abstract getAccountChainType (address: string): ChainType
   abstract info (): Promise<EverpayInfo>
