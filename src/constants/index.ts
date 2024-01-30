@@ -1,51 +1,73 @@
-export const NATIVE_CHAIN_TOKENS = [{
-  chainType: 'ethereum',
-  network: 'mainnet',
-  chainId: 1,
-  nativeSymbol: 'eth'
-}, {
-  chainType: 'ethereum',
-  network: 'goerli',
-  chainId: 5,
-  nativeSymbol: 'eth'
-}, {
-  chainType: 'moon',
-  network: 'moonbeam',
-  chainId: 1284,
-  nativeSymbol: 'glmr'
-}, {
-  chainType: 'moon',
-  network: 'moonbase-alphanet',
-  chainId: 1287,
-  nativeSymbol: 'dev'
-}, {
-  chainType: 'conflux',
-  network: 'conflux eSpace',
-  chainId: 1030,
-  nativeSymbol: 'cfx'
-}, {
-  chainType: 'conflux',
-  network: 'conflux eSpace Testnet',
-  chainId: 71,
-  nativeSymbol: 'cfx'
-}, {
-  chainType: 'bsc',
-  network: 'bsc mainnet',
-  chainId: 56,
-  nativeSymbol: 'bnb'
-}, {
-  chainType: 'bsc',
-  network: 'bsc testnet',
-  chainId: 97,
-  nativeSymbol: 'bnb'
-}, {
-  chainType: 'platon',
-  network: 'platon mainnet',
-  chainId: 210425,
-  nativeSymbol: 'lat'
-}, {
-  chainType: 'platon',
-  network: 'platon testnet',
-  chainId: 2206132,
-  nativeSymbol: 'lat'
-}]
+export const NATIVE_CHAIN_TOKENS = [
+  {
+    chainType: 'ethereum',
+    network: 'mainnet',
+    chainId: 1,
+    nativeSymbol: 'eth',
+    isProd: true
+  },
+  {
+    chainType: 'ethereum',
+    network: 'goerli',
+    chainId: 5,
+    nativeSymbol: 'eth',
+    isProd: false
+  },
+  {
+    chainType: 'moon',
+    network: 'moonbeam',
+    chainId: 1284,
+    nativeSymbol: 'glmr',
+    isProd: true
+  },
+  {
+    chainType: 'moon',
+    network: 'moonbase-alphanet',
+    chainId: 1287,
+    nativeSymbol: 'dev',
+    isProd: false
+  },
+  {
+    chainType: 'conflux',
+    network: 'conflux eSpace',
+    chainId: 1030,
+    nativeSymbol: 'cfx',
+    isProd: true
+  },
+  {
+    chainType: 'conflux',
+    network: 'conflux eSpace Testnet',
+    chainId: 71,
+    nativeSymbol: 'cfx',
+    isProd: false
+  },
+  {
+    chainType: 'bsc',
+    network: 'bsc mainnet',
+    chainId: 56,
+    nativeSymbol: 'bnb'
+  },
+  {
+    chainType: 'bsc',
+    network: 'bsc testnet',
+    chainId: 97,
+    nativeSymbol: 'bnb',
+    isProd: false
+  },
+  {
+    chainType: 'platon',
+    network: 'platon mainnet',
+    chainId: 210425,
+    nativeSymbol: 'lat',
+    isProd: true
+  },
+  {
+    chainType: 'platon',
+    network: 'platon testnet',
+    chainId: 2206132,
+    nativeSymbol: 'lat',
+    isProd: false
+  }
+]
+
+export const EVERPAY_JS_VERSION = '1.2.0'

@@ -48,7 +48,7 @@ export const getEverpayTxMessage = (everpayTxWithoutSig: EverpayTxWithoutSig): s
   return keys.map(key => `${key}:${everpayTxWithoutSig[key]}`).join('\n')
 }
 
-export const signRegisterAsync = async (config: Config, messageData: string): Promise<SignMessageAsyncResult> => {
+export const signRegisterAsync = async (config: Config, messageData: string, attachment?: string): Promise<SignMessageAsyncResult> => {
   const from = config.account as string
   const accountChainType = config.chainType as ChainType
   const personalMsgHashBuffer = hashPersonalMessage(Buffer.from(messageData))
@@ -57,7 +57,7 @@ export const signRegisterAsync = async (config: Config, messageData: string): Pr
   checkSignConfig(accountChainType, config)
 
   if (config.isSmartAccount ?? false) {
-    sig = await smartAccountLib.signRegisterAsync(Boolean(config.debug), Boolean(config.isSmartAccount), from, personalMsgHex)
+    sig = await smartAccountLib.signRegisterAsync(Boolean(config.debug), Boolean(config.isSmartAccount), from, personalMsgHex, undefined, attachment)
   } else if ([
     ChainType.ethereum,
     ChainType.moon,
@@ -76,7 +76,7 @@ export const signRegisterAsync = async (config: Config, messageData: string): Pr
   return { everHash: personalMsgHex, sig }
 }
 
-export const signMessageAsync = async (config: Config, messageData: string, accountData?: any): Promise<SignMessageAsyncResult> => {
+export const signMessageAsync = async (config: Config, messageData: string, accountData?: any, directly?: boolean): Promise<SignMessageAsyncResult> => {
   const from = config.account as string
   const accountChainType = config.chainType as ChainType
   const personalMsgHashBuffer = hashPersonalMessage(Buffer.from(messageData))
@@ -85,8 +85,8 @@ export const signMessageAsync = async (config: Config, messageData: string, acco
   checkSignConfig(accountChainType, config)
 
   if (!isNodeJs() && Boolean(config.isSmartAccount) && !window.location.host.includes('everpay.io')) {
-    const url = `https://beta${(config.debug ?? false) ? '-dev' : ''}.everpay.io/sign?account=${config.account as string}&message=${encodeURIComponent(messageData)}&host=${encodeURIComponent(window.location.host)}`
-    // const url = `http://localhost:8080/sign?account=${config.account as string}&message=${encodeURIComponent(messageData)}`
+    const url = `https://beta${(config.debug ?? false) ? '-dev' : ''}.everpay.io/sign?account=${config.account as string}&message=${encodeURIComponent(messageData)}&host=${encodeURIComponent(window.location.host)}&directly=${directly ? '1' : '0'}`
+    // const url = `http://localhost:8080/sign?account=${config.account as string}&message=${encodeURIComponent(messageData)}&host=${encodeURIComponent(window.location.host)}&directly=${directly ? '1' : '0'}`
     const popup = await openPopup(url)
     sig = await runPopup({
       popup,
@@ -94,7 +94,7 @@ export const signMessageAsync = async (config: Config, messageData: string, acco
     })
   } else {
     if (config.isSmartAccount ?? false) {
-      sig = await smartAccountLib.signMessageAsync(Boolean(config.debug), Boolean(config.isSmartAccount), from, personalMsgHex, accountData)
+      sig = await smartAccountLib.signMessageAsync(Boolean(config.debug), Boolean(config.isSmartAccount), from, directly ? messageData : personalMsgHex, accountData)
     } else if ([
       ChainType.ethereum,
       ChainType.moon,

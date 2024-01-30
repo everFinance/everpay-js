@@ -1,8 +1,8 @@
 import { Signer } from 'ethers'
 import { JWKInterface } from 'arweave/node/lib/wallet'
 import { PostEverpayTxResult } from './api'
-import type { TransactionResponse as EthereumTransaction } from '@ethersproject/abstract-provider'
-import type { TransactionInterface as ArweaveTransaction } from 'arweave/node/lib/transaction'
+import { TransactionResponse as EthereumTransaction } from '@ethersproject/abstract-provider'
+import { TransactionInterface as ArweaveTransaction } from 'arweave/node/lib/transaction'
 
 export enum ChainType {
   ethereum = 'ethereum',
@@ -95,7 +95,8 @@ export enum EverpayAction {
   withdraw = 'burn',
   bundle = 'bundle',
   set = 'set',
-  register = 'register'
+  register = 'register',
+  setAcc = 'setAcc'
 }
 
 export interface InternalTransferItem {
@@ -199,7 +200,8 @@ export enum EverpayActionWithDeposit {
   transfer = 'transfer',
   withdraw = 'burn',
   deposit = 'mint',
-  bundle = 'bundle'
+  bundle = 'bundle',
+  setAcc = 'setAcc'
 }
 
 enum EverpayTransactionStatus {
@@ -342,6 +344,32 @@ export interface CliamParams {
   salt: string
   createdAt: string
   signature?: string
+}
+
+export interface SignMessageResult {
+  message: string
+  sig: string
+}
+
+export interface VerifyMessageParams {
+  account: string
+  type: 'register' | 'sign'
+  message: string
+  sig: string
+}
+
+export interface VerifyMessageResult {
+  publicId: string
+  public: string
+}
+
+export interface SmartAccountAuthResult {
+  account: string
+  publicId: string
+  public: string
+  type: 'sign' | 'register'
+  message: string
+  sig: string
 }
 
 export abstract class EverpayBase {

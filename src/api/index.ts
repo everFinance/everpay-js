@@ -17,7 +17,9 @@ import {
   GetEverpayBalanceResult,
   GetEverpayBalancesParams,
   GetEverpayBalancesResult,
-  PostEverpayTxResult
+  PostEverpayTxResult,
+  VerifySigParams,
+  VerifySigResult
 } from '../types/api'
 
 // `validateStatus` defines whether to resolve or reject the promise for a given
@@ -178,6 +180,17 @@ export const getAccountData = async (apiHost: string, account: string): Promise<
   const url = `${apiHost}/account/${account}`
   const result = await sendRequest({
     url,
+    method: 'GET'
+  })
+
+  return result.data
+}
+
+export const verifySig = async (apiHost: string, params: VerifySigParams): Promise<VerifySigResult> => {
+  const url = `${apiHost}/verify`
+  const queryString = qsStringify(params, { skipNull: true })
+  const result = await sendRequest({
+    url: `${url}${queryString !== '' ? `?${queryString}` : ''}`,
     method: 'GET'
   })
 
