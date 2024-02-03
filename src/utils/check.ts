@@ -40,7 +40,6 @@ export const checkParams = (params: Record<string, unknown>): void => {
 }
 
 export const checkSignConfig = (accountType: ChainType, config: Config): void => {
-  console.log(accountType, config)
   if (config.isSmartAccount ?? false) {
     checkItem('account', config.account)
   } else if (accountType === ChainType.ethereum) {
