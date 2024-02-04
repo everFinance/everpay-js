@@ -70,14 +70,15 @@ const signRegisterAsync = async (
         requireResidentKey: true,
         residentKey: 'required',
         userVerification: 'required',
-        ...(attachment === 'platform' ? {
-          authenticatorAttachment: 'platform',
-        } : {})
+        ...(attachment === 'platform'
+          ? {
+              authenticatorAttachment: 'platform'
+            }
+          : {})
       }
     }
   }) as any
 
-  console.log(credential, 'credential')
   if (credential === null) {
     throw new Error('cancelled')
   }
@@ -122,7 +123,7 @@ const signMessageAsync = async (debug: boolean, isSmartAccount: boolean, email: 
       rpId: getRpId()
     } as any
   }) as any
-  console.log(assertion, 'assertion')
+
   if (assertion === null) {
     throw new Error('cancelled')
   }
