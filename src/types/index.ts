@@ -10,7 +10,8 @@ export enum ChainType {
   arweave = 'arweave',
   conflux = 'conflux',
   bsc = 'bsc',
-  platon = 'platon'
+  platon = 'platon',
+  mapo = 'mapo'
 }
 
 export type ArJWK = JWKInterface | 'use_wallet'

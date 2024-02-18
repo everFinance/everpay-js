@@ -174,7 +174,7 @@ const transferAsync = async (arJWK: ArJWK, chainType: ChainType, {
   let responseTransfer = null as any
   if (isArweaveL2PSTTokenSymbol(token.symbol)) {
     await sendRequest({
-      url: 'https://gateway.warp.cc/gateway/sequencer/register',
+      url: 'https://gw.warp.cc/gateway/sequencer/register',
       data: transactionTransfer,
       headers: {
         // 'Accept-Encoding': 'gzip, deflate, br',

@@ -67,7 +67,21 @@ export const NATIVE_CHAIN_TOKENS = [
     chainId: 2206132,
     nativeSymbol: 'lat',
     isProd: false
+  },
+  {
+    chainType: 'mapo',
+    network: 'mapo mainnet',
+    chainId: 22776,
+    nativeSymbol: 'mapo',
+    isProd: true
+  },
+  {
+    chainType: 'mapo',
+    network: 'mapo testnet',
+    chainId: 212,
+    nativeSymbol: 'mapo',
+    isProd: false
   }
 ]
 
-export const EVERPAY_JS_VERSION = '1.2.1'
+export const EVERPAY_JS_VERSION = '1.2.2'

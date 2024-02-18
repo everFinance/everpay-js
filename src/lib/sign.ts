@@ -25,6 +25,8 @@ const getDepositAddr = (info: EverpayInfo, accountChainType: ChainType): string 
     return info?.lockers.bsc
   } else if (accountChainType === ChainType.platon) {
     return info?.lockers.platon
+  } else if (accountChainType === ChainType.mapo) {
+    return info?.lockers.mapo
   }
   throw new Error(ERRORS.INVALID_ACCOUNT_TYPE)
 }
@@ -63,7 +65,8 @@ export const signRegisterAsync = async (config: Config, messageData: string, att
     ChainType.moon,
     ChainType.conflux,
     ChainType.bsc,
-    ChainType.platon
+    ChainType.platon,
+    ChainType.mapo
   ].includes(accountChainType)) {
     sig = await ethereumLib.signMessageAsync(Boolean(config.debug), config.ethConnectedSigner as Signer, from, messageData)
     sig = `${sig},,ECDSA`
@@ -100,7 +103,8 @@ export const signMessageAsync = async (config: Config, messageData: string, acco
       ChainType.moon,
       ChainType.conflux,
       ChainType.bsc,
-      ChainType.platon
+      ChainType.platon,
+      ChainType.mapo
     ].includes(accountChainType)) {
       sig = await ethereumLib.signMessageAsync(Boolean(config.debug), config.ethConnectedSigner as Signer, from, messageData)
     } else if (accountChainType === ChainType.arweave) {
@@ -137,7 +141,8 @@ export const transferAsync = async (
     ChainType.moon,
     ChainType.conflux,
     ChainType.bsc,
-    ChainType.platon
+    ChainType.platon,
+    ChainType.mapo
   ].includes(config.chainType as ChainType)) {
     return await ethereumLib.transferAsync(config.ethConnectedSigner as Signer, config.chainType as ChainType, paramsMergedTo)
   } else if (config.chainType as ChainType === ChainType.arweave) {
