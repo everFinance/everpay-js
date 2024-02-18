@@ -237,4 +237,7 @@ export const isMobileDevice = (opts?: any): boolean => {
   return result
 }
 
-export const isMobile = isMobileDevice()
+export const isMobile = isMobileDevice({
+  tablet: true,
+  featureDetect: true
+})

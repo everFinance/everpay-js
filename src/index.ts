@@ -213,10 +213,12 @@ class Everpay extends EverpayBase {
     return await getFee(this._apiHost, genTokenTag(token))
   }
 
-  async smartAccountAuth (logo: string): Promise<SmartAccountAuthResult> {
+  async smartAccountAuth (logo: string, email?: string, emailEditable?: boolean): Promise<SmartAccountAuthResult> {
     const debug = Boolean(this._config.debug)
-    const url = `https://beta${debug ? '-dev' : ''}.everpay.io/auth?host=${encodeURIComponent(window.location.host)}&logo=${encodeURIComponent(logo)}&version=${EVERPAY_JS_VERSION}`
-    // const url = `http://localhost:8080/auth?host=${encodeURIComponent(window.location.host)}&logo=${encodeURIComponent(logo)}&version=${EVERPAY_JS_VERSION}`
+    email = email !== undefined && isSmartAccount(email) ? email : ''
+    emailEditable = emailEditable !== false
+    const url = `https://beta${debug ? '-dev' : ''}.everpay.io/auth?host=${encodeURIComponent(window.location.host)}&logo=${encodeURIComponent(logo)}&version=${EVERPAY_JS_VERSION}&email=${email}&editable=${emailEditable ? 1 : 0}`
+    // const url = `http://localhost:8080/auth?host=${encodeURIComponent(window.location.host)}&logo=${encodeURIComponent(logo)}&version=${EVERPAY_JS_VERSION}&email=${email}&editable=${emailEditable ? 1 : 0}`
     const popup = await openPopup(url)
     return await runPopup({
       popup,

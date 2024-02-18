@@ -70,11 +70,9 @@ const signRegisterAsync = async (
         requireResidentKey: true,
         residentKey: 'required',
         userVerification: 'required',
-        ...(attachment === 'platform'
-          ? {
-              authenticatorAttachment: 'platform'
-            }
-          : {})
+        ...(attachment === 'platform' ? {
+          authenticatorAttachment: 'platform',
+        } : {})
       }
     }
   }) as any
@@ -119,6 +117,8 @@ const signMessageAsync = async (debug: boolean, isSmartAccount: boolean, email: 
   const assertion = await navigator.credentials.get({
     publicKey: {
       ...publicKeyData,
+      timeout: 300000,
+      userVerification: 'required',
       challenge: Arweave.utils.b64UrlToBuffer(window.btoa(everHash)),
       rpId: getRpId()
     } as any
