@@ -88,7 +88,7 @@ export const signMessageAsync = async (config: Config, messageData: string, acco
   checkSignConfig(accountChainType, config)
 
   if (!isNodeJs() && Boolean(config.isSmartAccount) && !window.location.host.includes('everpay.io')) {
-    const url = `https://beta${(config.debug ?? false) ? '-dev' : ''}.everpay.io/sign?account=${config.account as string}&message=${encodeURIComponent(messageData)}&host=${encodeURIComponent(window.location.host)}&directly=${directly ? '1' : '0'}`
+    const url = `https://app${(config.debug ?? false) ? '-dev' : ''}.everpay.io/sign?account=${config.account as string}&message=${encodeURIComponent(messageData)}&host=${encodeURIComponent(window.location.host)}&directly=${directly ? '1' : '0'}`
     // const url = `http://localhost:8080/sign?account=${config.account as string}&message=${encodeURIComponent(messageData)}&host=${encodeURIComponent(window.location.host)}&directly=${directly ? '1' : '0'}`
     const popup = await openPopup(url)
     sig = await runPopup({

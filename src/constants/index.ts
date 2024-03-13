@@ -84,4 +84,4 @@ export const NATIVE_CHAIN_TOKENS = [
   }
 ]
 
-export const EVERPAY_JS_VERSION = '1.2.2'
+export const EVERPAY_JS_VERSION = '1.3.0'
