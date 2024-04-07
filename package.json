@@ -71,7 +71,9 @@
     "keccak": "^3.0.2",
     "lodash": "^4.17.21",
     "query-string": "^7.0.1",
-    "uuid": "^8.3.2"
+    "uuid": "^8.3.2",
+    "@permaweb/aoconnect": "^0.0.48",
+    "arseeding-arbundles": "^0.6.27"
   },
   "gitHooks": {
     "pre-commit": "lint-staged"

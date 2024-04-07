@@ -58,7 +58,15 @@ export const isArweaveChainPSTMode = (token?: Token): boolean => {
 }
 
 export const isArweaveL2PSTTokenSymbol = (symbol: string): boolean => {
-  return symbol?.toUpperCase() === 'STAMP' || symbol.toUpperCase() === 'U'
+  return ['STAMP', 'U'].includes(symbol?.toUpperCase())
+}
+
+export const isArweaveAOSTestTokenSymbol = (symbol: string): boolean => {
+  return ['AOCRED', '0RBT', 'TRUNK'].includes(symbol?.toUpperCase())
+}
+
+export const isPermaswapHaloTokenSymbol = (symbol: string): boolean => {
+  return symbol?.toUpperCase() === 'HALO'
 }
 
 export const getAccountChainType = (from: string): ChainType => {

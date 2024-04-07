@@ -31,7 +31,10 @@ export default [
       //   devDeps: false,
       // }),
       // 处理外部依赖
-      resolve(),
+      resolve({
+        browser: true,
+        preferBuiltins: false
+      }),
       json(),
       // 支持基于 CommonJS 模块引入
       commonjs({}),

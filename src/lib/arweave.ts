@@ -1,10 +1,14 @@
 import Arweave from 'arweave'
 import isString from 'lodash/isString'
 import { ArJWK, ArweaveTransaction, ChainType } from '../types'
-import { getTokenAddrByChainType, hexToUint8Array, isArweaveL2PSTTokenSymbol } from '../utils/util'
+import { getTokenAddrByChainType, hexToUint8Array, isArweaveAOSTestTokenSymbol, isArweaveL2PSTTokenSymbol } from '../utils/util'
 import { TransferAsyncParams } from './interface'
 import { sendRequest } from '../api'
 import sha256 from 'crypto-js/sha256'
+import { connect } from '@permaweb/aoconnect'
+
+import { createData } from 'arseeding-arbundles'
+import { InjectedArweaveSigner } from 'arseeding-arbundles/src/signing'
 
 const options = {
   host: 'arweave.net', // Hostname or IP address for a Arweave host
@@ -12,6 +16,12 @@ const options = {
   protocol: 'https', // Network protocol http or https
   timeout: 20000, // Network request timeouts in milliseconds
   logging: false // Enable network request logging
+}
+
+const defaultAOConfig = {
+  CU_URL: 'https://cu.ao-testnet.xyz',
+  MU_URL: 'https://mu.ao-testnet.xyz',
+  GATEWAY_URL: 'https://g8way.io:443'
 }
 
 // TODO: to fix arConnect return result and interface
@@ -115,6 +125,66 @@ const signMessageAsync = async (debug: boolean, arJWK: ArJWK, address: string, m
   return `${signatureB64url},${arOwner}`
 }
 
+// TODO: only support browser yet
+export const sendAoTransfer = async (
+  process: string,
+  recipient: string,
+  amount: string
+) => {
+  const ao = connect(defaultAOConfig)
+
+  try {
+    const createDataItemSigner =
+      () =>
+        async ({
+          data,
+          tags = [],
+          target,
+          anchor
+        }: {
+          data: any
+          tags?: Array<{ name: string, value: string }>
+          target?: string
+          anchor?: string
+        }): Promise<{ id: string, raw: ArrayBuffer }> => {
+          await checkArPermissions([
+            'ACCESS_ADDRESS',
+            'ACCESS_ALL_ADDRESSES',
+            'ACCESS_PUBLIC_KEY',
+            'SIGN_TRANSACTION',
+            'SIGNATURE'
+          ])
+          const signer = new InjectedArweaveSigner(window.arweaveWallet)
+          await signer.setPublicKey()
+          const dataItem = createData(data, signer, { tags, target, anchor })
+
+          await dataItem.sign(signer)
+
+          return {
+            id: dataItem.id,
+            raw: dataItem.getRaw()
+          }
+        }
+    const signer = createDataItemSigner() as any
+    const transferID = await ao.message({
+      process,
+      signer,
+      tags: [
+        { name: 'Action', value: 'Transfer' },
+        {
+          name: 'Recipient',
+          value: recipient
+        },
+        { name: 'Quantity', value: amount }
+      ]
+    })
+    return transferID
+  } catch (err) {
+    console.log('err', err)
+    throw err
+  }
+}
+
 const transferAsync = async (arJWK: ArJWK, chainType: ChainType, {
   symbol,
   token,
@@ -124,6 +194,17 @@ const transferAsync = async (arJWK: ArJWK, chainType: ChainType, {
 }: TransferAsyncParams): Promise<ArweaveTransaction> => {
   const arweave = Arweave.init(options)
   let transactionTransfer: any
+
+  if (isArweaveAOSTestTokenSymbol(token.symbol)) {
+    const tokenID = getTokenAddrByChainType(token, ChainType.aostest)
+    const transferID = await sendAoTransfer(tokenID, to as string, value.toString())
+    console.log('transferID', transferID)
+    return {
+      id: transferID,
+      status: 200,
+      data: {}
+    } as any
+  }
 
   if (symbol.toUpperCase() === 'AR') {
     transactionTransfer = await arweave.createTransaction({
