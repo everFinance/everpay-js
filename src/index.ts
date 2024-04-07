@@ -1,7 +1,7 @@
 import { getEverpayTxMessage, signMessageAsync, signRegisterAsync, transferAsync, getRedPackTxMessage } from './lib/sign'
 import { getEverpayBalance, getEverpayBalances, getEverpayInfo, getEverpayTransaction, getEverpayTransactions, getExpressInfo, getMintdEverpayTransactionByChainTxHash, postTx, getFees, getFee, getEmailRegisterData, getAccountData, verifySig } from './api'
 import { everpayTxVersion, getExpressHost, getEverpayHost } from './config'
-import { getTimestamp, toBN, getAccountChainType, fromDecimalToUnit, genTokenTag, matchTokenTag, genExpressData, fromUnitToDecimalBN, genBundleData, getTokenBurnFeeByChainType, getChainDecimalByChainType, isArweaveChainPSTMode, getTokenByTag, isArweaveL2PSTTokenSymbol, isSmartAccount, genEverId, getUserId, isArweaveAddress, uint8ArrayToHex, isEthereumAddress } from './utils/util'
+import { getTimestamp, toBN, getAccountChainType, fromDecimalToUnit, genTokenTag, matchTokenTag, genExpressData, fromUnitToDecimalBN, genBundleData, getTokenBurnFeeByChainType, getChainDecimalByChainType, isArweaveChainPSTMode, getTokenByTag, isArweaveL2PSTTokenSymbol, isSmartAccount, genEverId, getUserId, isArweaveAddress, uint8ArrayToHex, isEthereumAddress, isArweaveAOSTestTokenSymbol } from './utils/util'
 import { GetEverpayBalanceParams, GetEverpayBalancesParams, GetEverpayTransactionsParams } from './types/api'
 import { checkParams } from './utils/check'
 import sha256 from 'crypto-js/sha256'
@@ -146,7 +146,7 @@ class Everpay extends EverpayBase {
         chainType: token?.chainType,
         symbol: token?.symbol.toUpperCase(),
         tag: token?.tag,
-        address: token.id,
+        address: token?.id,
         balance: fromDecimalToUnit(item.amount, item.decimals)
       }
     })
@@ -215,8 +215,9 @@ class Everpay extends EverpayBase {
 
   async smartAccountAuth (logo: string, email?: string, emailEditable?: boolean): Promise<SmartAccountAuthResult> {
     const debug = Boolean(this._config.debug)
-    email = email !== undefined && isSmartAccount(email) ? email : ''
-    emailEditable = emailEditable !== false
+    email = isSmartAccount(email as any) ? email : ''
+    // eslint-disable-next-line no-unneeded-ternary
+    emailEditable = emailEditable === false ? false : true
     const url = `https://app${debug ? '-dev' : ''}.everpay.io/auth?host=${encodeURIComponent(window.location.host)}&logo=${encodeURIComponent(logo)}&version=${EVERPAY_JS_VERSION}&email=${email}&editable=${emailEditable ? 1 : 0}`
     // const url = `http://localhost:8080/auth?host=${encodeURIComponent(window.location.host)}&logo=${encodeURIComponent(logo)}&version=${EVERPAY_JS_VERSION}&email=${email}&editable=${emailEditable ? 1 : 0}`
     const popup = await openPopup(url)
@@ -300,7 +301,7 @@ class Everpay extends EverpayBase {
       throw new Error(ERRORS.DEPOSIT_ARWEAVE_PST_MUST_BE_INTEGER)
     }
 
-    const chainDecimal = getChainDecimalByChainType(token, chainType as ChainType)
+    const chainDecimal = getChainDecimalByChainType(token, isArweaveAOSTestTokenSymbol(token.symbol) ? ChainType.aostest : chainType as ChainType)
     const value = utils.parseUnits(toBN(amount).toString(), chainDecimal)
 
     return await transferAsync(this._config, _cachedInfo.everpay?.value as EverpayInfo, {
