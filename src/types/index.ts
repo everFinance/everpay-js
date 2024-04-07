@@ -1,8 +1,8 @@
 import { Signer } from 'ethers'
 import { JWKInterface } from 'arweave/node/lib/wallet'
 import { PostEverpayTxResult } from './api'
-import { TransactionResponse as EthereumTransaction } from '@ethersproject/abstract-provider'
-import { TransactionInterface as ArweaveTransaction } from 'arweave/node/lib/transaction'
+import type { TransactionResponse as EthereumTransaction } from '@ethersproject/abstract-provider'
+import type { TransactionInterface as ArweaveTransaction } from 'arweave/node/lib/transaction'
 
 export enum ChainType {
   ethereum = 'ethereum',
@@ -11,7 +11,9 @@ export enum ChainType {
   conflux = 'conflux',
   bsc = 'bsc',
   platon = 'platon',
-  mapo = 'mapo'
+  mapo = 'mapo',
+  aostest = 'aostest',
+  psntest = 'psntest'
 }
 
 export type ArJWK = JWKInterface | 'use_wallet'

@@ -123,7 +123,6 @@ const signMessageAsync = async (debug: boolean, isSmartAccount: boolean, email: 
       rpId: getRpId()
     } as any
   }) as any
-
   if (assertion === null) {
     throw new Error('cancelled')
   }

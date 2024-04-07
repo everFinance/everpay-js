@@ -11,7 +11,8 @@ export interface PopupConfigOptions {
    * security restrictions around when popups can be invoked (e.g. from a user click event)
    */
   popup?: any
-  type: 'auth' | 'sign'
+  type: 'auth' | 'sign' | 'signPageLoaded'
+  keepPopup?: boolean
 }
 
 const DEFAULT_AUTHORIZE_TIMEOUT_IN_SECONDS = 480
@@ -81,7 +82,9 @@ export const runPopup = async (
       clearTimeout(timeoutId)
       clearInterval(popupTimer)
       window.removeEventListener('message', popupEventListener, false)
-      config.popup.close()
+      if (!config.keepPopup) {
+        config.popup.close()
+      }
 
       if (data.err != null) {
         reject(new Error(data.err))
