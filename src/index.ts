@@ -1,7 +1,7 @@
 import { getEverpayTxMessage, signMessageAsync, signRegisterAsync, transferAsync, getRedPackTxMessage } from './lib/sign'
-import { getEverpayBalance, getEverpayBalances, getEverpayInfo, getEverpayTransaction, getEverpayTransactions, getExpressInfo, getMintdEverpayTransactionByChainTxHash, postTx, getFees, getFee, getEmailRegisterData, getAccountData, verifySig } from './api'
-import { everpayTxVersion, getExpressHost, getEverpayHost } from './config'
-import { getTimestamp, toBN, getAccountChainType, fromDecimalToUnit, genTokenTag, matchTokenTag, genExpressData, fromUnitToDecimalBN, genBundleData, getTokenBurnFeeByChainType, getChainDecimalByChainType, isArweaveChainPSTMode, getTokenByTag, isArweaveL2PSTTokenSymbol, isSmartAccount, genEverId, getUserId, isArweaveAddress, uint8ArrayToHex, isEthereumAddress, isArweaveAOSTestTokenSymbol } from './utils/util'
+import { getEverpayBalance, getEverpayBalances, getEverpayInfo, getExpressInfo, getExplorerTransactions, getMintdEverpayTransactionByChainTxHash, postTx, getFees, getFee, getEmailRegisterData, getAccountData, verifySig, getExplorerTransaction } from './api'
+import { everpayTxVersion, getExpressHost, getEverpayHost, getExplorerHost } from './config'
+import { getTimestamp, toBN, getAccountChainType, fromDecimalToUnit, genTokenTag, matchTokenTag, genExpressData, fromUnitToDecimalBN, genBundleData, getTokenBurnFeeByChainType, getChainDecimalByChainType, isArweaveChainPSTMode, getTokenByTag, isArweaveL2PSTTokenSymbol, isSmartAccount, genEverId, getUserId, isArweaveAddress, uint8ArrayToHex, isEthereumAddress, isArweaveAOSTestToken } from './utils/util'
 import { GetEverpayBalanceParams, GetEverpayBalancesParams, GetEverpayTransactionsParams } from './types/api'
 import { checkParams } from './utils/check'
 import sha256 from 'crypto-js/sha256'
@@ -78,9 +78,11 @@ class Everpay extends EverpayBase {
     }
     this._apiHost = getEverpayHost(config?.debug)
     this._expressHost = getExpressHost(config?.debug)
+    this._explorerHost = getExplorerHost(config?.debug)
   }
 
   private readonly _apiHost: string
+  private readonly _explorerHost: string
   private readonly _expressHost: string
   private readonly _config: Config
 
@@ -180,7 +182,7 @@ class Everpay extends EverpayBase {
 
   async txs (params: TxsParams): Promise<TxsResult> {
     const mergedParams: GetEverpayTransactionsParams = await this.getMergedTxsParams(params)
-    return await getEverpayTransactions(this._apiHost, mergedParams)
+    return await getExplorerTransactions(this._explorerHost, mergedParams)
   }
 
   async txsByAccount (params: TxsByAccountParams): Promise<TxsResult> {
@@ -189,12 +191,12 @@ class Everpay extends EverpayBase {
     checkParams({ account: acc })
     const mergedParams: GetEverpayTransactionsParams = await this.getMergedTxsParams(params)
     mergedParams.account = acc
-    return await getEverpayTransactions(this._apiHost, mergedParams)
+    return await getExplorerTransactions(this._explorerHost, mergedParams)
   }
 
   async txByHash (everHash: string): Promise<EverpayTransaction> {
     checkParams({ everHash })
-    return await getEverpayTransaction(this._apiHost, everHash)
+    return await getExplorerTransaction(this._explorerHost, everHash)
   }
 
   async mintedTxByChainTxHash (chainTxHash: string): Promise<EverpayTransaction> {
@@ -301,7 +303,7 @@ class Everpay extends EverpayBase {
       throw new Error(ERRORS.DEPOSIT_ARWEAVE_PST_MUST_BE_INTEGER)
     }
 
-    const chainDecimal = getChainDecimalByChainType(token, isArweaveAOSTestTokenSymbol(token.symbol) ? ChainType.aostest : chainType as ChainType)
+    const chainDecimal = getChainDecimalByChainType(token, isArweaveAOSTestToken(token) ? ChainType.aostest : chainType as ChainType)
     const value = utils.parseUnits(toBN(amount).toString(), chainDecimal)
 
     return await transferAsync(this._config, _cachedInfo.everpay?.value as EverpayInfo, {

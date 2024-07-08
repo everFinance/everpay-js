@@ -23,10 +23,13 @@ const signRegisterAsync = async (
   email: string,
   everHash: string,
   accountData?: any,
-  attachment?: string
+  attachment?: string,
+  expiration?: number
 ): Promise<string> => {
   const everId = genEverId(email)
-  const userId = getUserId(debug, everId)
+  // expiration 用于添加多密钥时，避免 userId 相同，Safari 14.4+ excludeCredentials bug 导致覆盖丢失密钥
+  // https://forums.developer.apple.com/forums/thread/749232?login=true&page=1#785836022
+  const userId = getUserId(debug, everId, expiration)
   const arr = accountData && accountData.publicValues ? Object.entries(accountData.publicValues) : []
   const credential = await navigator.credentials.create({
     publicKey: {

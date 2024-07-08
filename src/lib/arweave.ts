@@ -1,14 +1,13 @@
 import Arweave from 'arweave'
 import isString from 'lodash/isString'
 import { ArJWK, ArweaveTransaction, ChainType } from '../types'
-import { getTokenAddrByChainType, hexToUint8Array, isArweaveAOSTestTokenSymbol, isArweaveL2PSTTokenSymbol } from '../utils/util'
+import { getTokenAddrByChainType, hexToUint8Array, isArweaveAOSTestToken, isArweaveL2PSTTokenSymbol } from '../utils/util'
 import { TransferAsyncParams } from './interface'
 import { sendRequest } from '../api'
 import sha256 from 'crypto-js/sha256'
 import { connect } from '@permaweb/aoconnect'
 
-import { createData } from 'arseeding-arbundles'
-import { InjectedArweaveSigner } from 'arseeding-arbundles/src/signing'
+import { DataItem } from 'arseeding-arbundles'
 
 const options = {
   host: 'arweave.net', // Hostname or IP address for a Arweave host
@@ -129,7 +128,9 @@ const signMessageAsync = async (debug: boolean, arJWK: ArJWK, address: string, m
 export const sendAoTransfer = async (
   process: string,
   recipient: string,
-  amount: string
+  amount: string,
+  addTags: Array<{ name: string, value: string }> = [],
+  replaceTags?: any
 ) => {
   const ao = connect(defaultAOConfig)
 
@@ -154,31 +155,35 @@ export const sendAoTransfer = async (
             'SIGN_TRANSACTION',
             'SIGNATURE'
           ])
-          const signer = new InjectedArweaveSigner(window.arweaveWallet)
-          await signer.setPublicKey()
-          const dataItem = createData(data, signer, { tags, target, anchor })
 
-          await dataItem.sign(signer)
+          const signed = await (window.arweaveWallet as any).signDataItem({
+            data,
+            tags,
+            anchor,
+            target
+          })
+          const dataItem = new DataItem(Buffer.from(signed))
 
           return {
-            id: dataItem.id,
-            raw: dataItem.getRaw()
+            id: await dataItem.id,
+            raw: await dataItem.getRaw()
           }
         }
     const signer = createDataItemSigner() as any
-    const transferID = await ao.message({
+    const messageID = await ao.message({
       process,
       signer,
-      tags: [
+      tags: replaceTags || [
         { name: 'Action', value: 'Transfer' },
         {
           name: 'Recipient',
           value: recipient
         },
-        { name: 'Quantity', value: amount }
+        { name: 'Quantity', value: amount },
+        ...addTags
       ]
     })
-    return transferID
+    return messageID
   } catch (err) {
     console.log('err', err)
     throw err
@@ -195,7 +200,7 @@ const transferAsync = async (arJWK: ArJWK, chainType: ChainType, {
   const arweave = Arweave.init(options)
   let transactionTransfer: any
 
-  if (isArweaveAOSTestTokenSymbol(token.symbol)) {
+  if (isArweaveAOSTestToken(token)) {
     const tokenID = getTokenAddrByChainType(token, ChainType.aostest)
     const transferID = await sendAoTransfer(tokenID, to as string, value.toString())
     console.log('transferID', transferID)

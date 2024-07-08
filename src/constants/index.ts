@@ -45,7 +45,8 @@ export const NATIVE_CHAIN_TOKENS = [
     chainType: 'bsc',
     network: 'bsc mainnet',
     chainId: 56,
-    nativeSymbol: 'bnb'
+    nativeSymbol: 'bnb',
+    isProd: true
   },
   {
     chainType: 'bsc',
@@ -84,4 +85,4 @@ export const NATIVE_CHAIN_TOKENS = [
   }
 ]
 
-export const EVERPAY_JS_VERSION = '1.3.0'
+export const EVERPAY_JS_VERSION = '1.5.0'

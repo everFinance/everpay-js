@@ -61,8 +61,8 @@ export const isArweaveL2PSTTokenSymbol = (symbol: string): boolean => {
   return ['STAMP', 'U'].includes(symbol?.toUpperCase())
 }
 
-export const isArweaveAOSTestTokenSymbol = (symbol: string): boolean => {
-  return ['AOCRED', '0RBT', 'TRUNK'].includes(symbol?.toUpperCase())
+export const isArweaveAOSTestToken = (token: Token): boolean => {
+  return token.chainType.includes(ChainType.aostest) && ['AOCRED', '0RBT', 'TRUNK', 'EXP', 'NEXP', 'EXP(ARIO)', 'BP', 'AR'].includes(token?.symbol?.toUpperCase())
 }
 
 export const isPermaswapHaloTokenSymbol = (symbol: string): boolean => {
@@ -179,10 +179,10 @@ export const isSmartAccount = (account: string): boolean => {
   return /^\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$/.test(account)
 }
 
-export const getUserId = (debug: boolean, everId: string): string => {
+export const getUserId = (debug: boolean, everId: string, expiration?: number): string => {
   const everpayChainIdStr = debug ? '5' : '1'
   // hash the message
-  const hash = sha256(`${everId.trim().toLowerCase()}${everpayChainIdStr}`)
+  const hash = sha256(`${everId.trim().toLowerCase()}${everpayChainIdStr}${expiration ? expiration : ''}`)
   const arrBuffer = hexToUint8Array(hash.toString()).slice(0, 10)
   const b64encoded = window.btoa(String.fromCharCode.apply(null, arrBuffer as any))
   return b64encoded

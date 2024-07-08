@@ -2,16 +2,23 @@ import { SignMessageAsyncResult, TransferAsyncParams } from './interface'
 import ethereumLib from './ethereum'
 import arweaveLib from './arweave'
 import smartAccountLib from './smartAccount'
-import { ArJWK, ChainType, Config, EverpayInfo, EverpayTxWithoutSig, EthereumTransaction, ArweaveTransaction, CliamParams } from '../types'
+import { ArJWK, ChainType, Config, EverpayInfo, EverpayTxWithoutSig, EthereumTransaction, ArweaveTransaction, CliamParams, Token } from '../types'
 import { checkSignConfig } from '../utils/check'
 
 import { Signer } from '@ethersproject/abstract-signer'
 import { ERRORS } from '../utils/errors'
 import hashPersonalMessage from './hashPersonalMessage'
-import { isNodeJs } from '../utils/util'
+import { isArweaveAOSTestToken, isNodeJs, isPermaswapHaloTokenSymbol } from '../utils/util'
 import { openPopup, runPopup } from './popup'
 
-const getDepositAddr = (info: EverpayInfo, accountChainType: ChainType): string => {
+export const getDepositAddr = (info: EverpayInfo, accountChainType: ChainType, token: Token): string => {
+  const symbol = token.symbol
+  if (isArweaveAOSTestToken(token)) {
+    return info?.lockers.aostest
+  }
+  if (isPermaswapHaloTokenSymbol(symbol)) {
+    return info?.lockers.psntest
+  }
   if (accountChainType === ChainType.ethereum) {
     return info?.lockers.ethereum
   } else if (accountChainType === ChainType.arweave) {
@@ -88,9 +95,17 @@ export const signMessageAsync = async (config: Config, messageData: string, acco
   checkSignConfig(accountChainType, config)
 
   if (!isNodeJs() && Boolean(config.isSmartAccount) && !window.location.host.includes('everpay.io')) {
-    const url = `https://app${(config.debug ?? false) ? '-dev' : ''}.everpay.io/sign?account=${config.account as string}&message=${encodeURIComponent(messageData)}&host=${encodeURIComponent(window.location.host)}&directly=${directly ? '1' : '0'}`
-    // const url = `http://localhost:8080/sign?account=${config.account as string}&message=${encodeURIComponent(messageData)}&host=${encodeURIComponent(window.location.host)}&directly=${directly ? '1' : '0'}`
+    const url = `https://app${(config.debug ?? false) ? '-dev' : ''}.everpay.io/sign?account=${config.account as string}&host=${encodeURIComponent(window.location.host)}&directly=${directly ? '1' : '0'}`
+    // const url = `http://localhost:8080/sign?account=${config.account as string}&host=${encodeURIComponent(window.location.host)}&directly=${directly ? '1' : '0'}`
     const popup = await openPopup(url)
+    // 先接收到子窗口的 signPageLoaded 事件
+    await runPopup({
+      popup,
+      type: 'signPageLoaded',
+      keepPopup: true
+    })
+    // 再向子窗口发送 messageData
+    popup.postMessage(JSON.stringify({ data: encodeURIComponent(messageData), type: 'signPageMessageData' }), '*')
     sig = await runPopup({
       popup,
       type: 'sign'
@@ -133,7 +148,7 @@ export const transferAsync = async (
 ): Promise<EthereumTransaction | ArweaveTransaction> => {
   checkSignConfig(config.chainType as ChainType, config)
 
-  const to = getDepositAddr(info, config.chainType as ChainType)
+  const to = getDepositAddr(info, config.chainType as ChainType, params.token)
   const paramsMergedTo = { ...params, to }
 
   if ([

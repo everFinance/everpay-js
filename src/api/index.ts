@@ -94,6 +94,7 @@ export const getEverpayBalances = async (apiHost: string, {
   return result.data
 }
 
+// 没有 targetChainTxHash 此方法已废弃
 export const getEverpayTransactions = async (apiHost: string, params: GetEverpayTransactionsParams): Promise<TxsResult> => {
   const { account, tokenTag, action, withoutAction, cursor } = params
   const baseUrl = account !== undefined ? `${apiHost}/txs/${account}` : `${apiHost}/txs`
@@ -106,6 +107,19 @@ export const getEverpayTransactions = async (apiHost: string, params: GetEverpay
   return result.data
 }
 
+export const getExplorerTransactions = async (apiHost: string, params: GetEverpayTransactionsParams): Promise<TxsResult> => {
+  const { account, tokenTag, action, withoutAction, cursor } = params
+  const baseUrl = `${apiHost}/txs`
+  const queryString = qsStringify({ address: account, cursor, tokenTag, action, withoutAction }, { skipNull: true })
+  const result = await sendRequest({
+    ...rConfig,
+    url: `${baseUrl}${queryString !== '' ? `?${queryString}` : ''}`,
+    method: 'GET'
+  })
+  return result.data
+}
+
+// 没有 targetChainTxHash 此方法已废弃
 export const getEverpayTransaction = async (apiHost: string, everHash: string): Promise<EverpayTransaction> => {
   const url = `${apiHost}/tx/${everHash}`
   const result = await sendRequest({
@@ -114,6 +128,16 @@ export const getEverpayTransaction = async (apiHost: string, everHash: string): 
     method: 'GET'
   })
   return result.data.tx
+}
+
+export const getExplorerTransaction = async (apiHost: string, everHash: string): Promise<EverpayTransaction> => {
+  const url = `${apiHost}/tx/${everHash}`
+  const result = await sendRequest({
+    ...rConfig,
+    url,
+    method: 'GET'
+  })
+  return result.data
 }
 
 export const getMintdEverpayTransactionByChainTxHash = async (apiHost: string, chainTxHash: string): Promise<EverpayTransaction> => {
